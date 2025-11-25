@@ -1,0 +1,222 @@
+.page {
+    padding: 20px 0 60px;
+}
+
+/* 1. LAYOUT */
+.container {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.leftBlock {
+    flex: 1;
+    min-width: 320px;
+}
+
+.rightBlock {
+    width: 360px;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 2. GALLERY */
+.gallery {
+    margin-bottom: 30px;
+
+    .mainSlider {
+        border-radius: 18px;
+        overflow: hidden;
+        margin-bottom: 12px;
+
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 18px;
+        }
+    }
+
+    .thumbs {
+        display: flex;
+        gap: 10px;
+
+        img {
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+
+            &:hover {
+                transform: scale(1.05);
+            }
+        }
+    }
+}
+
+/* 3. DESCRIPTION */
+.description {
+    margin-bottom: 30px;
+
+    h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    p {
+        font-size: 16px;
+        color: #444;
+        line-height: 1.5;
+    }
+}
+
+/* 4. PARAMETERS */
+.params {
+    margin-bottom: 40px;
+
+    h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    ul {
+        display: grid;
+        gap: 10px;
+
+        li {
+            font-size: 16px;
+
+            strong {
+                width: 140px;
+                display: inline-block;
+                font-weight: 600;
+            }
+        }
+    }
+}
+
+/* 5. CONTACT + MAP */
+.contactBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .ownerCard {
+        padding: 20px;
+        border-radius: 18px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: #fff;
+        box-shadow: 0 6px 20px rgba(255, 140, 80, 0.15);
+        transition: 0.25s;
+
+        &:hover {
+            transform: translateY(-3px);
+        }
+
+        .ownerInfo {
+            margin-bottom: 16px;
+
+            strong {
+                font-size: 18px;
+            }
+
+            span {
+                font-size: 14px;
+                color: #666;
+            }
+        }
+
+        .callBtn {
+            display: block;
+            text-align: center;
+            padding: 12px 0;
+            border-radius: 12px;
+            font-weight: 600;
+            border: 2px solid rgba(0, 0, 0, 0.15);
+            color: #222;
+            background: transparent;
+            cursor: pointer;
+            transition: 0.25s;
+
+            &:hover {
+                border-color: #ff6a5c;
+                background: rgba(255, 106, 92, 0.15);
+                color: #000;
+            }
+        }
+    }
+
+    .map iframe {
+        width: 100%;
+        height: 280px;
+        border-radius: 18px;
+        border: none;
+    }
+}
+
+/* 6. RECOMMENDATIONS */
+.recommend {
+    h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
+
+    .recommendGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 20px;
+
+        .card {
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: #fff;
+            box-shadow: 0 6px 20px rgba(255,140,80,0.15);
+            transition: 0.25s;
+            cursor: pointer;
+
+            &:hover {
+                transform: translateY(-4px);
+            }
+
+            img {
+                width: 100%;
+                height: 170px;
+                object-fit: cover;
+            }
+
+            .cardInfo {
+                padding: 14px;
+
+                strong {
+                    display: block;
+                    font-size: 16px;
+                    margin-bottom: 4px;
+                }
+
+                span {
+                    font-size: 14px;
+                    color: #666;
+                }
+            }
+        }
+    }
+}
+
+/* MOBILE */
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .rightBlock {
+        width: 100%;
+    }
+
+    .contactBlock {
+        flex-direction: column;
+    }
+}

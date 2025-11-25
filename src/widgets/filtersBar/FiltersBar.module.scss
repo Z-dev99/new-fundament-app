@@ -1,0 +1,263 @@
+.wrapper {
+    width: 100%;
+    background: #fff;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eceff5;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 40px;
+
+    @media (max-width: 768px) {
+        padding: 16px;
+        border-radius: 16px;
+        gap: 20px;
+    }
+}
+
+/* ---------------- GRID ---------------- */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+
+    @media (max-width: 1024px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    @media (max-width: 540px) {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #394150;
+    margin-bottom: 2px;
+}
+
+/* ---------- SEGMENT BUTTONS (Тип сделки) ---------- */
+
+.segment {
+    display: flex;
+    background: #f5f6fa;
+    padding: 4px;
+    border-radius: 12px;
+    border: 1px solid #e3e6ef;
+    gap: 4px;
+}
+
+.segmentBtn {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #646b78;
+    background: transparent;
+    transition: 0.25s ease;
+    cursor: pointer;
+
+    &:hover {
+        background: #eceff6;
+    }
+}
+
+.active {
+    background: linear-gradient(90deg, #ff496e 0%, #ff7d53 60%, #ffb538 100%);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(255, 95, 95, 0.25);
+}
+
+/* ---------------- INPUTS ---------------- */
+
+.inlineInputs {
+    display: flex;
+    gap: 10px;
+}
+
+.input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 12px;
+    background: #f8f9fd;
+    border: 1px solid #e6e8f0;
+    transition: 0.2s ease;
+    outline: none;
+
+    &::placeholder {
+        color: #a7a9b1;
+    }
+
+    &:focus {
+        border-color: #ff6b5a;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(255, 125, 90, 0.18);
+    }
+}
+
+/* ---------------- ROOM BUTTONS ---------------- */
+
+.rooms {
+    display: flex;
+    gap: 8px;
+}
+
+.roomBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid #dfe3ee;
+    background: #f5f6fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #525a67;
+    cursor: pointer;
+    transition: 0.2s ease;
+
+    &:hover {
+        background: #eceff6;
+    }
+}
+
+.roomActive {
+    background: linear-gradient(90deg, #ff496e, #ff7d53, #ffb538);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 2px 10px rgba(255, 80, 80, 0.28);
+}
+
+/* ---------------- ACTION BAR ---------------- */
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    @media (max-width: 680px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+}
+
+/* VIEW SWITCH (map/list) */
+
+.viewSwitch {
+    display: flex;
+    gap: 12px;
+}
+
+.viewBtn {
+    padding: 10px 16px;
+    border-radius: 12px;
+    background: #f5f6fa;
+    border: 1px solid #e2e5ef;
+    font-size: 14px;
+    font-weight: 600;
+    color: #525867;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: 0.25s ease;
+
+    svg {
+        opacity: 0.8;
+    }
+
+    &:hover {
+        background: #eceff6;
+    }
+}
+
+.viewActive {
+    background: #fff;
+    border-color: #ff6b5a;
+    color: #ff624f;
+    box-shadow: 0 0 0 3px rgba(255, 120, 90, 0.2);
+
+    svg {
+        color: #ff624f;
+    }
+}
+
+/* RIGHT SIDE */
+
+.right {
+    display: flex;
+    gap: 14px;
+
+    @media (max-width: 680px) {
+        flex-direction: column;
+    }
+}
+
+.moreBtn {
+    padding: 10px 16px;
+    font-size: 14px;
+    border-radius: 12px;
+    background: #f8f9fd;
+    border: 1px solid #e0e3ec;
+    cursor: pointer;
+    transition: 0.25s ease;
+    font-weight: 600;
+    color: #394150;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    &:hover {
+        background: #eff1f7;
+    }
+}
+
+.count {
+    background: #ff6b5a;
+    padding: 2px 7px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+.applyBtn {
+    padding: 12px 20px;
+    background: linear-gradient(90deg, #ff496e 0%, #ff7d53 55%, #ffb538 100%);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.25s ease;
+    box-shadow: 0 3px 14px rgba(255, 90, 90, 0.3);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 18px rgba(255, 90, 90, 0.35);
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: 0 3px 12px rgba(255, 90, 90, 0.25);
+    }
+}

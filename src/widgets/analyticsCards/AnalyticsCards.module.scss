@@ -1,0 +1,84 @@
+.wrapper {
+    width: 100%;
+    padding: 20px 0;
+    color: #fff;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+
+    span {
+        background: linear-gradient(90deg,
+                #ff3d79 0%,
+                #ff6a5c 30%,
+                #ff9f3f 65%,
+                #ffc93b 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    position: relative;
+    border-radius: 16px;
+    padding: 26px 24px;
+    min-height: 150px;
+    cursor: pointer;
+    background: color-mix(in srgb, var(--color-white) 70%, var(--color-brand) 5%);
+    border: 1px solid color-mix(in srgb, var(--color-brand) 18%, #ffffff);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.08);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+
+    backdrop-filter: blur(6px);
+}
+
+.label {
+    font-size: 14px;
+    line-height: 1.35;
+    opacity: 0.85;
+    max-width: 220px;
+    letter-spacing: 0.2px;
+    color: #323232;
+}
+
+.value {
+    margin-top: 12px;
+    font-size: 44px;
+    font-weight: 800;
+
+    background: linear-gradient(90deg,
+            #ff3d79 0%,
+            #ff6a5c 30%,
+            #ff9f3f 65%,
+            #ffc93b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.rings {
+    position: absolute;
+    right: -60px;
+    top: -50px;
+    width: 260px;
+    height: 260px;
+
+    background-image:
+        radial-gradient(circle at center,
+            color-mix(in srgb, var(--color-brand) 30%, transparent) 2px,
+            transparent 2px);
+    background-size: 26px 26px;
+    opacity: 0.12;
+    pointer-events: none;
+}

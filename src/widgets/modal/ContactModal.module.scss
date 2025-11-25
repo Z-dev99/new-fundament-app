@@ -1,0 +1,227 @@
+.modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 16px; // чтобы на мобилках модалка не прилипала к бокам
+    z-index: 999;
+
+    opacity: 0;
+    transform: scale(0.98);
+    animation: fadeIn 0.25s ease forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modalContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal {
+    position: relative;
+    background: #fff;
+    width: 880px;
+    min-height: 420px;
+    border-radius: 18px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    animation: modalIn 0.3s ease forwards;
+
+    @keyframes modalIn {
+        to {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    @media (max-width: 900px) {
+        width: 100%;
+        flex-direction: column;
+        border-radius: 16px;
+    }
+
+    @media (max-width: 500px) {
+        width: 100%;
+        border-radius: 14px;
+    }
+}
+
+.person {
+    width: 360px;
+    background: #f5f5f5;
+
+    img {
+        object-fit: cover;
+        height: 100%;
+        width: 100%;
+    }
+
+    @media (max-width: 900px) {
+        width: 100%;
+        height: 260px;
+
+        img {
+            object-fit: cover;
+        }
+    }
+}
+
+.content {
+    flex: 1;
+    padding: 32px 36px 0 36px;
+    position: relative;
+
+    @media (max-width: 600px) {
+        padding: 24px 20px 0 20px;
+    }
+}
+
+.title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 26px;
+    color: #111827;
+
+    @media (max-width: 600px) {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding-bottom: 40px;
+
+    @media (max-width: 600px) {
+        gap: 16px;
+        padding-bottom: 70px;
+    }
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    input {
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 15px;
+
+        &:focus {
+            border-color: #002574;
+        }
+    }
+
+    @media (max-width: 600px) {
+        input {
+            font-size: 14px;
+            padding: 10px 12px;
+        }
+    }
+}
+
+.submit {
+    margin-top: 8px;
+    background: #002574;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: 0.25s;
+
+    &:hover:not(:disabled) {
+        background: #00328f;
+    }
+
+    &:disabled {
+        background: #d1d5db;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 600px) {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
+
+.bottomBanner {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 12px;
+    text-align: center;
+    font-size: 15px;
+    background: linear-gradient(90deg, #ff7c6e, #ff2daa);
+    color: #fff;
+    font-weight: 500;
+
+    @media (max-width: 600px) {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+.closeBtn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(4px);
+
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+
+    font-size: 22px;
+    font-weight: 300;
+
+    opacity: 0.7;
+    transition: 0.2s;
+
+    &:hover {
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 600px) {
+        width: 34px;
+        height: 34px;
+        font-size: 20px;
+        top: 10px;
+        right: 10px;
+    }
+}

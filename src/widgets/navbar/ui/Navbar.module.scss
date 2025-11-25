@@ -1,0 +1,159 @@
+.navbar {
+    width: 100%;
+    background: #fff;
+    border-bottom: 1px solid #f1f1f1;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.inner {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    gap: 32px; // важное для равномерного распределения
+}
+
+.logoBlock {
+    display: flex;
+    align-items: center;
+}
+
+/* ---------------- NAV LINKS ---------------- */
+
+.navLinks {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+
+    a {
+        font-size: 15px;
+        color: #002574;
+        font-weight: 500;
+        transition: 0.25s ease;
+        padding: 4px 0;
+
+        &:hover {
+            color: #00328f;
+        }
+    }
+}
+
+/* --------- RIGHT SIDE --------- */
+.rightSide {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Desktop city select */
+.cityDesktop {
+    display: block;
+}
+
+/* Desktop big button */
+.requestDesktop {
+    background: #002574;
+    color: #fff;
+    padding: 10px 18px;
+    font-size: 14px;
+    border-radius: 10px;
+    line-height: 1;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 37, 116, 0.25);
+    transition: 0.25s ease;
+
+    &:hover {
+        background: #00328f;
+    }
+}
+
+/* Mobile icon button */
+.requestMobileIcon {
+    display: none;
+    padding: 8px;
+    background: #002574;
+    border-radius: 10px;
+    color: white;
+    border: none;
+}
+
+/* City select mobile below navbar */
+.cityMobile {
+    display: none;
+    padding: 10px 0;
+}
+
+/* ---------------- MEDIA ---------------- */
+@media (max-width: 900px) {
+
+    .cityDesktop,
+    .requestDesktop,
+    .navLinks {
+        /* скрываем навигацию */
+        display: none;
+    }
+
+    .requestMobileIcon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .inner {
+        height: 60px;
+        gap: 16px;
+    }
+
+    .cityMobile {
+        display: block;
+    }
+}
+
+
+.burger {
+    display: none;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.mobileMenu {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    border-bottom: 1px solid #eee;
+    z-index: 999;
+}
+
+.mobileMenu a {
+    font-size: 18px;
+    font-weight: 500;
+    color: #002574;
+}
+
+.mobileBtn {
+    margin-top: 10px;
+    padding: 12px 20px;
+    font-size: 16px;
+    background: #002574;
+    border-radius: 10px;
+    color: white;
+}
+
+@media (max-width: 900px) {
+    .burger {
+        display: block;
+    }
+}

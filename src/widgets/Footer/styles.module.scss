@@ -1,0 +1,104 @@
+.footer {
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    padding: 2rem 1.5rem;
+}
+
+.payments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 0.8rem;
+    align-items: center;
+
+    .paymentLogo {
+        width: 70px !important;
+        height: 40px !important;
+        object-fit: contain;
+        background: #fff;
+        padding: 4px 6px;
+        border-radius: 8px;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+
+        &:hover {
+            transform: translateY(-2px);
+        }
+    }
+}
+
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    @media (min-width: 768px) {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+}
+
+.left {
+    max-width: 300px;
+}
+
+.logo {
+
+    margin-bottom: 1rem;
+
+    img {
+        width: 160px;
+        height: 36px;
+    }
+}
+
+.text {
+    color: #374151;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.copy {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.right {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+
+    @media (max-width: 767px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    h4 {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #111827;
+    }
+
+    a {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #111827;
+        font-size: 0.95rem;
+        transition: color 0.2s ease;
+
+        &:hover {
+            color: var(--primary-color);
+        }
+    }
+}
