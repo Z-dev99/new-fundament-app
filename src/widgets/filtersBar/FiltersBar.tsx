@@ -46,9 +46,7 @@ export default function FiltersBar() {
             <div className="container">
                 <div className={styles.wrapper}>
 
-                    {/* === TOP GRID === */}
                     <div className={styles.grid}>
-                        {/* Тип сделки */}
                         <div className={styles.group}>
                             <div className={styles.label}>Тип сделки</div>
                             <div className={styles.segment}>
@@ -67,7 +65,6 @@ export default function FiltersBar() {
                             </div>
                         </div>
 
-                        {/* Стоимость */}
                         <div className={styles.group}>
                             <div className={styles.label}>Стоимость</div>
                             <div className={styles.inlineInputs}>
@@ -88,7 +85,6 @@ export default function FiltersBar() {
                             </div>
                         </div>
 
-                        {/* Комнатность */}
                         <div className={styles.group}>
                             <div className={styles.label}>Комнатность</div>
                             <div className={styles.rooms}>
@@ -104,7 +100,6 @@ export default function FiltersBar() {
                             </div>
                         </div>
 
-                        {/* Площадь */}
                         <div className={styles.group}>
                             <div className={styles.label}>Площадь</div>
                             <div className={styles.inlineInputs}>
@@ -126,7 +121,6 @@ export default function FiltersBar() {
                         </div>
                     </div>
 
-                    {/* === ACTIONS === */}
                     <div className={styles.actions}>
                         <div className={styles.viewSwitch}>
                             <button

@@ -38,7 +38,7 @@
     --space-5: 20px;
     --space-6: 24px;
 
-    --container-width: 1280px;
+    --container-width: 980px;
     --container-padding: 16px;
 }
 
@@ -65,13 +65,13 @@
 
 @media (min-width: 1024px) {
     .container {
-        max-width: 960px;
+        max-width: 640px;
     }
 }
 
 @media (min-width: 1280px) {
     .container {
-        max-width: 1200px;
+        max-width: 860px;
     }
 }
 

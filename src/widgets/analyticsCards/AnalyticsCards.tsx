@@ -30,13 +30,11 @@ export const AnalyticsCards = () => {
 
     useEffect(() => {
         if (!isInView) return;
-
         cards.forEach((card, index) => {
             let start = 0;
             const end = card.value;
             const duration = 1200;
             const startTime = performance.now();
-
             const animate = (now: number) => {
                 const progress = Math.min((now - startTime) / duration, 1);
                 const current = Math.floor(start + (end - start) * progress);
@@ -46,7 +44,6 @@ export const AnalyticsCards = () => {
                     updated[index] = current;
                     return updated;
                 });
-
                 if (progress < 1) requestAnimationFrame(animate);
             };
 
@@ -58,7 +55,7 @@ export const AnalyticsCards = () => {
         <div className="container">
             <div ref={ref} className={styles.wrapper}>
                 <h2 className={styles.title}>
-                    <span>Аналитика</span> проданных квартир
+                    <span>Аналитика проданных квартир</span>
                 </h2>
 
                 <div className={styles.grid}>

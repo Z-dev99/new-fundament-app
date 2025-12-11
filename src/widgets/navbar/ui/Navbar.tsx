@@ -18,10 +18,9 @@ export const Navbar = () => {
     return (
         <>
             <motion.header className={styles.navbar}>
-                <div className="container">
+                <div >
                     <div className={styles.inner}>
 
-                        {/* LOGO */}
                         <div className={styles.logoBlock}>
                             <Link href="/" className={styles.logo} onClick={closeMenu}>
                                 <Image
@@ -33,7 +32,6 @@ export const Navbar = () => {
                             </Link>
                         </div>
 
-                        {/* NAVIGATION - DESKTOP */}
                         <nav className={styles.navLinks}>
                             <Link href="/">Главная</Link>
                             <Link href="/contacts">Контакты</Link>
@@ -54,7 +52,6 @@ export const Navbar = () => {
                                 Подать заявку
                             </motion.button>
 
-                            {/* BURGER BUTTON */}
                             <button
                                 className={styles.burger}
                                 onClick={() => setMenuOpen((prev) => !prev)}

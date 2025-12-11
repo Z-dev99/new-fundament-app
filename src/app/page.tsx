@@ -1,123 +1,106 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
-import RootLayout from "./layout";
 import { Marquee } from "@/widgets/marquee/Marquee";
 import { AdBlock } from "@/widgets/adBlock/AdBlock";
 import NavTabs, { NavItem } from "@/widgets/navTabs/NavTabs";
 import FiltersBar from "@/widgets/filtersBar/FiltersBar";
 import { CardsList } from "@/widgets/cardsList/CardsList";
 
-import { AiOutlineHome, AiOutlineStar } from "react-icons/ai";
+import { AiOutlineBuild, AiOutlineCheck, AiOutlineStar } from "react-icons/ai";
 import { Navbar } from "@/widgets/navbar/ui/Navbar";
 import { AnalyticsCards } from "@/widgets/analyticsCards/AnalyticsCards";
 import FeedbackForm from "@/widgets/feedbackForm/FeedbackForm";
 
-export default function Page() {
+const FixedAdBlock = ({ position = "left", title = "Реклама" }: { position?: "left" | "right"; title?: string }) => (
+  <motion.div
+    initial={{ opacity: 0, x: position === "left" ? -50 : 50 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ duration: 0.6, ease: "easeOut" }}
+    style={{
+      position: "fixed",
+      [position]: "12px",
+      top: "10%",
+      width: "200px",
+      height: "520px",
+      background: "linear-gradient(135deg, #ececec, #cfcfcf)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      fontWeight: "bold",
+      fontSize: "20px",
+      borderRadius: "16px",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+      textAlign: "center",
+      cursor: "pointer",
+      zIndex: 50,
+    }}
+  >
+    {title}
+  </motion.div>
+);
 
+
+const GreyAdBlock = ({ title }: { title: string }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, ease: "easeOut" }}
+    style={{
+      background: "linear-gradient(135deg, #e2e2e2, #d0d0d0)",
+      width: "100%",
+      height: "280px",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      textAlign: "center",
+      margin: "24px 0",
+      fontWeight: "bold",
+      fontSize: "20px",
+      color: "#333",
+      cursor: "pointer",
+      borderRadius: "16px",
+      boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
+    }}
+  >
+    {title}
+  </motion.div>
+);
+export default function Page() {
   const [page, setPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("new-builds");
+  const [isMobile, setIsMobile] = useState(false);
   const perPage = 24;
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const adItems = [
-    {
-      id: 1,
-      image:
-        "https://cdn.ananasposter.ru/image/cache/catalog/poster/film/83/10267-1000x830.jpg",
-      title: "Новостройки премиум-класса",
-      text: "Лучшие предложения в вашем городе",
-    },
-    {
-      id: 3,
-      image:
-        "https://cdn.ananasposter.ru/image/cache/catalog/poster/film/83/10267-1000x830.jpg",
-      title: "Скидки на готовые квартиры",
-      text: "Выгодные ипотечные ставки",
-    },
+    { id: 1, image: "https://cdn.ananasposter.ru/image/cache/catalog/poster/film/83/10267-1000x830.jpg", title: "Новостройки премиум-класса", text: "Лучшие предложения в вашем городе" },
+    { id: 2, image: "https://cdn.ananasposter.ru/image/cache/catalog/poster/film/83/10267-1000x830.jpg", title: "Скидки на готовые квартиры", text: "Выгодные ипотечные ставки" },
   ];
 
   const navItems: Array<NavItem> = [
-    { id: "main", label: "Главная", icon: <AiOutlineHome /> },
-    { id: "design", label: "Дизайн", icon: <AiOutlineStar /> },
-    { id: "studio", label: "Студия", icon: <AiOutlineStar /> },
-    { id: "draft", label: "Черновой", icon: <AiOutlineStar /> },
-    { id: "news", label: "Новинки", icon: <AiOutlineStar /> },
-    { id: "left", label: "Левый берег", icon: <AiOutlineStar /> },
-    { id: "right", label: "Правый берег", icon: <AiOutlineStar /> },
+    { id: "new-builds", label: "Новостройки", icon: <AiOutlineStar /> },
+    { id: "under-construction", label: "Строится", icon: <AiOutlineBuild /> },
+    { id: "ready", label: "Готовые к заселению", icon: <AiOutlineCheck /> },
   ];
 
-
-  const cards = [
-    {
-      id: 1,
-      image: "https://images.pexels.com/photos/271743/pexels-photo-271743.jpeg",
-      title: "3-комнатная на Ц-5",
-      price: "880 000 000 сум",
-      address: "Юнусабадский район",
-      rooms: "3",
-      area: "86",
-    },
-    {
-      id: 2,
-      image: "https://images.pexels.com/photos/259600/pexels-photo-259600.jpeg",
-      title: "Евро-двушка возле метро",
-      price: "530 000 000 сум",
-      address: "Мирзо-Улугбек",
-      rooms: "2",
-      area: "54",
-    },
-
-    ...Array.from({ length: 148 }).map((_, i) => {
-      const id = i + 3;
-
-      const images = [
-        "https://images.pexels.com/photos/271743/pexels-photo-271743.jpeg",
-        "https://images.pexels.com/photos/259600/pexels-photo-259600.jpeg",
-        "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
-        "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg",
-        "https://images.pexels.com/photos/1571461/pexels-photo-1571461.jpeg",
-        "https://images.pexels.com/photos/2724749/pexels-photo-2724749.jpeg",
-        "https://images.pexels.com/photos/276583/pexels-photo-276583.jpeg",
-        "https://images.pexels.com/photos/259962/pexels-photo-259962.jpeg",
-      ];
-
-      const titles = [
-        "Евро-двушка в центре",
-        "Студия с ремонтом",
-        "3-комнатная уютная",
-        "4-комнатная премиум",
-        "Квартира с мебелью",
-        "Элитная квартира",
-        "Светлая евродвушка",
-        "Панорамная студия",
-      ];
-
-      const districts = [
-        "Юнусабадский район",
-        "Мирзо-Улугбек",
-        "Чиланзар",
-        "Учтепа",
-        "Яккасарай",
-        "Сергели",
-        "Шайхантахур",
-        "Яшнабад",
-      ];
-
-      const rand = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
-
-      return {
-        id,
-        image: rand(images),
-        title: rand(titles),
-        price: `${Math.floor(350 + Math.random() * 900)} 000 000 сум`,
-        address: rand(districts),
-        rooms: String(1 + Math.floor(Math.random() * 5)),
-        area: String(40 + Math.floor(Math.random() * 90)),
-      };
-    }),
-  ];
-
+  const cards = Array.from({ length: 50 }).map((_, i) => ({
+    id: i + 1,
+    image: "https://images.pexels.com/photos/271743/pexels-photo-271743.jpeg",
+    title: `Квартира ${i + 1}`,
+    price: `${300 + i * 10} 000 000 сум`,
+    address: "Район " + ((i % 5) + 1),
+    rooms: String(1 + (i % 4)),
+    area: String(40 + (i % 60)),
+  }));
 
   const pages = Math.ceil(cards.length / perPage);
   const items = cards.slice((page - 1) * perPage, page * perPage);
@@ -130,17 +113,41 @@ export default function Page() {
   return (
     <div>
       <Navbar />
-      <Marquee />
-      <AdBlock items={adItems} />
-      <NavTabs
-        items={navItems}
-        active="main"
-        onChange={(id) => console.log(id)}
-      />
-      <FiltersBar />
-      <CardsList items={items} page={page} pages={pages} onPageChange={changePage} />
-      <AnalyticsCards />
-      <FeedbackForm />
+      <div style={{ display: "flex", justifyContent: "center", position: "relative" }}>
+        {!isMobile && <FixedAdBlock position="left" title="Место для вашей рекламы" />}
+        {!isMobile && <FixedAdBlock position="right" title="Место для вашей рекламы" />}
+        <div className="container">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+            <Marquee />
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+            <AdBlock items={adItems} />
+          </motion.div>
+          <NavTabs
+            items={navItems.map((item) => ({ ...item, icon: item.icon }))}
+            active={activeTab}
+            onChange={(id) => setActiveTab(id)}
+          />
+          <FiltersBar />
+          {isMobile && <GreyAdBlock title="Место для вашей рекламы" />}
+          <CardsList
+            items={items.map((card, index) => ({
+              ...card,
+              motionProps: {
+                initial: { opacity: 0, y: 20 },
+                animate: { opacity: 1, y: 0 },
+                transition: { duration: 0.4, delay: index * 0.05 },
+              },
+            }))}
+            page={page}
+            pages={pages}
+            onPageChange={changePage}
+          />
+          {isMobile && <GreyAdBlock title="Место для вашей рекламы" />}
+          <AnalyticsCards />
+          <FeedbackForm />
+        </div>
+      </div>
     </div>
   );
 }

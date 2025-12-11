@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "./CardItem.module.css";
 import Link from "next/link";
 
@@ -10,7 +10,7 @@ import "swiper/css/navigation";
 import { Pagination } from "swiper/modules";
 
 interface Props {
-    id: string | number;     // ← Добавили ID
+    id: string | number;
     title: string;
     price: string;
     address: string;
@@ -28,6 +28,23 @@ export const CardItem: React.FC<Props> = ({
     area,
     images,
 }) => {
+    const [loading, setLoading] = useState(false);
+    const [showPhone, setShowPhone] = useState(false);
+
+    const handlePhoneClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+
+        if (loading || showPhone) return; 
+        setLoading(true);
+
+        setTimeout(() => {
+            setLoading(false);
+            setShowPhone(true);
+
+            setTimeout(() => setShowPhone(false), 5000);
+        }, 1500);
+    };
+
     return (
         <Link href={`/property/${id}`} className={styles.cardLink}>
             <div className={styles.card}>
@@ -46,15 +63,6 @@ export const CardItem: React.FC<Props> = ({
                             </SwiperSlide>
                         ))}
                     </Swiper>
-
-                    <button
-                        className={styles.favorite}
-                        onClick={(e) => {
-                            e.preventDefault(); 
-                        }}
-                    >
-                        ♡
-                    </button>
                 </div>
 
                 <div className={styles.body}>
@@ -67,14 +75,12 @@ export const CardItem: React.FC<Props> = ({
                         {rooms} комнаты • {area} м²
                     </div>
 
-                    <button
-                        className={styles.phoneBtn}
-                        onClick={(e) => {
-                            e.preventDefault(); 
-                            alert("Телефон: +998 ** *** ** **");
-                        }}
-                    >
-                        Показать телефон
+                    <button className={styles.phoneBtn} onClick={handlePhoneClick}>
+                        {loading
+                            ? "Загрузка..." 
+                            : showPhone
+                            ? "+998 90 123 45 67"
+                            : "Показать телефон"}
                     </button>
                 </div>
             </div>

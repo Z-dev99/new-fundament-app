@@ -2,6 +2,10 @@
     background: #fff;
     border-top: 1px solid #e5e7eb;
     padding: 2rem 1.5rem;
+
+    @media (max-width: 767px) {
+        padding: 1.5rem 1rem;
+    }
 }
 
 .payments {
@@ -20,39 +24,54 @@
         border-radius: 8px;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
 
-
         &:hover {
             transform: translateY(-2px);
+        }
+
+        /* адаптация логотипов */
+        @media (max-width: 600px) {
+            width: 56px !important;
+            height: 32px !important;
+            padding: 3px 4px;
         }
     }
 }
 
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
+.content {
     display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    justify-content: space-between;
+    align-items: start;
+    width: 100%;
 
-    @media (min-width: 768px) {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-start;
+    @media (max-width: 900px) {
+        gap: 2rem;
+    }
+
+    @media (max-width: 767px) {
+        flex-direction: column;
+        gap: 2.5rem;
     }
 }
 
 .left {
     max-width: 300px;
+
+    @media (max-width: 767px) {
+        max-width: 100%;
+    }
 }
 
 .logo {
-
     margin-bottom: 1rem;
 
     img {
         width: 160px;
         height: 36px;
+
+        @media (max-width: 480px) {
+            width: 130px;
+            height: 30px;
+        }
     }
 }
 
@@ -61,11 +80,19 @@
     font-size: 0.95rem;
     margin-bottom: 1rem;
     margin-top: 1rem;
+
+    @media (max-width: 480px) {
+        font-size: 0.9rem;
+    }
 }
 
 .copy {
     font-size: 0.85rem;
     color: #6b7280;
+
+    @media (max-width: 480px) {
+        font-size: 0.8rem;
+    }
 }
 
 .right {
@@ -73,8 +100,14 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
 
+    @media (max-width: 1024px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
     @media (max-width: 767px) {
+        width: 100%;
         grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 }
 
@@ -87,6 +120,10 @@
         font-weight: 600;
         margin-bottom: 0.5rem;
         color: #111827;
+
+        @media (max-width: 480px) {
+            font-size: 1rem;
+        }
     }
 
     a {
@@ -99,6 +136,10 @@
 
         &:hover {
             color: var(--primary-color);
+        }
+
+        @media (max-width: 480px) {
+            font-size: 0.9rem;
         }
     }
 }

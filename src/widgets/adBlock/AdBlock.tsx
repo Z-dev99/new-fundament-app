@@ -26,9 +26,9 @@ export const AdBlock: FC<AdBlockProps> = ({ items }) => {
             <Swiper
                 modules={[Pagination, Autoplay]}
                 slidesPerView="auto"
-                centeredSlides
                 spaceBetween={24}
                 loop
+                centeredSlides={true}
                 autoplay={{ delay: 2000, disableOnInteraction: true }}
             >
                 {items.map((item) => (

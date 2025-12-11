@@ -1,0 +1,268 @@
+$primary-gradient: linear-gradient(90deg, #ff3d79, #ff6a5c, #ff9f3f, #ffc93b);
+$bg-color: #f9fafb;
+$text-color: #333;
+$card-bg: #fff;
+$shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
+$shadow-medium: 0 6px 18px rgba(0, 0, 0, 0.1);
+
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    background: $bg-color;
+}
+
+/* Гамбургер для мобильных */
+.hamburger {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1000;
+    background: $primary-gradient;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    @media (max-width: 1024px) {
+        display: block;
+    }
+}
+
+/* Полупрозрачный фон при открытом меню */
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 900;
+    @media (max-width: 1024px) {
+        display: block;
+    }
+}
+
+.sidebar {
+    width: 260px;
+    background: $card-bg;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: $shadow-light;
+    transition: all 0.3s;
+
+    .logo {
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        color: #222;
+    }
+
+    .menu {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .menuItem {
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            color: $text-color;
+            font-weight: 500;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: $primary-gradient;
+                color: #fff;
+                transform: translateX(5px);
+            }
+        }
+
+        .active {
+            background: $primary-gradient;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(255, 61, 121, 0.4);
+        }
+    }
+
+    .account {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        button {
+            background: #f3f4f6;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.3s;
+
+            &:hover {
+                background: $primary-gradient;
+                color: #fff;
+                transform: translateX(3px);
+            }
+        }
+    }
+
+    /* Мобильный сайдбар: выезжает слева */
+    @media (max-width: 1024px) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 260px;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        &.open {
+            transform: translateX(0);
+        }
+    }
+}
+
+.main {
+    flex: 1;
+    padding: 2.5rem;
+
+    .metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .metric {
+        background: $card-bg;
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: $shadow-medium;
+        transition: transform 0.3s, box-shadow 0.3s;
+
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .metricIcon {
+            font-size: 2.5rem;
+        }
+
+        .metricTitle {
+            font-size: 0.95rem;
+            color: #777;
+        }
+
+        .metricValue {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 0.2rem;
+
+            .metricChange {
+                font-weight: 500;
+                color: green;
+                margin-left: 0.5rem;
+            }
+        }
+    }
+
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .card {
+        background: $card-bg;
+        border-radius: 16px;
+        padding: 1.75rem;
+        box-shadow: $shadow-medium;
+        transition: transform 0.3s, box-shadow 0.3s;
+
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 18px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 0.95rem;
+            color: #555;
+        }
+    }
+
+    .graphs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .graphCard {
+        background: $card-bg;
+        flex: 1;
+        height: 260px;
+        border-radius: 16px;
+        box-shadow: $shadow-medium;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: $text-color;
+        transition: transform 0.3s;
+
+        &:hover {
+            transform: translateY(-3px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        padding: 1.5rem;
+
+        .metrics {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .cards {
+            grid-template-columns: 1fr;
+        }
+
+        .graphs {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        padding: 1rem;
+
+        .metrics {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .cards {
+            gap: 1rem;
+        }
+
+        .graphs {
+            gap: 1rem;
+        }
+    }
+}

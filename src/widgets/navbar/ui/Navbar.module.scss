@@ -5,6 +5,7 @@
     position: sticky;
     top: 0;
     z-index: 999;
+
 }
 
 .inner {
@@ -13,7 +14,10 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
-    gap: 32px; // важное для равномерного распределения
+    gap: 32px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 15px;
 }
 
 .logoBlock {
@@ -21,7 +25,6 @@
     align-items: center;
 }
 
-/* ---------------- NAV LINKS ---------------- */
 
 .navLinks {
     display: flex;
@@ -41,19 +44,16 @@
     }
 }
 
-/* --------- RIGHT SIDE --------- */
 .rightSide {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
-/* Desktop city select */
 .cityDesktop {
     display: block;
 }
 
-/* Desktop big button */
 .requestDesktop {
     background: #002574;
     color: #fff;
@@ -82,19 +82,16 @@
     border: none;
 }
 
-/* City select mobile below navbar */
 .cityMobile {
     display: none;
     padding: 10px 0;
 }
 
-/* ---------------- MEDIA ---------------- */
 @media (max-width: 900px) {
 
     .cityDesktop,
     .requestDesktop,
     .navLinks {
-        /* скрываем навигацию */
         display: none;
     }
 

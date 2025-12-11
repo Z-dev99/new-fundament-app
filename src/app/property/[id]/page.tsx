@@ -29,7 +29,6 @@ export default function PropertyPage() {
 
             <section className={styles.page}>
                 <div className="container" style={{ display: 'flex', gap: '30px', flexWrap: 'wrap' }}>
-                    {/* Левый блок: галерея + описание */}
                     <div className={styles.leftBlock} style={{ flex: 1, minWidth: '320px' }}>
                         <div className={styles.gallery}>
                             <Swiper
@@ -97,7 +96,6 @@ export default function PropertyPage() {
                         </div>
                     </div>
 
-                    {/* Правый блок: контакты + карта */}
                     <div className={styles.rightBlock} style={{ width: '360px', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div className={styles.ownerCard} style={{ background: '#fff', borderRadius: '18px', padding: '16px', boxShadow: '0 6px 20px rgba(255, 140, 80, 0.15)' }}>
                             <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>Контакты владельца</h2>

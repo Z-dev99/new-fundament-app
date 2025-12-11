@@ -3,6 +3,7 @@
     overflow-x: auto;
     margin: 20px auto;
     scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .wrapper::-webkit-scrollbar {
@@ -29,7 +30,7 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.25s ease;
+    transition: all 0.3s ease;
     white-space: nowrap;
     flex: 0 0 auto;
     min-width: 130px;
@@ -56,9 +57,18 @@
     opacity: 0.9;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .item {
         min-width: 110px;
         padding: 10px 16px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .item {
+        min-width: 100px;
+        padding: 8px 12px;
+        font-size: 13px;
     }
 }
