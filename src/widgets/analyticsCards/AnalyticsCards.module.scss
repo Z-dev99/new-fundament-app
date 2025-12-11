@@ -141,3 +141,14 @@
         top: -30px;
     }
 }
+
+.statusBlock {
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #323232;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--color-white) 80%, var(--color-brand) 5%);
+    border: 1px solid color-mix(in srgb, var(--color-brand) 18%, #ffffff);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
