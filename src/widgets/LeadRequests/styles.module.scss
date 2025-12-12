@@ -1,0 +1,125 @@
+$card-bg: #fff;
+$card-border: #e2e8f0;
+$card-radius: 12px;
+$card-padding: 20px;
+$card-hover-bg: #f9fafb;
+$card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+$text-color: #333;
+$accent-color: #10b981;
+$delete-color: #ff4d4f;
+$delete-hover: #ff7875;
+
+.leadRequestsBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: $text-color;
+    }
+
+    .cards {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+
+        .card {
+            background: $card-bg;
+            border: 1px solid $card-border;
+            border-radius: $card-radius;
+            padding: $card-padding;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: $card-hover-bg;
+                box-shadow: $card-hover-shadow;
+            }
+
+            .header {
+                display: flex;
+                justify-content: space-between;
+                font-weight: 600;
+                color: $text-color;
+            }
+
+            .announcementId,
+            .phone {
+                font-size: 14px;
+                color: #555;
+            }
+
+            .deleteBtn {
+                align-self: flex-end;
+                padding: 6px 12px;
+                border-radius: 8px;
+                border: none;
+                font-weight: 600;
+                cursor: pointer;
+                color: #fff;
+                background-color: $delete-color;
+                transition: all 0.3s;
+
+                &:hover {
+                    background-color: $delete-hover;
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
+
+        button {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            cursor: pointer;
+            transition: 0.2s;
+
+            &:disabled {
+                cursor: not-allowed;
+                opacity: 0.5;
+            }
+
+            &:not(:disabled):hover {
+                background: #f0f0f0;
+            }
+        }
+
+        span {
+            font-weight: 500;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .leadRequestsBlock .cards {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .leadRequestsBlock .card {
+        padding: 15px;
+    }
+
+    .leadRequestsBlock .pagination {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}

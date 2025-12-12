@@ -8,7 +8,7 @@
     justify-content: center;
     align-items: center;
 
-    padding: 16px; // чтобы на мобилках модалка не прилипала к бокам
+    padding: 16px;
     z-index: 999;
 
     opacity: 0;
@@ -33,7 +33,7 @@
     position: relative;
     background: #fff;
     width: 880px;
-    min-height: 420px;
+    min-height: 460px;
     border-radius: 18px;
     display: flex;
     overflow: hidden;
@@ -84,23 +84,25 @@
 
 .content {
     flex: 1;
-    padding: 32px 36px 0 36px;
+    padding: 48px 36px 0 36px;
+    /* увеличенный верхний отступ */
     position: relative;
 
     @media (max-width: 600px) {
-        padding: 24px 20px 0 20px;
+        padding: 36px 20px 0 20px;
     }
 }
 
 .title {
     font-size: 26px;
     font-weight: 700;
-    margin-bottom: 26px;
+    margin-bottom: 28px;
+    /* чуть больше для визуального разделения */
     color: #111827;
 
     @media (max-width: 600px) {
         font-size: 22px;
-        margin-bottom: 20px;
+        margin-bottom: 22px;
     }
 }
 
@@ -108,6 +110,8 @@
     display: flex;
     flex-direction: column;
     gap: 22px;
+    margin-top: 8px;
+    /* добавлен отступ сверху */
     padding-bottom: 40px;
 
     @media (max-width: 600px) {

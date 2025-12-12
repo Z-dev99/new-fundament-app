@@ -2,8 +2,7 @@
 
 import { useGetStatsQuery } from "@/shared/api/statsApi";
 import styles from "./AnalyticsCards.module.scss";
-import { motion, useInView } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 interface CardType {
     title: string;
@@ -13,53 +12,7 @@ interface CardType {
 
 export const AnalyticsCards: React.FC = () => {
     const { data, isLoading, error } = useGetStatsQuery();
-    const ref = useRef<HTMLDivElement>(null);
-    const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-    const cards: CardType[] = data
-        ? [
-            {
-                title: "КВАРТИР ПРОДАНО ЗА ПОСЛЕДНИЙ МЕСЯЦ",
-                value: Number(data.apartments_sold_monthly) || 0,
-                suffix: "+",
-            },
-            {
-                title: "СРЕДНЯЯ ЦЕНА ЗА ОДНОКОМНАТНУЮ КВАРТИРУ",
-                value: Number(data.average_price_one_room) || 0,
-                suffix: " млн сум",
-            },
-            {
-                title: "СРЕДНЕЕ ВРЕМЯ ПРОДАЖИ КВАРТИРЫ",
-                value: Number(data.avg_sale_days) || 0,
-                suffix: " дней",
-            },
-        ]
-        : [];
-
-    const [counts, setCounts] = useState<number[]>(cards.map(() => 0));
-
-    useEffect(() => {
-        if (!isInView || !cards.length) return;
-        cards.forEach((card, index) => {
-            const start = 0;
-            const end = card.value;
-            const duration = 1200;
-            const startTime = performance.now();
-
-            const animate = (now: number) => {
-                const progress = Math.min((now - startTime) / duration, 1);
-                const current = Math.floor(start + (end - start) * progress);
-
-                setCounts((prev) => {
-                    const updated = [...prev];
-                    updated[index] = current;
-                    return updated;
-                });
-                if (progress < 1) requestAnimationFrame(animate);
-            };
-            requestAnimationFrame(animate);
-        });
-    }, [isInView, data]);
     if (isLoading)
         return (
             <div className="container">
@@ -90,9 +43,39 @@ export const AnalyticsCards: React.FC = () => {
             </div>
         );
 
+    function getPlural(value: number, one: string, few: string, many: string) {
+        const mod10 = value % 10;
+        const mod100 = value % 100;
+
+        if (mod10 === 1 && mod100 !== 11) return one;
+        if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+        return many;
+    }
+
+    const cards: CardType[] = data
+        ? [
+            {
+                title: "КВАРТИР ПРОДАНО ЗА ПОСЛЕДНИЙ МЕСЯЦ",
+                value: Number(data.apartments_sold_monthly) || 0,
+                suffix: "+",
+            },
+            {
+                title: "СРЕДНЯЯ ЦЕНА ЗА ОДНОКОМНАТНУЮ КВАРТИРУ",
+                value: Number(data.average_price_one_room) || 0,
+                suffix: " млн сум",
+            },
+            {
+                title: "СРЕДНЕЕ ВРЕМЯ ПРОДАЖИ КВАРТИРЫ",
+                value: Number(data.avg_sale_days) || 0,
+                suffix: getPlural(Number(data.avg_sale_days), " день", " дня", " дней"),
+            },
+        ]
+        : [];
+
+
     return (
         <div className="container">
-            <div ref={ref} className={styles.wrapper}>
+            <div className={styles.wrapper}>
                 <h2 className={styles.title}>
                     <span>Аналитика проданных квартир</span>
                 </h2>
@@ -108,7 +91,7 @@ export const AnalyticsCards: React.FC = () => {
                         >
                             <div className={styles.label}>{card.title}</div>
                             <div className={styles.value}>
-                                {counts[i]}
+                                {card.value}
                                 {card.suffix}
                             </div>
                             <div className={styles.rings} />

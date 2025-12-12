@@ -1,0 +1,134 @@
+$support-card-bg: #fff;
+$support-card-border: #e2e8f0;
+$support-card-radius: 12px;
+$support-card-padding: 20px;
+$support-card-hover-bg: #f9fafb;
+$support-card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+$support-text-color: #333;
+$support-accent-color: #ff6a5c;
+$support-delete-color: #ff4d4f;
+$support-delete-hover: #ff7875;
+
+.supportBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: $support-text-color;
+    }
+
+    .cards {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+
+        .card {
+            background: $support-card-bg;
+            border: 1px solid $support-card-border;
+            border-radius: $support-card-radius;
+            padding: $support-card-padding;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            &:hover {
+                background: $support-card-hover-bg;
+                box-shadow: $support-card-hover-shadow;
+            }
+
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .name {
+                    font-weight: 600;
+                    color: $support-text-color;
+                }
+
+                .date {
+                    font-size: 14px;
+                    color: #888;
+                }
+            }
+
+            .details {
+                font-size: 16px;
+                color: $support-text-color;
+            }
+
+            .phone {
+                font-size: 14px;
+                color: #555;
+            }
+
+            .deleteBtn {
+                align-self: flex-end;
+                padding: 6px 12px;
+                font-size: 14px;
+                font-weight: 600;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                color: #fff;
+                background-color: $support-delete-color;
+                transition: all 0.3s;
+
+                &:hover {
+                    background-color: $support-delete-hover;
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .supportBlock .cards {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .supportBlock .card {
+        padding: 15px;
+    }
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+
+    button {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        cursor: pointer;
+        transition: 0.2s;
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        &:not(:disabled):hover {
+            background: #f0f0f0;
+        }
+    }
+
+    span {
+        font-weight: 500;
+    }
+}

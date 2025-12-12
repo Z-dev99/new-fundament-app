@@ -39,10 +39,9 @@ export const Navbar = () => {
                         </nav>
 
                         <div className={styles.rightSide}>
-                            <div className={styles.cityDesktop}>
+                            {/* <div className={styles.cityDesktop}>
                                 <CitySelect />
-                            </div>
-
+                            </div> */}
                             <motion.button
                                 className={styles.requestDesktop}
                                 whileTap={{ scale: 0.95 }}
@@ -51,7 +50,6 @@ export const Navbar = () => {
                             >
                                 Подать заявку
                             </motion.button>
-
                             <button
                                 className={styles.burger}
                                 onClick={() => setMenuOpen((prev) => !prev)}

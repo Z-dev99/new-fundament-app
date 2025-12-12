@@ -1,0 +1,158 @@
+$card-bg: #fff;
+$card-border: #e2e8f0;
+$card-radius: 12px;
+$card-padding: 20px;
+$card-hover-bg: #f9fafb;
+$card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+$text-color: #333;
+$accent-color: #10b981;
+$delete-color: #ef4444;
+$delete-hover: #dc2626;
+
+.moderatorBlock {
+    min-height: 100vh;
+
+    h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: $text-color;
+    }
+
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+
+        .card {
+            background: $card-bg;
+            border: 1px solid $card-border;
+            border-radius: $card-radius;
+            padding: $card-padding;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: $card-hover-bg;
+                box-shadow: $card-hover-shadow;
+            }
+
+            .header {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+
+                .name {
+                    font-weight: 600;
+                    font-size: 16px;
+                    color: $text-color;
+                }
+
+                .date {
+                    font-size: 14px;
+                    color: #6b7280;
+                }
+            }
+
+            .reviewText {
+                font-size: 15px;
+                color: $text-color;
+                margin-bottom: 12px;
+            }
+
+            .actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+
+                button {
+                    padding: 8px 14px;
+                    border-radius: 8px;
+                    border: none;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s;
+
+                    &.publish {
+                        background: $accent-color;
+                        color: #fff;
+
+                        &:hover:not(:disabled) {
+                            background: darken($accent-color, 10%);
+                        }
+                    }
+
+                    &.delete {
+                        background: $delete-color;
+                        color: #fff;
+
+                        &:hover:not(:disabled) {
+                            background: $delete-hover;
+                        }
+                    }
+
+                    &:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
+                }
+            }
+        }
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+        gap: 12px;
+
+        button {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+
+            &:hover:not(:disabled) {
+                background: #f0f0f0;
+            }
+
+            &:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            &.active {
+                background: #2563eb;
+                color: #fff;
+                border-color: #2563eb;
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .moderatorBlock .cards {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .moderatorBlock .card {
+        padding: 15px;
+
+        .header {
+            flex-direction: column;
+            gap: 4px;
+        }
+    }
+
+    .moderatorBlock .pagination {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
