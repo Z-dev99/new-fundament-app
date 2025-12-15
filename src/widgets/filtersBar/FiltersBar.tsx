@@ -1,24 +1,41 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import styles from "./FiltersBar.module.scss";
 import { ModalFilter } from "../modal/ModalFilter";
+import type { AnnouncementsFilters } from "@/shared/api/announcementsApi";
 
 const IconMap = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-        <path d="M9 20l-5-2V6l5 2v12zM9 4l6-2 6 2v12l-6 2-6-2V4z"
-            stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <circle cx="12" cy="10" r="3" />
     </svg>
 );
 
 const IconList = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-        <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
-            stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6" />
+        <line x1="8" y1="12" x2="21" y2="12" />
+        <line x1="8" y1="18" x2="21" y2="18" />
+        <line x1="3" y1="6" x2="3.01" y2="6" />
+        <line x1="3" y1="12" x2="3.01" y2="12" />
+        <line x1="3" y1="18" x2="3.01" y2="18" />
     </svg>
 );
 
-export default function FiltersBar() {
+const IconFilter = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+);
+
+interface FiltersBarProps {
+    activeTab?: string;
+    onFiltersChange?: (filters: any) => void;
+    totalCount?: number;
+}
+
+export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: FiltersBarProps = {}) {
     const [dealType, setDealType] = useState<"purchase" | "rent">("purchase");
     const [priceFrom, setPriceFrom] = useState("");
     const [priceTo, setPriceTo] = useState("");
@@ -27,36 +44,191 @@ export default function FiltersBar() {
     const [rooms, setRooms] = useState<number | null>(null);
     const [view, setView] = useState<"map" | "list">("map");
     const [modalOpen, setModalOpen] = useState(false);
+    const [modalFilters, setModalFilters] = useState<Partial<AnnouncementsFilters>>({});
+    const [resultsCount, setResultsCount] = useState(totalCount || 1055);
 
-    const [filtersCount] = useState(2);
-    const [resultsCount] = useState(1055);
+    // Обновляем количество результатов из API
+    useEffect(() => {
+        if (totalCount !== undefined) {
+            setResultsCount(totalCount);
+        }
+    }, [totalCount]);
 
-    const toggleRoom = (n: number) => {
-        setRooms(prev => prev === n ? null : n);
-    };
+    // Реагируем на изменение активного таба
+    useEffect(() => {
+        if (activeTab && totalCount === undefined) {
+            // При изменении таба можно сбросить некоторые фильтры или обновить результаты
+            // В реальном приложении здесь будет запрос к API с учетом activeTab
+            const tabCounts: Record<string, number> = {
+                "new-builds": 1055,
+                "under-construction": 842,
+                "ready": 623,
+            };
+            setResultsCount(tabCounts[activeTab] || 1055);
+        }
+    }, [activeTab, totalCount]);
 
-    const onApply = () => {
-        console.log({
-            dealType, priceFrom, priceTo, areaFrom, areaTo, rooms, view
+    const toggleRoom = useCallback((n: number) => {
+        setRooms((prev) => (prev === n ? null : n));
+    }, []);
+
+    const onApply = useCallback(() => {
+        // Объединяем фильтры: основные имеют приоритет
+        const finalDealType = dealType || (modalFilters.announcement_type === "SALE" ? "purchase" : modalFilters.announcement_type === "RENT" ? "rent" : "");
+        // Поддерживаем оба варианта: priceFrom/priceTo и min_price/max_price
+        const finalPriceFrom = priceFrom || (modalFilters.min_price ? String(modalFilters.min_price) : (modalFilters.priceFrom ? String(modalFilters.priceFrom) : ""));
+        const finalPriceTo = priceTo || (modalFilters.max_price ? String(modalFilters.max_price) : (modalFilters.priceTo ? String(modalFilters.priceTo) : ""));
+        const finalAreaFrom = areaFrom || (modalFilters.min_area_total ? String(modalFilters.min_area_total) : "");
+        const finalAreaTo = areaTo || (modalFilters.max_area_total ? String(modalFilters.max_area_total) : "");
+        const finalRooms = rooms !== null ? String(rooms) : (modalFilters.min_rooms ? String(modalFilters.min_rooms) : null);
+
+        const allFilters = {
+            activeTab,
+            view,
+            dealType: finalDealType,
+            priceFrom: finalPriceFrom,
+            priceTo: finalPriceTo,
+            areaFrom: finalAreaFrom,
+            areaTo: finalAreaTo,
+            rooms: finalRooms,
+            // Дополнительные фильтры из модалки (теперь в формате API)
+            city: modalFilters.city,
+            district: modalFilters.district,
+            street: modalFilters.street,
+            wall_material: modalFilters.wall_material,
+            bathroom_layout: modalFilters.bathroom_layout,
+            property_type: modalFilters.property_type,
+            order_by: modalFilters.order_by,
+            country: modalFilters.country,
+            region: modalFilters.region,
+            currency: modalFilters.currency || "UZS",
+            min_area_living: modalFilters.min_area_living,
+            max_area_living: modalFilters.max_area_living,
+            min_area_kitchen: modalFilters.min_area_kitchen,
+            max_area_kitchen: modalFilters.max_area_kitchen,
+            min_floor: modalFilters.min_floor,
+            max_floor: modalFilters.max_floor,
+            min_floors_total: modalFilters.min_floors_total,
+            max_floors_total: modalFilters.max_floors_total,
+            min_ceiling_height: modalFilters.min_ceiling_height,
+            max_ceiling_height: modalFilters.max_ceiling_height,
+            min_year_built: modalFilters.min_year_built,
+            max_year_built: modalFilters.max_year_built,
+            layout_type: modalFilters.layout_type,
+            city_side: modalFilters.city_side,
+            heating_type: modalFilters.heating_type,
+            renovation_type: modalFilters.renovation_type,
+            available_from: modalFilters.available_from,
+        };
+        onFiltersChange?.(allFilters);
+    }, [activeTab, dealType, priceFrom, priceTo, areaFrom, areaTo, rooms, view, modalFilters, onFiltersChange]);
+
+    const handleModalApply = useCallback((filters: Partial<AnnouncementsFilters>) => {
+        setModalFilters(filters);
+        // Синхронизация основных фильтров из модалки
+        if (filters.announcement_type) {
+            setDealType(filters.announcement_type === "SALE" ? "purchase" : "rent");
+        }
+        // Поддерживаем оба варианта: priceFrom/priceTo и min_price/max_price
+        if (filters.min_price) {
+            setPriceFrom(String(filters.min_price));
+        } else if (filters.priceFrom) {
+            setPriceFrom(String(filters.priceFrom));
+        }
+        if (filters.max_price) {
+            setPriceTo(String(filters.max_price));
+        } else if (filters.priceTo) {
+            setPriceTo(String(filters.priceTo));
+        }
+        if (filters.min_area_total) setAreaFrom(String(filters.min_area_total));
+        if (filters.max_area_total) setAreaTo(String(filters.max_area_total));
+        if (filters.min_rooms) {
+            setRooms(filters.min_rooms);
+        }
+        setModalOpen(false);
+    }, []);
+
+    // Применяем фильтры из модалки после их установки
+    useEffect(() => {
+        if (Object.keys(modalFilters).length > 0) {
+            const timer = setTimeout(() => {
+                onApply();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [modalFilters, onApply]);
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (modalFilters.city) count++;
+        if (modalFilters.district) count++;
+        if (modalFilters.street) count++;
+        if (modalFilters.wall_material) count++;
+        if (modalFilters.bathroom_layout) count++;
+        if (modalFilters.property_type) count++;
+        if (modalFilters.order_by) count++;
+        if (modalFilters.country) count++;
+        if (modalFilters.region) count++;
+        if (modalFilters.min_area_living || modalFilters.max_area_living) count++;
+        if (modalFilters.min_area_kitchen || modalFilters.max_area_kitchen) count++;
+        if (modalFilters.min_floor || modalFilters.max_floor) count++;
+        if (modalFilters.min_floors_total || modalFilters.max_floors_total) count++;
+        if (modalFilters.min_year_built || modalFilters.max_year_built) count++;
+        return count;
+    }, [modalFilters]);
+
+    const hasActiveFilters = useMemo(() => {
+        return (
+            priceFrom ||
+            priceTo ||
+            areaFrom ||
+            areaTo ||
+            rooms !== null ||
+            activeFiltersCount > 0
+        );
+    }, [priceFrom, priceTo, areaFrom, areaTo, rooms, activeFiltersCount]);
+
+    const handleClearFilters = useCallback(() => {
+        setDealType("purchase");
+        setPriceFrom("");
+        setPriceTo("");
+        setAreaFrom("");
+        setAreaTo("");
+        setRooms(null);
+        setModalFilters({});
+        // Применяем очищенные фильтры
+        onFiltersChange?.({
+            activeTab,
+            view,
+            dealType: "purchase",
+            priceFrom: "",
+            priceTo: "",
+            areaFrom: "",
+            areaTo: "",
+            rooms: null,
         });
-    };
+    }, [activeTab, view, onFiltersChange]);
 
     return (
         <>
             <div className="container">
                 <div className={styles.wrapper}>
-
                     <div className={styles.grid}>
                         <div className={styles.group}>
-                            <div className={styles.label}>Тип сделки</div>
+                            <label className={styles.label}>
+                                <span className={styles.labelIcon}>💼</span>
+                                Тип сделки
+                            </label>
                             <div className={styles.segment}>
                                 <button
+                                    type="button"
                                     className={`${styles.segmentBtn} ${dealType === "purchase" ? styles.active : ""}`}
                                     onClick={() => setDealType("purchase")}
                                 >
                                     Покупка
                                 </button>
                                 <button
+                                    type="button"
                                     className={`${styles.segmentBtn} ${dealType === "rent" ? styles.active : ""}`}
                                     onClick={() => setDealType("rent")}
                                 >
@@ -66,31 +238,47 @@ export default function FiltersBar() {
                         </div>
 
                         <div className={styles.group}>
-                            <div className={styles.label}>Стоимость</div>
+                            <label className={styles.label}>
+                                <span className={styles.labelIcon}>💰</span>
+                                Стоимость
+                            </label>
                             <div className={styles.inlineInputs}>
-                                <input
-                                    placeholder="От"
-                                    inputMode="numeric"
-                                    value={priceFrom}
-                                    onChange={(e) => setPriceFrom(e.target.value)}
-                                    className={styles.input}
-                                />
-                                <input
-                                    placeholder="До"
-                                    inputMode="numeric"
-                                    value={priceTo}
-                                    onChange={(e) => setPriceTo(e.target.value)}
-                                    className={styles.input}
-                                />
+                                <div className={styles.inputWrapper}>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="От"
+                                        value={priceFrom}
+                                        onChange={(e) => setPriceFrom(e.target.value)}
+                                        className={styles.input}
+                                    />
+                                    <span className={styles.inputSuffix}>сум</span>
+                                </div>
+                                <div className={styles.rangeSeparator}>—</div>
+                                <div className={styles.inputWrapper}>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="До"
+                                        value={priceTo}
+                                        onChange={(e) => setPriceTo(e.target.value)}
+                                        className={styles.input}
+                                    />
+                                    <span className={styles.inputSuffix}>сум</span>
+                                </div>
                             </div>
                         </div>
 
                         <div className={styles.group}>
-                            <div className={styles.label}>Комнатность</div>
+                            <label className={styles.label}>
+                                <span className={styles.labelIcon}>🚪</span>
+                                Комнатность
+                            </label>
                             <div className={styles.rooms}>
-                                {[1, 2, 3, 4, 5].map(n => (
+                                {[1, 2, 3, 4, 5].map((n) => (
                                     <button
                                         key={n}
+                                        type="button"
                                         className={`${styles.roomBtn} ${rooms === n ? styles.roomActive : ""}`}
                                         onClick={() => toggleRoom(n)}
                                     >
@@ -101,22 +289,34 @@ export default function FiltersBar() {
                         </div>
 
                         <div className={styles.group}>
-                            <div className={styles.label}>Площадь</div>
+                            <label className={styles.label}>
+                                <span className={styles.labelIcon}>📐</span>
+                                Площадь
+                            </label>
                             <div className={styles.inlineInputs}>
-                                <input
-                                    placeholder="От"
-                                    inputMode="numeric"
-                                    value={areaFrom}
-                                    onChange={(e) => setAreaFrom(e.target.value)}
-                                    className={styles.input}
-                                />
-                                <input
-                                    placeholder="До"
-                                    inputMode="numeric"
-                                    value={areaTo}
-                                    onChange={(e) => setAreaTo(e.target.value)}
-                                    className={styles.input}
-                                />
+                                <div className={styles.inputWrapper}>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="От"
+                                        value={areaFrom}
+                                        onChange={(e) => setAreaFrom(e.target.value)}
+                                        className={styles.input}
+                                    />
+                                    <span className={styles.inputSuffix}>м²</span>
+                                </div>
+                                <div className={styles.rangeSeparator}>—</div>
+                                <div className={styles.inputWrapper}>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="До"
+                                        value={areaTo}
+                                        onChange={(e) => setAreaTo(e.target.value)}
+                                        className={styles.input}
+                                    />
+                                    <span className={styles.inputSuffix}>м²</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -124,39 +324,81 @@ export default function FiltersBar() {
                     <div className={styles.actions}>
                         <div className={styles.viewSwitch}>
                             <button
+                                type="button"
                                 className={`${styles.viewBtn} ${view === "map" ? styles.viewActive : ""}`}
                                 onClick={() => setView("map")}
                             >
-                                <IconMap /> <span>На карте</span>
+                                <IconMap />
+                                <span>На карте</span>
                             </button>
                             <button
+                                type="button"
                                 className={`${styles.viewBtn} ${view === "list" ? styles.viewActive : ""}`}
                                 onClick={() => setView("list")}
                             >
-                                <IconList /> <span>Список</span>
+                                <IconList />
+                                <span>Список</span>
                             </button>
                         </div>
 
                         <div className={styles.right}>
                             <button
+                                type="button"
                                 className={styles.moreBtn}
                                 onClick={() => setModalOpen(true)}
                             >
-                                Ещё фильтры <span className={styles.count}>{filtersCount}</span>
+                                <IconFilter />
+                                <span>Ещё фильтры</span>
+                                {activeFiltersCount > 0 && (
+                                    <span className={styles.count}>{activeFiltersCount}</span>
+                                )}
                             </button>
 
+                            {hasActiveFilters && (
+                                <button
+                                    type="button"
+                                    className={styles.clearBtn}
+                                    onClick={handleClearFilters}
+                                    title="Очистить все фильтры"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path
+                                            d="M8 3V1M8 1L6 3M8 1L10 3M4 4C3.46957 4.53043 3.07143 5.17174 2.83939 5.87119C2.60735 6.57065 2.54796 7.31071 2.66667 8.03333M12 4C12.5304 4.53043 12.9286 5.17174 13.1606 5.87119C13.3927 6.57065 13.452 7.31071 13.3333 8.03333M2.66667 8.03333C2.66667 9.23742 3.15833 10.3923 4.03333 11.2673C4.90833 12.1423 6.06324 12.634 7.26733 12.634C8.47142 12.634 9.62633 12.1423 10.5013 11.2673C11.3763 10.3923 11.868 9.23742 11.868 8.03333"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                </button>
+                            )}
+
                             <button
+                                type="button"
                                 className={styles.applyBtn}
                                 onClick={onApply}
                             >
-                                Показать {resultsCount.toLocaleString()} объектов
+                                <span>Показать {resultsCount.toLocaleString()} объектов</span>
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                                    <path
+                                        d="M6 3L12 9L6 15"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <ModalFilter open={modalOpen} onClose={() => setModalOpen(false)} />
+            <ModalFilter
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onApply={handleModalApply}
+                initialCount={resultsCount}
+            />
         </>
     );
 }

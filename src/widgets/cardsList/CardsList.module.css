@@ -1,25 +1,137 @@
+.wrapper {
+    width: 100%;
+    min-height: 400px;
+}
+
 .grid {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 26px;
+    grid-template-columns: 1fr;
+    gap: 20px;
     padding: 20px 0;
 }
 
+.cardWrapper {
+    width: 100%;
+    height: 100%;
+}
+
+.emptyState {
+    width: 100%;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.emptyState p {
+    font-size: 18px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(0, 37, 116, 0.1);
+    border-top-color: #002574;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.resultsInfo {
+    padding: 16px 0;
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.resultsInfo strong {
+    color: #002574;
+    font-weight: 600;
+}
+
+.emptyStateContent {
+    text-align: center;
+    max-width: 400px;
+}
+
+.emptyStateIcon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    color: #cbd5e0;
+    opacity: 0.6;
+}
+
+.emptyStateText {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0 0 12px;
+    line-height: 1.4;
+}
+
+.emptyStateSubtext {
+    font-size: 16px;
+    color: #718096;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Планшет: 2 колонки */
+@media (min-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        padding: 24px 0;
+    }
+}
+
+/* Десктоп: 3 колонки */
 @media (min-width: 1024px) {
     .grid {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+        padding: 28px 0;
     }
 }
 
-@media (min-width: 1280px) {
-    .grid {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+/* Мобильный: 1 колонка */
+@media (max-width: 767px) {
+    .emptyState {
+        min-height: 300px;
+        padding: 40px 20px;
     }
-}
 
-@media (min-width: 1536px) {
+    .emptyStateIcon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 20px;
+    }
+
+    .emptyStateText {
+        font-size: 20px;
+    }
+
+    .emptyStateSubtext {
+        font-size: 14px;
+    }
+
     .grid {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 16px 0;
     }
 }

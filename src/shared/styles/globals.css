@@ -80,3 +80,13 @@
         max-width: var(--container-width);
     }
 }
+
+/* Скрываем навигацию когда открыта модалка фильтров */
+body.modal-filter-open > * > header,
+body.modal-filter-open [class*="NavTabs_wrapper"],
+body.modal-filter-open [class*="Navbar_navbar"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}

@@ -112,7 +112,6 @@ export const ContactModal = ({ open, onClose }: Props) => {
             setAnnouncementId("");
             onClose();
         } catch (err: any) {
-            console.error(err);
             toast.error(err.data?.message || "Ошибка отправки заявки");
         } finally {
             setIsSubmitting(false);

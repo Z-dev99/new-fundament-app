@@ -1,0 +1,402 @@
+$card-bg: #fff;
+$card-border: #e2e8f0;
+$card-radius: 12px;
+$card-padding: 20px;
+$card-hover-bg: #f9fafb;
+$card-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+$text-color: #333;
+$accent-color: #10b981;
+$delete-color: #ff4d4f;
+$delete-hover: #ff7875;
+$upload-color: #3b82f6;
+$upload-hover: #2563eb;
+
+.bannersBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+    h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: $text-color;
+    }
+
+    .description {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .loading,
+    .error {
+        padding: 20px;
+        text-align: center;
+        color: #666;
+    }
+
+    .error {
+        color: $delete-color;
+    }
+
+    .section {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+
+        .sectionTitle {
+            font-size: 20px;
+            font-weight: 600;
+            color: $text-color;
+            margin: 0;
+        }
+
+        .sectionDescription {
+            font-size: 14px;
+            color: #666;
+            margin: -8px 0 0 0;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+    }
+
+    .card {
+        background: $card-bg;
+        border: 1px solid $card-border;
+        border-radius: $card-radius;
+        padding: $card-padding;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: $card-hover-bg;
+            box-shadow: $card-hover-shadow;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+
+            .bannerTitle {
+                font-size: 18px;
+                font-weight: 600;
+                color: $text-color;
+                margin: 0 0 4px 0;
+            }
+
+            .bannerDescription {
+                font-size: 13px;
+                color: #666;
+                margin: 0;
+            }
+
+            .bannerType {
+                font-size: 11px;
+                padding: 4px 8px;
+                background: #f0f0f0;
+                border-radius: 4px;
+                color: #666;
+                font-weight: 500;
+                white-space: nowrap;
+            }
+        }
+
+        .bannerPreview {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            .imageWrapper {
+                width: 100%;
+                height: 200px;
+                border-radius: 8px;
+                overflow: hidden;
+                background: #f5f5f5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid $card-border;
+
+                .bannerImage {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+            }
+
+            .fileInfo {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                .fileName {
+                    font-size: 12px;
+                    color: #666;
+                    padding: 4px 8px;
+                    background: #f5f5f5;
+                    border-radius: 4px;
+                    word-break: break-all;
+                }
+            }
+        }
+
+        .noBanner {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+            border: 2px dashed $card-border;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+
+            .uploadBtn {
+                flex: 1;
+                padding: 10px 16px;
+                border-radius: 8px;
+                border: none;
+                font-weight: 600;
+                cursor: pointer;
+                color: #fff;
+                background-color: $upload-color;
+                transition: all 0.3s;
+                text-align: center;
+                font-size: 14px;
+                display: inline-block;
+
+                &:hover:not(:disabled) {
+                    background-color: $upload-hover;
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            }
+
+            .deleteBtn {
+                padding: 10px 16px;
+                border-radius: 8px;
+                border: none;
+                font-weight: 600;
+                cursor: pointer;
+                color: #fff;
+                background-color: $delete-color;
+                transition: all 0.3s;
+                font-size: 14px;
+
+                &:hover:not(:disabled) {
+                    background-color: $delete-hover;
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+
+    // Стили для секции слайдера
+    .sliderSection {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+
+        .addBannerCard {
+            padding: 20px;
+            border: 2px dashed $card-border;
+            border-radius: $card-radius;
+            background: #fafafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            .addBannerBtn {
+                padding: 12px 24px;
+                border-radius: 8px;
+                border: none;
+                font-weight: 600;
+                cursor: pointer;
+                color: #fff;
+                background-color: $upload-color;
+                transition: all 0.3s;
+                font-size: 15px;
+                display: inline-block;
+
+                &:hover:not(:disabled) {
+                    background-color: $upload-hover;
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            }
+        }
+
+        .sliderBanners {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .sliderBannerCard {
+            background: $card-bg;
+            border: 1px solid $card-border;
+            border-radius: $card-radius;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: $card-hover-bg;
+                box-shadow: $card-hover-shadow;
+            }
+
+            .sliderBannerHeader {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .bannerNumber {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: $text-color;
+                }
+
+                .bannerType {
+                    font-size: 11px;
+                    padding: 4px 8px;
+                    background: #f0f0f0;
+                    border-radius: 4px;
+                    color: #666;
+                    font-weight: 500;
+                }
+            }
+
+            .bannerPreview {
+                .imageWrapper {
+                    width: 100%;
+                    height: 180px;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    background: #f5f5f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 1px solid $card-border;
+
+                    .bannerImage {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+                }
+
+                .fileInfo {
+                    margin-top: 8px;
+
+                    .fileName {
+                        font-size: 11px;
+                        color: #666;
+                        padding: 4px 8px;
+                        background: #f5f5f5;
+                        border-radius: 4px;
+                        word-break: break-all;
+                    }
+                }
+            }
+
+            .deleteBtn {
+                width: 100%;
+                padding: 8px 16px;
+                border-radius: 8px;
+                border: none;
+                font-weight: 600;
+                cursor: pointer;
+                color: #fff;
+                background-color: $delete-color;
+                transition: all 0.3s;
+                font-size: 13px;
+
+                &:hover:not(:disabled) {
+                    background-color: $delete-hover;
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            }
+        }
+
+        .noBannersMessage {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            background: #fafafa;
+            border-radius: $card-radius;
+            border: 1px dashed $card-border;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .bannersBlock {
+        .section {
+            .cards {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+
+        .card {
+            padding: 16px;
+
+            .header {
+                flex-direction: column;
+                gap: 8px;
+
+                .bannerType {
+                    align-self: flex-start;
+                }
+            }
+
+            .actions {
+                flex-direction: column;
+
+                .uploadBtn,
+                .deleteBtn {
+                    width: 100%;
+                }
+            }
+        }
+
+        .sliderSection {
+            .sliderBanners {
+                grid-template-columns: 1fr;
+            }
+        }
+    }
+}

@@ -8,6 +8,19 @@ import AnalyticsBlock from "@/widgets/AnalyticsBlock/AnalyticsBlock";
 import { SupportCards } from "@/widgets/Support/SupportCards";
 import { LeadRequests } from "@/widgets/LeadRequests/LeadRequests";
 import { ModeratorReviews } from "@/widgets/ModeratorReviews/ModeratorReviews";
+import { BannersBlock } from "@/widgets/bannersBlock/BannersBlock";
+import { AnnouncementsBlock } from "@/widgets/AnnouncementsBlock/AnnouncementsBlock";
+import { 
+    Megaphone, 
+    Users, 
+    Mail, 
+    Image as ImageIcon, 
+    BarChart3, 
+    MessageSquare,
+    LogOut,
+    Menu,
+    X
+} from "lucide-react";
 
 interface DashboardViewProps {
     onLogout: () => void;
@@ -18,30 +31,36 @@ export default function DashboardView({ onLogout }: DashboardViewProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const tabs = [
-        { title: "Объявления", icon: "📢" },
-        { title: "Заявки пользователей", icon: "👥" },
-        { title: "Обратная связь", icon: "✉️" },
-        { title: "Баннеры", icon: "🖼️" },
-        { title: "Аналитика", icon: "📊" },
-        { title: "Отзывы", icon: "" },
+        { title: "Объявления", icon: <Megaphone size={20} /> },
+        { title: "Заявки пользователей", icon: <Users size={20} /> },
+        { title: "Обратная связь", icon: <Mail size={20} /> },
+        { title: "Баннеры", icon: <ImageIcon size={20} /> },
+        { title: "Аналитика", icon: <BarChart3 size={20} /> },
+        { title: "Отзывы", icon: <MessageSquare size={20} /> },
     ];
 
     const renderTabContent = () => {
         switch (activeTab) {
             case "Объявления":
-                return <p>Здесь отображаются все объявления</p>;
+                return <AnnouncementsBlock />;
             case "Заявки пользователей":
                 return <LeadRequests />;
             case "Обратная связь":
                 return <SupportCards />;
             case "Баннеры":
-                return <p>Управление баннерами на сайте</p>;
+                return <BannersBlock />;
             case "Аналитика":
                 return <AnalyticsBlock />;
             case "Отзывы":
                 return <ModeratorReviews />;
             default:
-                return <p>Добро пожаловать в Dashboard</p>;
+                return (
+                    <div className={styles.emptyTab}>
+                        <BarChart3 size={48} />
+                        <h3>Добро пожаловать в Dashboard</h3>
+                        <p>Выберите раздел в меню</p>
+                    </div>
+                );
         }
     };
 
@@ -69,35 +88,41 @@ export default function DashboardView({ onLogout }: DashboardViewProps) {
                     <button
                         className={styles.close}
                         onClick={() => setSidebarOpen(false)}
+                        aria-label="Закрыть меню"
                     >
-                        ✕
+                        <X size={24} />
                     </button>
                 </div>
 
                 <nav className={styles.nav}>
                     {tabs.map((tab) => (
-                        <div
+                        <button
                             key={tab.title}
                             className={`${styles.navItem} ${activeTab === tab.title ? styles.active : ""}`}
-                            onClick={() => { setActiveTab(tab.title); setSidebarOpen(false); }}
+                            onClick={() => { 
+                                setActiveTab(tab.title); 
+                                setSidebarOpen(false); 
+                            }}
                         >
                             <span className={styles.icon}>{tab.icon}</span>
                             <span className={styles.tabText}>{tab.title}</span>
-                        </div>
+                        </button>
                     ))}
                 </nav>
 
                 <button className={styles.logout} onClick={handleLogout}>
-                    🚪 Выйти
+                    <LogOut size={20} />
+                    <span>Выйти</span>
                 </button>
             </aside>
 
-            <div className={`${styles.burger} ${sidebarOpen ? styles.hidden : ""} ${styles.mobileHeader}`}>
+            <div className={`${styles.mobileHeader} ${sidebarOpen ? styles.hidden : ""}`}>
                 <button
-                    className={`${styles.burger} ${sidebarOpen ? styles.hidden : ""}`}
+                    className={styles.burger}
                     onClick={() => setSidebarOpen(true)}
+                    aria-label="Открыть меню"
                 >
-                    ☰
+                    <Menu size={28} />
                 </button>
                 <Image
                     src="/logos/logo.svg"
@@ -109,7 +134,7 @@ export default function DashboardView({ onLogout }: DashboardViewProps) {
             </div>
 
             <main className={`${styles.content} ${sidebarOpen ? styles.blur : ""}`}>
-                <h1>{activeTab}</h1>
+                <h1 className={styles.pageTitle}>{activeTab}</h1>
                 {renderTabContent()}
             </main>
         </div>

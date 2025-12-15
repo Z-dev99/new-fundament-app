@@ -1,86 +1,189 @@
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+$tertiary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+$card-bg: #ffffff;
+$card-border: #e2e8f0;
+$text-primary: #1a202c;
+$text-secondary: #718096;
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+$radius: 20px;
+
 .wrapper {
     width: 100%;
-    padding: 20px 0;
+    padding: 60px 0;
     color: #fff;
 
+    @media (max-width: 768px) {
+        padding: 40px 0;
+    }
+
     @media (max-width: 480px) {
-        padding: 16px 0;
+        padding: 32px 0;
     }
 }
 
 .title {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 20px;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 800;
+    margin-bottom: 32px;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
 
     span {
-        background: linear-gradient(90deg,
-                #ff3d79 0%,
-                #ff6a5c 30%,
-                #ff9f3f 65%,
-                #ffc93b 100%);
+        background: linear-gradient(135deg, #002574 0%, #00328f 50%, #0040a8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     @media (max-width: 768px) {
-        font-size: 26px;
-    }
-
-    @media (max-width: 480px) {
-        font-size: 22px;
+        margin-bottom: 24px;
     }
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
 
-    @media (max-width: 650px) {
-        grid-template-columns: 1fr 1fr;
+    @media (max-width: 768px) {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
     }
 
-    @media (max-width: 460px) {
+    @media (max-width: 640px) {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
 }
 
 .card {
     position: relative;
-    border-radius: 16px;
-    padding: 22px 20px;
-    min-height: 140px;
+    border-radius: $radius;
+    padding: 28px 24px;
+    min-height: 180px;
     cursor: default;
-    background: color-mix(in srgb, var(--color-white) 70%, var(--color-brand) 5%);
-    border: 1px solid color-mix(in srgb, var(--color-brand) 18%, #ffffff);
-    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.08);
-
+    background: $card-bg;
+    border: 2px solid $card-border;
+    box-shadow: $shadow-sm;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    backdrop-filter: blur(6px);
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+        box-shadow: $shadow-lg;
+        border-color: transparent;
+        transform: translateY(-4px);
+
+        &::before {
+            opacity: 1;
+        }
+
+        .cardIcon {
+            transform: scale(1.1) rotate(5deg);
+        }
+    }
+
+    &.gradient1 {
+        --gradient: #{$primary-gradient};
+
+        .cardIcon {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            color: #667eea;
+        }
+
+        .value {
+            background: $primary-gradient;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    }
+
+    &.gradient2 {
+        --gradient: #{$secondary-gradient};
+
+        .cardIcon {
+            background: linear-gradient(135deg, rgba(245, 87, 108, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%);
+            color: #f5576c;
+        }
+
+        .value {
+            background: $secondary-gradient;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    }
+
+    &.gradient3 {
+        --gradient: #{$tertiary-gradient};
+
+        .cardIcon {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+            color: #4facfe;
+        }
+
+        .value {
+            background: $tertiary-gradient;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    }
 
     @media (max-width: 768px) {
-        padding: 18px 16px;
-        min-height: 120px;
+        padding: 24px 20px;
+        min-height: 160px;
     }
 
     @media (max-width: 480px) {
-        padding: 16px 14px;
-        min-height: 110px;
+        padding: 20px 18px;
+        min-height: 140px;
     }
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.cardIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
 }
 
 .label {
     font-size: 14px;
-    line-height: 1.35;
-    opacity: 0.85;
-    max-width: 220px;
-    letter-spacing: 0.2px;
-    color: #323232;
+    line-height: 1.5;
+    font-weight: 600;
+    color: $text-secondary;
+    flex: 1;
+    letter-spacing: 0.1px;
 
     @media (max-width: 768px) {
         font-size: 13px;
@@ -91,24 +194,31 @@
     }
 }
 
+.valueWrapper {
+    margin-top: auto;
+}
+
 .value {
-    margin-top: 12px;
-    font-size: 32px;
+    font-size: clamp(28px, 4vw, 36px);
     font-weight: 800;
-    background: linear-gradient(90deg,
-            #ff3d79 0%,
-            #ff6a5c 30%,
-            #ff9f3f 65%,
-            #ffc93b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+    letter-spacing: -1px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.suffix {
+    font-size: 18px;
+    font-weight: 600;
+    opacity: 0.8;
 
     @media (max-width: 768px) {
-        font-size: 36px;
+        font-size: 16px;
     }
 
     @media (max-width: 480px) {
-        font-size: 30px;
+        font-size: 14px;
     }
 }
 
@@ -118,14 +228,19 @@
     top: -50px;
     width: 260px;
     height: 260px;
-
-    background-image:
-        radial-gradient(circle at center,
-            color-mix(in srgb, var(--color-brand) 30%, transparent) 2px,
-            transparent 2px);
+    background-image: radial-gradient(
+        circle at center,
+        rgba(0, 37, 116, 0.08) 2px,
+        transparent 2px
+    );
     background-size: 26px 26px;
-    opacity: 0.12;
+    opacity: 0.3;
     pointer-events: none;
+    transition: opacity 0.3s ease;
+
+    .card:hover & {
+        opacity: 0.5;
+    }
 
     @media (max-width: 768px) {
         width: 200px;
@@ -142,13 +257,72 @@
     }
 }
 
-.statusBlock {
-    padding: 30px 20px;
+.loadingContainer,
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 20px;
+    min-height: 300px;
     text-align: center;
-    font-size: 1.1rem;
-    color: #323232;
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--color-white) 80%, var(--color-brand) 5%);
-    border: 1px solid color-mix(in srgb, var(--color-brand) 18%, #ffffff);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+    p {
+        font-size: 16px;
+        color: $text-secondary;
+        margin: 0;
+        font-weight: 500;
+    }
+}
+
+.loadingContainer {
+    .spinner {
+        animation: spin 0.8s linear infinite;
+        color: #667eea;
+    }
+}
+
+.errorContainer {
+    .errorIcon {
+        color: #ef4444;
+        opacity: 0.8;
+    }
+
+    p {
+        color: #ef4444;
+    }
+
+    .retryBtn {
+        margin-top: 8px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: 2px solid #ef4444;
+        background: #fff;
+        color: #ef4444;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &:hover {
+            background: #ef4444;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }

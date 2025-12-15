@@ -1,41 +1,175 @@
-.wrap {
-    margin: 40px auto 10px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
-
-.page {
-    width: 34px;
-    height: 34px;
-
-    background: #f0f0f5;
-    border-radius: 10px;
-    border: 1px solid #d1d3e0;
-    color: #333;
-
+.pagination {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
+    margin: 40px auto 20px;
+    padding: 0 20px;
+    flex-wrap: wrap;
+}
 
+.navButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: #f0f0f5;
+    border: 1px solid #d1d3e0;
+    border-radius: 10px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    transition: background 0.25s, border-color 0.25s, color 0.25s;
+    transition: all 0.25s ease;
+    min-height: 44px;
 }
 
-.page:hover {
+.navButton:hover:not(:disabled) {
+    background: #fff;
     border-color: #ff6a5c;
-    background: color-mix(in srgb, var(--color-brand) 10%, #f0f0f5);
-    color: #000;
+    color: #ff6a5c;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 106, 92, 0.2);
 }
 
-.active {
-    background: linear-gradient(90deg,
-            #ff3d79 0%,
-            #ff6a5c 30%,
-            #ff9f3f 65%,
-            #ffc93b 100%);
+.navButton:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f5f5f5;
+}
+
+.navButton:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.prevButton,
+.nextButton {
+    font-weight: 500;
+}
+
+.pages {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pageButton {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 8px;
+    background: #f0f0f5;
+    border: 1px solid #d1d3e0;
+    border-radius: 10px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pageButton:hover {
+    background: #fff;
+    border-color: #ff6a5c;
+    color: #ff6a5c;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 106, 92, 0.2);
+}
+
+.pageButton.active {
+    background: linear-gradient(
+        90deg,
+        #ff3d79 0%,
+        #ff6a5c 30%,
+        #ff9f3f 65%,
+        #ffc93b 100%
+    );
     border-color: transparent;
-    color: #111;
+    color: #fff;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(255, 100, 100, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 106, 92, 0.4);
+    transform: scale(1.05);
+}
+
+.pageButton.active:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(255, 106, 92, 0.5);
+}
+
+.pageButton:active:not(.active) {
+    transform: translateY(0);
+}
+
+.dots {
+    padding: 0 8px;
+    color: #999;
+    font-size: 14px;
+    font-weight: 500;
+    user-select: none;
+    min-width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .pagination {
+        gap: 6px;
+        margin: 30px auto 15px;
+        padding: 0 10px;
+    }
+
+    .navButton {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-height: 40px;
+    }
+
+    .navButton span {
+        display: none;
+    }
+
+    .pageButton {
+        min-width: 40px;
+        height: 40px;
+        font-size: 13px;
+    }
+
+    .dots {
+        min-width: 40px;
+        height: 40px;
+        font-size: 13px;
+    }
+
+    .pages {
+        gap: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination {
+        gap: 4px;
+    }
+
+    .navButton {
+        padding: 6px 10px;
+        min-height: 36px;
+    }
+
+    .pageButton {
+        min-width: 36px;
+        height: 36px;
+        font-size: 12px;
+    }
+
+    .dots {
+        min-width: 36px;
+        height: 36px;
+        font-size: 12px;
+    }
 }

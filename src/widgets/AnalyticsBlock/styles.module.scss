@@ -1,126 +1,500 @@
-$analytics-primary-gradient: linear-gradient(90deg, #ff3d79, #ff6a5c, #ff9f3f, #ffc93b);
-$analytics-text-color: #333;
-$analytics-card-bg: #ffffff;
-$analytics-card-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-$analytics-card-radius: 14px;
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+$tertiary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+$success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+$card-bg: #ffffff;
+$card-border: #e2e8f0;
+$text-primary: #1a202c;
+$text-secondary: #718096;
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+$radius: 16px;
 
 .analyticsBlock {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 32px;
     font-family: 'Inter', sans-serif;
 
-    h2 {
-        font-size: 26px;
-        font-weight: 700;
-        color: $analytics-text-color;
-        margin-bottom: 16px;
+    .header {
+        margin-bottom: 8px;
+
+        .headerTop {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        h2 {
+            font-size: clamp(24px, 4vw, 32px);
+            font-weight: 800;
+            color: $text-primary;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: $text-secondary;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .refreshBtn {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 2px solid $card-border;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: $text-secondary;
+
+            &:hover {
+                border-color: #667eea;
+                color: #667eea;
+                background: rgba(102, 126, 234, 0.05);
+                transform: rotate(180deg);
+            }
+
+            &:active {
+                transform: rotate(180deg) scale(0.95);
+            }
+        }
     }
 
     .cards {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
 
         .card {
-            flex: 1 1 250px;
-            background: $analytics-card-bg;
-            padding: 22px 24px;
-            border-radius: $analytics-card-radius;
-            box-shadow: $analytics-card-shadow;
+            background: $card-bg;
+            border-radius: $radius;
+            padding: 28px;
+            box-shadow: $shadow-sm;
+            border: 1px solid $card-border;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            gap: 20px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: var(--gradient);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
 
             &:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+                transform: translateY(-4px);
+                box-shadow: $shadow-lg;
+                border-color: transparent;
+
+                &::before {
+                    opacity: 1;
+                }
             }
 
-            h3 {
-                font-size: 16px;
-                font-weight: 600;
-                margin-bottom: 10px;
-                color: $analytics-text-color;
+            &.gradient1 {
+                --gradient: #{$primary-gradient};
+
+                .cardIcon {
+                    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+                    color: #667eea;
+                }
             }
 
-            p {
-                font-size: 20px;
-                font-weight: 700;
-                color: #111;
+            &.gradient2 {
+                --gradient: #{$secondary-gradient};
+
+                .cardIcon {
+                    background: linear-gradient(135deg, rgba(245, 87, 108, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%);
+                    color: #f5576c;
+                }
+            }
+
+            &.gradient3 {
+                --gradient: #{$tertiary-gradient};
+
+                .cardIcon {
+                    background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+                    color: #4facfe;
+                }
+            }
+
+            .cardIcon {
+                width: 56px;
+                height: 56px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform 0.3s ease;
+            }
+
+            &:hover .cardIcon {
+                transform: scale(1.1) rotate(5deg);
+            }
+
+            .cardContent {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+
+                h3 {
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: $text-secondary;
+                    margin: 0;
+                    line-height: 1.4;
+                }
+
+                .cardValue {
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: $text-primary;
+                    margin: 0;
+                    letter-spacing: -1px;
+                    line-height: 1.2;
+                    display: flex;
+                    align-items: baseline;
+                    gap: 4px;
+                }
+
+                .cardSuffix {
+                    font-size: 18px;
+                    font-weight: 500;
+                    color: $text-secondary;
+                    opacity: 0.7;
+                }
             }
         }
     }
 
-    .analyticsForm {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        background: #f9fafb;
-        padding: 22px;
-        border-radius: $analytics-card-radius;
-        max-width: 500px;
-        box-shadow: $analytics-card-shadow;
+    .formSection {
+        background: $card-bg;
+        border-radius: $radius;
+        padding: 32px;
+        box-shadow: $shadow-sm;
+        border: 1px solid $card-border;
 
-        h3 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 14px;
-            color: $analytics-text-color;
-        }
+        .formHeader {
+            margin-bottom: 28px;
 
-        input,
-        textarea {
-            padding: 12px 14px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s ease;
+            h3 {
+                font-size: 22px;
+                font-weight: 700;
+                color: $text-primary;
+                margin: 0 0 6px 0;
+            }
 
-            &:focus {
-                border-color: #ff6a5c;
-                box-shadow: 0 0 0 2px rgba(255, 61, 121, 0.15);
+            p {
+                font-size: 14px;
+                color: $text-secondary;
+                margin: 0;
             }
         }
 
-        textarea {
-            resize: vertical;
-            min-height: 80px;
+        .analyticsForm {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+
+            .formGroup {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+
+                label {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: $text-primary;
+
+                    svg {
+                        color: #667eea;
+                        opacity: 0.7;
+                        flex-shrink: 0;
+                    }
+                }
+
+                input,
+                textarea {
+                    padding: 14px 16px;
+                    border-radius: 10px;
+                    border: 2px solid $card-border;
+                    font-size: 15px;
+                    font-family: inherit;
+                    color: $text-primary;
+                    background: #fafbfc;
+                    outline: none;
+                    transition: all 0.2s ease;
+
+                    &::placeholder {
+                        color: #a0aec0;
+                    }
+
+                    &:focus {
+                        border-color: #667eea;
+                        background: #fff;
+                        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+                    }
+
+                    &:hover:not(:focus) {
+                        border-color: #cbd5e0;
+                    }
+                }
+
+                textarea {
+                    resize: vertical;
+                    min-height: 100px;
+                }
+
+                .inputError {
+                    border-color: #ef4444 !important;
+                    background: #fef2f2 !important;
+
+                    &:focus {
+                        border-color: #ef4444 !important;
+                        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1) !important;
+                    }
+                }
+
+                .error {
+                    display: block;
+                    font-size: 13px;
+                    color: #ef4444;
+                    margin-top: 4px;
+                    font-weight: 500;
+                    animation: slideDown 0.2s ease;
+                }
+
+                .charCount {
+                    font-size: 12px;
+                    color: #a0aec0;
+                    text-align: right;
+                    margin-top: 4px;
+                }
+            }
+
+            .submitBtn {
+                margin-top: 8px;
+                padding: 16px 24px;
+                border-radius: 10px;
+                border: none;
+                background: $primary-gradient;
+                color: #fff;
+                font-size: 15px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+                &:hover:not(:disabled) {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                }
+
+                &:active:not(:disabled) {
+                    transform: translateY(0);
+                }
+
+                &:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                    transform: none;
+                }
+
+                .spinnerSmall {
+                    animation: spin 0.8s linear infinite;
+                }
+            }
+        }
+    }
+
+    .loadingContainer,
+    .errorContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        gap: 20px;
+        min-height: 300px;
+
+        p {
+            font-size: 16px;
+            color: $text-secondary;
+            margin: 0;
+        }
+    }
+
+    .errorContainer {
+        .errorIcon {
+            color: #ef4444;
+            opacity: 0.8;
         }
 
-        button {
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            border: none;
-            background: $analytics-primary-gradient;
-            color: #fff;
+        p {
+            color: #ef4444;
+            font-weight: 500;
+        }
+
+        .retryBtn {
+            margin-top: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid #ef4444;
+            background: #fff;
+            color: #ef4444;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
 
             &:hover {
+                background: #ef4444;
+                color: #fff;
                 transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(255, 61, 121, 0.3);
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
             }
 
-            &:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
+            &:active {
+                transform: translateY(0);
+            }
+        }
+    }
+
+    .spinner {
+        animation: spin 0.8s linear infinite;
+        color: #667eea;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .analyticsBlock {
+        gap: 24px;
+
+        .header {
+            .headerTop {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .refreshBtn {
+                align-self: flex-start;
+            }
+        }
+
+        .cards {
+            grid-template-columns: 1fr;
+            gap: 16px;
+
+            .card {
+                padding: 24px;
+
+                .cardContent {
+                    .cardValue {
+                        font-size: 28px;
+                    }
+                }
+            }
+        }
+
+        .formSection {
+            padding: 24px;
+
+            .formHeader {
+                margin-bottom: 20px;
+
+                h3 {
+                    font-size: 20px;
+                }
+            }
+
+            .analyticsForm {
+                gap: 16px;
             }
         }
     }
 }
 
-@media (max-width: 768px) {
-    .analyticsBlock .cards {
-        flex-direction: column;
-        gap: 16px;
-    }
+@media (max-width: 480px) {
+    .analyticsBlock {
+        .cards {
+            .card {
+                padding: 20px;
 
-    .analyticsBlock .analyticsForm {
-        width: 100%;
-        padding: 16px;
+                .cardIcon {
+                    width: 48px;
+                    height: 48px;
+
+                    svg {
+                        width: 24px;
+                        height: 24px;
+                    }
+                }
+
+                .cardContent {
+                    h3 {
+                        font-size: 14px;
+                    }
+
+                    .cardValue {
+                        font-size: 24px;
+                    }
+                }
+            }
+        }
+
+        .formSection {
+            padding: 20px;
+        }
     }
 }
