@@ -4,6 +4,7 @@ import styles from "./styles.module.scss";
 import { MessageCircle, Users, Zap, Phone, MapPin, Send, ExternalLink } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import { Navbar } from "@/widgets/navbar/ui/Navbar";
+import { WorkingHours, ContactMethods, SocialNetworks, HowToFind } from "@/widgets/contactBlocks";
 
 const contacts = [
     {
@@ -139,6 +140,10 @@ export default function ContactsPage() {
                         })}
                     </motion.div>
 
+                    <WorkingHours />
+
+                    <ContactMethods />
+
                     <motion.div className={styles.addressSection} variants={containerVariants}>
                         <motion.div className={styles.addressHeader} variants={fadeUp}>
                             <div className={styles.addressIcon}>
@@ -184,6 +189,10 @@ export default function ContactsPage() {
                             ))}
                         </motion.div>
                     </motion.div>
+
+                    <HowToFind />
+
+                    <SocialNetworks />
                 </div>
             </motion.section>
         </div>

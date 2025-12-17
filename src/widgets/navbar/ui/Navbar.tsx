@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import styles from "./Navbar.module.scss";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { CitySelect } from "./CitySelect";
+// import { CitySelect } from "./CitySelect";
 import { ContactModal } from "@/widgets/modal/ContactModal";
 import { Menu, X, Home, Phone, MessageSquare, FileText } from "lucide-react";
 import Link from "next/link";
@@ -129,9 +129,9 @@ export const Navbar = () => {
                         </div>
                     </div>
 
-                    <div className={styles.cityMobile}>
+                    {/* <div className={styles.cityMobile}>
                         <CitySelect />
-                    </div>
+                    </div> */}
                 </div>
             </motion.header>
 

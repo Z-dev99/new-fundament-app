@@ -1,0 +1,500 @@
+$primary-color: #002574;
+$primary-hover: #00328f;
+$text-primary: #1a202c;
+$text-secondary: #718096;
+$bg-primary: #ffffff;
+$bg-secondary: #f8f9fa;
+$border-color: #e2e8f0;
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+$radius: 16px;
+
+// ===== WORKING HOURS =====
+.workingHours {
+    background: linear-gradient(135deg, $primary-color 0%, $primary-hover 100%);
+    border-radius: $radius;
+    padding: 40px 32px;
+    color: #ffffff;
+    text-align: center;
+    box-shadow: $shadow-lg;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+        padding: 32px 24px;
+    }
+}
+
+.iconWrapper {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 768px) {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 20px;
+
+        svg {
+            width: 28px;
+            height: 28px;
+        }
+    }
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 768px) {
+        font-size: 24px;
+        margin-bottom: 24px;
+    }
+}
+
+.hoursList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 768px) {
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+}
+
+.hoursItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+        padding: 14px 16px;
+    }
+}
+
+.day {
+    font-size: 16px;
+    font-weight: 600;
+    opacity: 0.95;
+
+    @media (max-width: 768px) {
+        font-size: 14px;
+    }
+}
+
+.hours {
+    font-size: 18px;
+    font-weight: 700;
+
+    @media (max-width: 768px) {
+        font-size: 16px;
+    }
+}
+
+.locationHint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+
+    svg {
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+        font-size: 13px;
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+// ===== CONTACT METHODS =====
+.contactMethods {
+    margin: 60px 0;
+
+    @media (max-width: 768px) {
+        margin: 40px 0;
+    }
+}
+
+.sectionTitle {
+    font-size: clamp(24px, 4vw, 32px);
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 12px;
+    text-align: center;
+    letter-spacing: -0.5px;
+
+    @media (max-width: 768px) {
+        font-size: 24px;
+    }
+}
+
+.sectionDescription {
+    font-size: 16px;
+    color: $text-secondary;
+    text-align: center;
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media (max-width: 768px) {
+        font-size: 14px;
+        margin-bottom: 32px;
+    }
+}
+
+.methodsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+.methodCard {
+    background: $bg-primary;
+    border-radius: $radius;
+    padding: 28px 24px;
+    border: 2px solid $border-color;
+    box-shadow: $shadow-sm;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--method-color);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+        box-shadow: $shadow-lg;
+        border-color: var(--method-color);
+
+        &::before {
+            opacity: 1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        padding: 24px 20px;
+        gap: 16px;
+    }
+}
+
+.methodIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+
+    @media (max-width: 768px) {
+        width: 56px;
+        height: 56px;
+    }
+}
+
+.methodCard:hover .methodIcon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.methodContent {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.methodTitle {
+    font-size: 20px;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0;
+
+    @media (max-width: 768px) {
+        font-size: 18px;
+    }
+}
+
+.methodDescription {
+    font-size: 14px;
+    color: $text-secondary;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.methodValue {
+    font-size: 16px;
+    font-weight: 600;
+    color: $primary-color;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+
+    @media (max-width: 768px) {
+        font-size: 15px;
+    }
+}
+
+.externalIcon {
+    opacity: 0.7;
+    transition: transform 0.3s ease;
+}
+
+.methodCard:hover .externalIcon {
+    transform: translate(4px, -4px);
+}
+
+// ===== SOCIAL NETWORKS =====
+.socialNetworks {
+    margin: 60px 0;
+
+    @media (max-width: 768px) {
+        margin: 40px 0;
+    }
+}
+
+.socialsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    max-width: 500px;
+    margin: 0 auto;
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+        max-width: 300px;
+        gap: 20px;
+    }
+}
+
+.socialCard {
+    background: $bg-primary;
+    border-radius: $radius;
+    padding: 24px 20px;
+    border: 2px solid $border-color;
+    box-shadow: $shadow-sm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: $text-primary;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--social-color);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+        box-shadow: $shadow-lg;
+        border-color: var(--social-color);
+
+        &::before {
+            opacity: 1;
+        }
+    }
+
+    @media (max-width: 640px) {
+        padding: 20px 16px;
+        gap: 10px;
+    }
+}
+
+.socialIcon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+
+    @media (max-width: 640px) {
+        width: 48px;
+        height: 48px;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+
+.socialCard:hover .socialIcon {
+    transform: scale(1.15);
+}
+
+.socialName {
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+
+    @media (max-width: 640px) {
+        font-size: 13px;
+    }
+}
+
+// ===== HOW TO FIND =====
+.howToFind {
+    margin: 60px 0;
+
+    @media (max-width: 768px) {
+        margin: 40px 0;
+    }
+}
+
+.instructionsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+.instructionCard {
+    background: $bg-primary;
+    border-radius: $radius;
+    padding: 24px;
+    border: 2px solid $border-color;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: $primary-color;
+    }
+
+    @media (max-width: 768px) {
+        padding: 20px;
+        gap: 16px;
+    }
+}
+
+.instructionIcon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(0, 37, 116, 0.1) 0%, rgba(0, 50, 143, 0.1) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $primary-color;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+
+    @media (max-width: 768px) {
+        width: 48px;
+        height: 48px;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+
+.instructionCard:hover .instructionIcon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.instructionContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.instructionTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0;
+
+    @media (max-width: 768px) {
+        font-size: 16px;
+    }
+}
+
+.instructionDescription {
+    font-size: 14px;
+    color: $text-secondary;
+    margin: 0;
+    line-height: 1.6;
+
+    @media (max-width: 768px) {
+        font-size: 13px;
+    }
+}

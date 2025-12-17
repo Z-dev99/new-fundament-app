@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { User, Phone, Hash } from "lucide-react";
 import styles from "./ContactModal.module.scss";
 import { toast } from "react-hot-toast";
 import { BaseModal } from "@/shared/ui/BaseModal";
@@ -131,7 +132,10 @@ export const ContactModal = ({ open, onClose }: Props) => {
                     <h2 className={styles.title}>Понравился объект? Расскажем подробнее!</h2>
                     <form className={styles.form} onSubmit={handleSubmit}>
                         <div className={styles.field}>
-                            <label>Контакты <span>*</span></label>
+                            <label>
+                                <Phone size={16} />
+                                Контакты <span>*</span>
+                            </label>
                             <input
                                 ref={inputRef}
                                 type="tel"
@@ -142,7 +146,10 @@ export const ContactModal = ({ open, onClose }: Props) => {
                             />
                         </div>
                         <div className={styles.field}>
-                            <label>Имя <span>*</span></label>
+                            <label>
+                                <User size={16} />
+                                Имя <span>*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={fullName}
@@ -151,7 +158,10 @@ export const ContactModal = ({ open, onClose }: Props) => {
                             />
                         </div>
                         <div className={styles.field}>
-                            <label>ID объекта/заявки <span>*</span></label>
+                            <label>
+                                <Hash size={16} />
+                                ID объекта/заявки <span>*</span>
+                            </label>
                             <input
                                 type="text"
                                 value={announcementId}

@@ -1,39 +1,74 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useState, useMemo } from "react";
+import { useGetBannersQuery } from "@/shared/api/bannersApi";
 import styles from "./AdBlock.module.scss";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 
-interface AdItem {
-    id: number;
-    image: string;
-    title?: string;
-    text?: string;
-}
+// Placeholder изображение в формате SVG (серый фон)
+const PLACEHOLDER_IMAGE = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
 
-interface AdBlockProps {
-    items: AdItem[];
-}
+const getImageUrl = (fileName: string): string => {
+    return `https://fundament.uz/img/${fileName}`;
+};
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=600&fit=crop";
+export const AdBlock: FC = () => {
+    const { data: banners, isLoading } = useGetBannersQuery();
+    const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+    const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 
-export const AdBlock: FC<AdBlockProps> = ({ items }) => {
-    const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
-    const [loadedImages, setLoadedImages] = useState<Record<number, boolean>>({});
+    // Фильтруем только MIDDLE_SIDE баннеры
+    const middleBanners = useMemo(() => {
+        if (!banners) return [];
+        return banners.filter((banner) => banner.banner_type === "MIDDLE_SIDE");
+    }, [banners]);
 
-    if (!items || items.length === 0) {
-        return null;
+    if (isLoading) {
+        return (
+            <div className={`${styles.wrapper} container`}>
+                <div style={{ height: "420px", background: "#f0f0f0", borderRadius: "22px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div>Загрузка баннеров...</div>
+                </div>
+            </div>
+        );
     }
 
-    const handleImageError = (itemId: number) => {
-        setImageErrors((prev) => ({ ...prev, [itemId]: true }));
+    // Если нет баннеров, показываем placeholder
+    if (!middleBanners || middleBanners.length === 0) {
+        return (
+            <div className={`${styles.wrapper} container`}>
+                <div className={styles.emptyBanner}>
+                    <div className={styles.emptyContent}>
+                        <div className={styles.emptyIcon}>
+                            <svg
+                                width="64"
+                                height="64"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                <path d="M9 9h6v6H9z" />
+                            </svg>
+                        </div>
+                        <h3 className={styles.emptyTitle}>Место для вашей рекламы</h3>
+                        <p className={styles.emptyText}>Свяжитесь с нами для размещения</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const handleImageError = (fileName: string) => {
+        setImageErrors((prev) => ({ ...prev, [fileName]: true }));
     };
 
-    const handleImageLoad = (itemId: number) => {
-        setLoadedImages((prev) => ({ ...prev, [itemId]: true }));
+    const handleImageLoad = (fileName: string) => {
+        setLoadedImages((prev) => ({ ...prev, [fileName]: true }));
     };
 
     return (
@@ -42,7 +77,7 @@ export const AdBlock: FC<AdBlockProps> = ({ items }) => {
                 modules={[Pagination, Autoplay]}
                 slidesPerView="auto"
                 spaceBetween={24}
-                loop={items.length > 1}
+                loop={middleBanners.length > 1}
                 centeredSlides={true}
                 autoplay={{
                     delay: 5000,
@@ -51,12 +86,14 @@ export const AdBlock: FC<AdBlockProps> = ({ items }) => {
                 }}
                 className={styles.swiper}
             >
-                {items.map((item) => {
-                    const imageSrc = imageErrors[item.id] ? FALLBACK_IMAGE : item.image;
-                    const isLoaded = loadedImages[item.id];
+                {middleBanners.map((banner, index) => {
+                    const imageSrc = imageErrors[banner.file_name] 
+                        ? PLACEHOLDER_IMAGE 
+                        : getImageUrl(banner.file_name);
+                    const isLoaded = loadedImages[banner.file_name];
                     
                     return (
-                        <SwiperSlide key={item.id} className={styles.slideWrapper}>
+                        <SwiperSlide key={`${banner.banner_type}-${banner.file_name}-${index}`} className={styles.slideWrapper}>
                             <div className={styles.slide}>
                                 {!isLoaded && (
                                     <div className={styles.imagePlaceholder}>
@@ -65,19 +102,12 @@ export const AdBlock: FC<AdBlockProps> = ({ items }) => {
                                 )}
                                 <img
                                     src={imageSrc}
-                                    alt={item.title || "Реклама"}
+                                    alt="Реклама"
                                     className={`${styles.image} ${isLoaded ? styles.loaded : ""}`}
-                                    onError={() => handleImageError(item.id)}
-                                    onLoad={() => handleImageLoad(item.id)}
-                                    loading={item.id === items[0]?.id ? "eager" : "lazy"}
+                                    onError={() => handleImageError(banner.file_name)}
+                                    onLoad={() => handleImageLoad(banner.file_name)}
+                                    loading={index === 0 ? "eager" : "lazy"}
                                 />
-
-                                {(item.title || item.text) && (
-                                    <div className={styles.content}>
-                                        {item.title && <h3>{item.title}</h3>}
-                                        {item.text && <p>{item.text}</p>}
-                                    </div>
-                                )}
                             </div>
                         </SwiperSlide>
                     );

@@ -20,7 +20,12 @@ import {
   Loader2,
   Quote,
   TrendingUp,
+  Award,
+  ThumbsUp,
+  Sparkles,
+  Heart,
 } from "lucide-react";
+import { HowToReview, FeedbackMatters, WhyTrustUs } from "@/widgets/reviewsBlocks";
 
 const PER_PAGE = 12;
 
@@ -167,12 +172,20 @@ export default function ReviewsPage() {
 
   const stats = useMemo(() => {
     if (!data) return null;
+    const reviews = data.reviews;
     return {
       total: data.total,
       averageLength: Math.round(
-        data.reviews.reduce((acc, r) => acc + r.review.length, 0) /
-        data.reviews.length
+        reviews.reduce((acc, r) => acc + r.review.length, 0) /
+        reviews.length
       ),
+      averageRating: 5, // Все отзывы по умолчанию 5 звезд
+      recentCount: reviews.filter((r) => {
+        const date = new Date(r.created_at);
+        const now = new Date();
+        const diffDays = Math.ceil((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        return diffDays <= 30;
+      }).length,
     };
   }, [data]);
 
@@ -210,14 +223,52 @@ export default function ReviewsPage() {
                 нашли или продали квартиру через наш сервис.
               </p>
               {stats && (
-                <div className={styles.stats}>
-                  <div className={styles.statItem}>
-                    <TrendingUp size={20} />
-                    <span>
-                      <strong>{stats.total}</strong> отзывов
-                    </span>
-                  </div>
-                </div>
+                <motion.div
+                  className={styles.stats}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                >
+                  <motion.div
+                    className={styles.statItem}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <div className={styles.statIcon}>
+                      <MessageSquare size={20} />
+                    </div>
+                    <div className={styles.statContent}>
+                      <strong>{stats.total}</strong>
+                      <span>Всего отзывов</span>
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    className={styles.statItem}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <div className={styles.statIcon}>
+                      <Star size={20} />
+                    </div>
+                    <div className={styles.statContent}>
+                      <strong>{stats.averageRating}.0</strong>
+                      <span>Средний рейтинг</span>
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    className={styles.statItem}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <div className={styles.statIcon}>
+                      <TrendingUp size={20} />
+                    </div>
+                    <div className={styles.statContent}>
+                      <strong>{stats.recentCount}</strong>
+                      <span>За месяц</span>
+                    </div>
+                  </motion.div>
+                </motion.div>
               )}
             </div>
           </motion.div>
@@ -226,15 +277,15 @@ export default function ReviewsPage() {
             className={styles.actions}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
           >
             <motion.button
               className={styles.addBtn}
               onClick={() => setModal(true)}
-              whileHover={{ scale: 1.05, y: -2 }}
+              whileHover={{ scale: 1.05, y: -4 }}
               whileTap={{ scale: 0.95 }}
             >
-              <MessageSquare size={20} />
+              <Sparkles size={20} />
               <span>Оставить отзыв</span>
             </motion.button>
           </motion.div>
@@ -297,11 +348,20 @@ export default function ReviewsPage() {
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star
                             key={star}
-                            size={16}
+                            size={18}
                             className={styles.star}
                             fill="currentColor"
                           />
                         ))}
+                      </div>
+                      <div className={styles.reviewActions}>
+                        <motion.button
+                          className={styles.actionBtn}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <ThumbsUp size={16} />
+                        </motion.button>
                       </div>
                     </div>
                   </motion.div>
@@ -334,6 +394,12 @@ export default function ReviewsPage() {
               </motion.button>
             </div>
           )}
+
+          <WhyTrustUs />
+
+          <HowToReview onOpenModal={() => setModal(true)} />
+
+          <FeedbackMatters onOpenModal={() => setModal(true)} />
         </div>
 
         <AnimatePresence>

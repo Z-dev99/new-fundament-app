@@ -12,12 +12,13 @@ interface SideAdBlockProps {
     onClick?: () => void;
 }
 
-export const SideAdBlock: FC<SideAdBlockProps> = ({ 
-    position, 
-    title = "Реклама",
+export const SideAdBlock: FC<SideAdBlockProps> = ({
+    position,
+    title = "Место для вашей рекламы",
     image,
-    onClick 
+    onClick
 }) => {
+
     return (
         <motion.div
             className={styles.wrapper}
@@ -37,6 +38,7 @@ export const SideAdBlock: FC<SideAdBlockProps> = ({
                         className={styles.image}
                         sizes="200px"
                         priority
+                        unoptimized
                     />
                     <div className={styles.overlay}>
                         <div className={styles.badge}>Реклама</div>
@@ -65,6 +67,8 @@ export const SideAdBlock: FC<SideAdBlockProps> = ({
         </motion.div>
     );
 };
+
+
 
 
 

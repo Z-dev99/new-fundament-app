@@ -141,10 +141,29 @@ export default function FeedbackForm() {
             <Toaster position="top-right" />
 
             <motion.div className={styles.wrapper}>
+                <motion.div
+                    className={styles.header}
+                    initial={{ opacity: 0, y: -20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <h2 className={styles.title}>
+                        <span>Свяжитесь с нами</span>
+                    </h2>
+                    <p className={styles.subtitle}>
+                        Оставьте заявку, и мы свяжемся с вами в ближайшее время
+                    </p>
+                </motion.div>
+
                 <motion.form
                     className={styles.card}
                     onSubmit={handleSubmit}
                     noValidate
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.1 }}
                 >
                     <div className={styles.group}>
                         <label className={styles.label}>

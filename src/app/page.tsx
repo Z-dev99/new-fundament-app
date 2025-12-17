@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, Suspense, memo } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useDeviceType } from "@/shared/hooks/useMediaQuery";
+import { useGetBannersQuery } from "@/shared/api/bannersApi";
 
 import { Navbar } from "@/widgets/navbar/ui/Navbar";
 import { Marquee } from "@/widgets/marquee/Marquee";
@@ -46,33 +47,29 @@ const FeedbackForm = dynamic(() => import("@/widgets/feedbackForm/FeedbackForm")
     ssr: false,
 });
 
+const AboutUs = dynamic(() => import("@/widgets/aboutUs/AboutUs").then(mod => ({ default: mod.AboutUs })), {
+    ssr: false,
+});
+
 
 const PageContent = memo(function PageContent() {
     const [activeTab, setActiveTab] = useState("new-builds");
     const { isDesktop } = useDeviceType();
     const isMobile = !isDesktop;
+    const { data: banners } = useGetBannersQuery();
 
-    const adItems = useMemo(
-        () => [
+    // Получаем LEFT_SIDE и RIGHT_SIDE баннеры
+    const leftBanner = useMemo(() => {
+        return banners?.find((b) => b.banner_type === "LEFT_SIDE");
+    }, [banners]);
 
+    const rightBanner = useMemo(() => {
+        return banners?.find((b) => b.banner_type === "RIGHT_SIDE");
+    }, [banners]);
 
-        ],
-        []
-    );
-
-    const sideAdImages = useMemo(
-        () => [
-            {
-                position: "left" as const,
-                image: "",
-            },
-            {
-                position: "right" as const,
-                image: "",
-            },
-        ],
-        []
-    );
+    const getImageUrl = (fileName: string): string => {
+        return `https://fundament.uz/img/${fileName}`;
+    };
 
     const handleAdClick = useCallback(() => { }, []);
 
@@ -84,14 +81,12 @@ const PageContent = memo(function PageContent() {
                     <Suspense fallback={null}>
                         <SideAdBlock
                             position="left"
-                            title="Специальное предложение"
-                            image={sideAdImages[0].image}
+                            image={leftBanner ? getImageUrl(leftBanner.file_name) : undefined}
                             onClick={handleAdClick}
                         />
                         <SideAdBlock
                             position="right"
-                            title="Акция недели"
-                            image={sideAdImages[1].image}
+                            image={rightBanner ? getImageUrl(rightBanner.file_name) : undefined}
                             onClick={handleAdClick}
                         />
                     </Suspense>
@@ -112,7 +107,7 @@ const PageContent = memo(function PageContent() {
                             transition={{ duration: 0.6 }}
                             style={{ marginBottom: "32px" }}
                         >
-                            <AdBlock items={adItems} />
+                            <AdBlock />
                         </motion.div>
                     </Suspense>
 
@@ -140,6 +135,9 @@ const PageContent = memo(function PageContent() {
 
                     <Suspense fallback={null}>
                         <AnalyticsCards />
+                    </Suspense>
+                    <Suspense fallback={null}>
+                        <AboutUs />
                     </Suspense>
                     <Suspense fallback={null}>
                         <FeedbackForm />
