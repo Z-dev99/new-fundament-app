@@ -104,8 +104,8 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
                             />
                         </div>
 
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             className={styles.submitButton}
                             disabled={isLoading}
                         >

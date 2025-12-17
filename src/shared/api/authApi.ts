@@ -13,7 +13,7 @@ export interface SignInResponse {
 export const authApi = createApi({
     reducerPath: "authApi",
     baseQuery: fetchBaseQuery({
-        baseUrl: process.env.NEXT_PUBLIC_API_URL as string,
+        baseUrl: (process.env.NEXT_PUBLIC_API_URL as string).replace(/\/?$/, "/"),
         prepareHeaders: (headers) => {
             const token = Cookies.get("token");
             if (token) {
@@ -25,7 +25,7 @@ export const authApi = createApi({
     endpoints: (builder) => ({
         signInModerator: builder.mutation<SignInResponse, SignInPayload>({
             query: (body) => ({
-                url: "auth/moderator/signin",
+                url: "moderator/signin",
                 method: "POST",
                 body,
             }),
