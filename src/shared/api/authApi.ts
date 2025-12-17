@@ -25,7 +25,7 @@ export const authApi = createApi({
     endpoints: (builder) => ({
         signInModerator: builder.mutation<SignInResponse, SignInPayload>({
             query: (body) => ({
-                url: "moderator/signin",
+                url: "auth/moderator/signin",
                 method: "POST",
                 body,
             }),
