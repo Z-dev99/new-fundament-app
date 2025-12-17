@@ -40,7 +40,6 @@ export interface AnnouncementsFilters {
     bathroom_layout?: string | null; // COMBINED, SEPARATE
     heating_type?: string | null; // CENTRAL, AUTONOMOUS, DECENTRALIZED
     renovation_type?: string | null; // SHELL, BLACK, COSMETIC, DESIGNER, EURO
-    // Поддержка обоих вариантов для обратной совместимости
     min_price?: string | null;
     max_price?: string | null;
     priceFrom?: string | number | null; // Алиас для min_price (будет преобразован в min_price)
@@ -62,8 +61,8 @@ export interface AnnouncementsFilters {
     max_ceiling_height?: number | null;
     min_year_built?: number | null;
     max_year_built?: number | null;
-    available_from?: string | null; // date-time format
-    order_by?: string; // Default: "created_at"
+    available_from?: string | null;
+    order_by?: string;
 }
 
 export interface AddAnnouncementBody {
@@ -102,7 +101,6 @@ export interface AddAnnouncementBody {
     available_from: string;
     contact_phone: string;
     images: string[];
-    // Опциональные поля (не входят в основной пример API, но могут использоваться)
     contact_email?: string;
     subscription_id?: string;
 }
@@ -136,134 +134,41 @@ export interface AnnouncementContacts {
     email: string;
 }
 
-const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {
-    let baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://147.45.68.231:8081/api/v1/";
-    // Нормализуем baseUrl - убираем все слэши в конце
-    baseUrl = baseUrl.replace(/\/+$/, "");
-    // Добавляем один слэш в конце для правильного объединения
-    baseUrl = `${baseUrl}/`;
-
-    const token = Cookies.get("token");
-
-    // Нормализуем URL в args - убираем начальный слэш, если есть
-    let normalizedArgs = args;
-    if (typeof args === "object" && args.url) {
-        normalizedArgs = {
-            ...args,
-            url: args.url.startsWith("/") ? args.url.substring(1) : args.url,
-        };
-    }
-
-    const url = typeof normalizedArgs === "string" ? normalizedArgs : normalizedArgs.url;
-    const method = typeof normalizedArgs === "string" ? "GET" : normalizedArgs.method || "GET";
-    const body = typeof normalizedArgs === "string" ? undefined : normalizedArgs.body;
-    
-    // Если body - это FormData, не устанавливаем Content-Type (браузер установит автоматически с boundary)
-    const isFormData = body instanceof FormData;
-
-    const start = performance.now();
-    const fullUrl = `${baseUrl}${url}`;
-
-    console.groupCollapsed(
-        `%c📡 API Request → ${method} ${fullUrl}`,
-        "color:#00BFFF;font-weight:bold;"
-    );
-    console.log("Base URL:", baseUrl);
-    console.log("Relative URL:", url);
-    console.log("Full URL:", fullUrl);
-    console.log("Method:", method);
-    console.log("Headers:", { Authorization: token ? "Bearer ***" : "none" });
-    if (body) {
-        if (body instanceof FormData) {
-            console.log("Body: FormData");
-            for (const [key, value] of body.entries()) {
-                if (value instanceof File) {
-                    console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-                } else {
-                    console.log(`  ${key}:`, value);
-                }
-            }
-        } else {
-            console.log("Body:", body);
+const baseQuery = fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL as string,
+    prepareHeaders: (headers) => {
+        const token = Cookies.get("token");
+        if (token) {
+            headers.set("Authorization", `Bearer ${token}`);
         }
-    }
-    console.groupEnd();
-
-    try {
-        const rawBaseQuery = fetchBaseQuery({
-            baseUrl,
-            prepareHeaders: (headers, { extra, endpoint }) => {
-                if (token) headers.set("Authorization", `Bearer ${token}`);
-                // Для FormData не устанавливаем Content-Type - браузер установит автоматически
-                if (!isFormData && body) {
-                    headers.set("Content-Type", "application/json");
-                }
-                return headers;
-            },
-        });
-
-        const result = await rawBaseQuery(normalizedArgs, api, extraOptions);
-        const duration = (performance.now() - start).toFixed(1);
-
-        console.groupCollapsed(
-            `%c📨 API Response ← ${method} ${fullUrl} (${duration} ms)`,
-            "color:#32CD32;font-weight:bold;"
-        );
-        if (result.data) {
-            console.log("Data:", result.data);
-        }
-        if (result.error) {
-            console.error("Error:", result.error);
-            if ('status' in result.error && result.error.status === "FETCH_ERROR") {
-                console.error("Network error details:", {
-                    message: 'error' in result.error ? result.error.error : 'Unknown error',
-                });
-            } else if ('status' in result.error && typeof result.error.status === 'number') {
-                console.error("HTTP Error:", {
-                    status: result.error.status,
-                    data: 'data' in result.error ? result.error.data : undefined,
-                });
-            }
-        }
-        console.groupEnd();
-
-        return result;
-    } catch (error: any) {
-        console.error("Unexpected error in baseQueryWithLogging:", error);
-        throw error;
-    }
-};
+        return headers;
+    },
+});
 
 export const announcementApi = createApi({
     reducerPath: "announcementApi",
-    baseQuery: baseQueryWithLogging,
+    baseQuery,
     tagTypes: ["Announcement"],
     endpoints: (builder) => ({
         getAnnouncements: builder.query<AnnouncementsResponse, AnnouncementsFilters>({
             query: (filters) => {
                 const params = new URLSearchParams();
                 Object.entries(filters).forEach(([key, value]) => {
-                    // Пропускаем undefined, null и пустые строки
                     if (value !== undefined && value !== null && value !== "") {
-                        // Преобразуем priceFrom -> min_price и priceTo -> max_price для обратной совместимости
-                        // Приоритет у min_price/max_price, если они указаны
                         let paramKey = key;
-                        if (key === 'priceFrom' && !filters.min_price) {
-                            paramKey = 'min_price';
-                            params.append(paramKey, String(value));
-                        } else if (key === 'priceTo' && !filters.max_price) {
-                            paramKey = 'max_price';
-                            params.append(paramKey, String(value));
-                        } else if (key !== 'priceFrom' && key !== 'priceTo') {
-                            // Пропускаем priceFrom/priceTo, если уже есть min_price/max_price
+                        if (key === "priceFrom" && !filters.min_price) {
+                            paramKey = "min_price";
+                        } else if (key === "priceTo" && !filters.max_price) {
+                            paramKey = "max_price";
+                        }
+                        if (paramKey !== "priceFrom" && paramKey !== "priceTo") {
                             params.append(paramKey, String(value));
                         }
                     }
                 });
                 const queryString = params.toString();
-                return `announcements${queryString ? `?${queryString}` : ''}`;
+                return `announcements${queryString ? `?${queryString}` : ""}`;
             },
-            // Отключаем кеширование для этого запроса, чтобы всегда получать свежие данные
             keepUnusedDataFor: 0,
             transformResponse: (response: AnnouncementsResponse) => ({
                 ...response,
@@ -272,13 +177,10 @@ export const announcementApi = createApi({
             providesTags: ["Announcement"],
         }),
 
-        getMyAnnouncements: builder.query<AnnouncementsResponse, { page?: number; page_size?: number }>({
-            query: ({ page = 1, page_size = 12 } = {}) =>
-                `announcements/me?page=${page}&page_size=${page_size}`,
-            providesTags: ["Announcement"],
-        }),
-
-        getFavoriteAnnouncements: builder.query<AnnouncementsResponse, { page?: number; page_size?: number }>({
+        getFavoriteAnnouncements: builder.query<
+            AnnouncementsResponse,
+            { page?: number; page_size?: number }
+        >({
             query: ({ page = 1, page_size = 12 } = {}) =>
                 `announcements/favorites?page=${page}&page_size=${page_size}`,
             providesTags: ["Announcement"],
@@ -290,274 +192,83 @@ export const announcementApi = createApi({
         }),
 
         addAnnouncement: builder.mutation<Announcement, { data: AddAnnouncementBody }>({
-            queryFn: async ({ data }, { getState }) => {
-                const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://147.45.68.231:8081/api/v1/").replace(/\/+$/, "") + "/";
-                const token = Cookies.get("token");
-                const url = `${baseUrl}announcements`;
-
-                console.group(`%c📤 addAnnouncement Request`, "color:#FF6B6B;font-weight:bold;");
-                console.log("Base URL:", baseUrl);
-                console.log("Full URL:", url);
-                console.log("Data:", data);
-                console.log("Images (file names):", data.images);
-
-                // Проверка валидности URL
-                try {
-                    new URL(url);
-                } catch (urlError) {
-                    console.error("%c❌ Invalid URL:", "color:#FF6B6B;font-weight:bold;", url);
-                    console.groupEnd();
-                    return { 
-                        error: { 
-                            status: 'FETCH_ERROR' as const, 
-                            error: 'Invalid URL format',
-                        } 
-                    };
-                }
-
-                try {
-                    // Отправляем обычный JSON с названиями файлов в поле images
-                    const headers: HeadersInit = {
-                        'Content-Type': 'application/json',
-                    };
-                    if (token) {
-                        headers['Authorization'] = `Bearer ${token}`;
-                    }
-                    
-                    console.log("%c📋 Sending JSON data...", "color:#4ECDC4;font-weight:bold;");
-                    console.log("Headers:", headers);
-                    console.log("Full URL:", url);
-                    console.log("Body:", JSON.stringify(data, null, 2));
-                    
-                    let response: Response;
-                    try {
-                        response = await fetch(url, {
-                            method: 'POST',
-                            headers,
-                            body: JSON.stringify(data),
-                            credentials: 'include',
-                        });
-                    } catch (fetchError: any) {
-                        console.error("%c❌ Fetch error details:", "color:#FF6B6B;font-weight:bold;", {
-                            message: fetchError.message,
-                            name: fetchError.name,
-                            url: url,
-                        });
-                        console.groupEnd();
-                        return { 
-                            error: { 
-                                status: 'FETCH_ERROR' as const, 
-                                error: fetchError.message || 'Failed to fetch',
-                            } 
-                        };
-                    }
-
-                    console.log("%c📥 Response received", "color:#AA96DA;font-weight:bold;");
-                    console.log("Status:", response.status, response.statusText);
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-                        console.error("Error data:", errorData);
-                        console.groupEnd();
-                        return { error: { status: response.status, data: errorData } };
-                    }
-
-                    const result = await response.json();
-                    console.log("Success data:", result);
-                    console.groupEnd();
-                    return { data: result };
-                } catch (error: any) {
-                    console.error("%c❌ Request failed", "color:#FF6B6B;font-weight:bold;", error);
-                    console.groupEnd();
-                    return { error: { status: 'FETCH_ERROR', error: error.message } };
-                }
-            },
+            query: ({ data }) => ({
+                url: "announcements",
+                method: "POST",
+                body: data,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
             invalidatesTags: ["Announcement"],
         }),
 
-        updateAnnouncement: builder.mutation<Announcement, { id: string; data: UpdateAnnouncementBody; files?: File[] }>({
+        updateAnnouncement: builder.mutation<
+            Announcement,
+            { id: string; data: UpdateAnnouncementBody; files?: File[] }
+        >({
             queryFn: async ({ id, data, files }) => {
-                const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://147.45.68.231:8081/api/v1/").replace(/\/+$/, "") + "/";
                 const token = Cookies.get("token");
+                const baseUrl = process.env.NEXT_PUBLIC_API_URL as string;
                 const url = `${baseUrl}announcements/${id}`;
 
-                console.group(`%c📤 updateAnnouncement Request`, "color:#FF6B6B;font-weight:bold;");
-                console.log("Base URL:", baseUrl);
-                console.log("Full URL:", url);
-                console.log("ID:", id);
-                console.log("Data:", data);
-                console.log("Files count:", files?.length || 0);
                 if (files && files.length > 0) {
-                    console.log("Files:", files.map(f => ({ name: f.name, size: f.size, type: f.type })));
-                }
+                    const formData = new FormData();
 
-                // Проверка валидности URL
-                try {
-                    new URL(url);
-                } catch (urlError) {
-                    console.error("%c❌ Invalid URL:", "color:#FF6B6B;font-weight:bold;", url);
-                    console.groupEnd();
-                    return {
-                        error: {
-                            status: 'FETCH_ERROR' as const,
-                            error: 'Invalid URL format',
+                    Object.entries(data).forEach(([key, value]) => {
+                        if (key === "images") return;
+                        if (value !== undefined && value !== null) {
+                            formData.append(
+                                key,
+                                typeof value === "object" ? JSON.stringify(value) : String(value)
+                            );
                         }
-                    };
-                }
+                    });
 
-                try {
-                    // Если есть файлы, используем FormData с прямым fetch
-                    if (files && files.length > 0) {
-                        const formData = new FormData();
+                    files.forEach((file) => {
+                        formData.append("images", file, file.name);
+                    });
 
-                        console.log("%c📋 Building FormData...", "color:#4ECDC4;font-weight:bold;");
-
-                        // Добавляем все поля данных
-                        Object.entries(data).forEach(([key, value]) => {
-                            if (key === 'images') {
-                                return;
-                            }
-                            if (value !== undefined && value !== null) {
-                                if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
-                                    const stringValue = JSON.stringify(value);
-                                    formData.append(key, stringValue);
-                                    console.log(`  ${key}:`, stringValue);
-                                } else {
-                                    formData.append(key, String(value));
-                                    console.log(`  ${key}:`, value);
-                                }
-                            }
-                        });
-
-                        // Добавляем файлы как 'images' - браузер автоматически установит Content-Type для каждого файла
-                        files.forEach((file, index) => {
-                            formData.append('images', file, file.name);
-                            console.log(`  images[${index}]: File(${file.name}, ${file.size} bytes, ${file.type})`);
-                        });
-
-                        // Если есть существующие имена файлов
-                        if (data.images && Array.isArray(data.images) && data.images.length > 0) {
-                            const existingImagesJson = JSON.stringify(data.images);
-                            formData.append('existing_images', existingImagesJson);
-                            console.log(`  existing_images:`, existingImagesJson);
-                        }
-
-                        console.log("%c📦 FormData contents:", "color:#95E1D3;font-weight:bold;");
-                        for (const [key, value] of formData.entries()) {
-                            if (value instanceof File) {
-                                console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
-                            } else {
-                                console.log(`  ${key}:`, value);
-                            }
-                        }
-
-                        // Используем прямой fetch - браузер автоматически установит правильный Content-Type с boundary
-                        const headers: HeadersInit = {};
-                        if (token) {
-                            headers['Authorization'] = `Bearer ${token}`;
-                        }
-                        // НЕ устанавливаем Content-Type - браузер установит автоматически multipart/form-data с boundary
-                        
-                        console.log("%c🚀 Sending request...", "color:#F38181;font-weight:bold;");
-                        console.log("Method: PATCH");
-                        console.log("Headers:", headers);
-                        console.log("Full URL:", url);
-
-                        let response: Response;
-                        try {
-                            response = await fetch(url, {
-                                method: 'PATCH',
-                                headers,
-                                body: formData,
-                                credentials: 'include',
-                            });
-                        } catch (fetchError: any) {
-                            console.error("%c❌ Fetch error details:", "color:#FF6B6B;font-weight:bold;", {
-                                message: fetchError.message,
-                                name: fetchError.name,
-                                url: url,
-                            });
-                            console.groupEnd();
-                            return {
-                                error: {
-                                    status: 'FETCH_ERROR' as const,
-                                    error: fetchError.message || 'Failed to fetch',
-                                }
-                            };
-                        }
-
-                        console.log("%c📥 Response received", "color:#AA96DA;font-weight:bold;");
-                        console.log("Status:", response.status, response.statusText);
-                        console.log("Headers:", Object.fromEntries(response.headers.entries()));
-
-                        if (!response.ok) {
-                            const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-                            console.error("Error data:", errorData);
-                            console.groupEnd();
-                            return { error: { status: response.status, data: errorData } };
-                        }
-
-                        const result = await response.json();
-                        console.log("Success data:", result);
-                        console.groupEnd();
-                        return { data: result };
+                    if (Array.isArray(data.images) && data.images.length > 0) {
+                        formData.append("existing_images", JSON.stringify(data.images));
                     }
 
-                    // Если файлов нет, отправляем обычный JSON
-                    const headers: HeadersInit = {
-                        'Content-Type': 'application/json',
-                    };
-                    if (token) {
-                        headers['Authorization'] = `Bearer ${token}`;
-                    }
+                    const headers: HeadersInit = {};
+                    if (token) headers["Authorization"] = `Bearer ${token}`;
 
-                    console.log("%c📋 Sending JSON data...", "color:#4ECDC4;font-weight:bold;");
-                    console.log("Headers:", headers);
-                    console.log("Full URL:", url);
-                    console.log("Body:", JSON.stringify(data, null, 2));
-
-                    let response: Response;
-                    try {
-                        response = await fetch(url, {
-                            method: 'PATCH',
-                            headers,
-                            body: JSON.stringify(data),
-                            credentials: 'include',
-                        });
-                    } catch (fetchError: any) {
-                        console.error("%c❌ Fetch error details:", "color:#FF6B6B;font-weight:bold;", {
-                            message: fetchError.message,
-                            name: fetchError.name,
-                            url: url,
-                        });
-                        console.groupEnd();
-                        return {
-                            error: {
-                                status: 'FETCH_ERROR' as const,
-                                error: fetchError.message || 'Failed to fetch',
-                            }
-                        };
-                    }
-
-                    console.log("%c📥 Response received", "color:#AA96DA;font-weight:bold;");
-                    console.log("Status:", response.status, response.statusText);
+                    const response = await fetch(url, {
+                        method: "PATCH",
+                        headers,
+                        body: formData,
+                        credentials: "include",
+                    });
 
                     if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-                        console.error("Error data:", errorData);
-                        console.groupEnd();
+                        const errorData = await response.json();
                         return { error: { status: response.status, data: errorData } };
                     }
 
-                    const result = await response.json();
-                    console.log("Success data:", result);
-                    console.groupEnd();
-                    return { data: result };
-                } catch (error: any) {
-                    console.error("%c❌ Request failed", "color:#FF6B6B;font-weight:bold;", error);
-                    console.groupEnd();
-                    return { error: { status: 'FETCH_ERROR', error: error.message } };
+                    return { data: await response.json() };
                 }
+
+                const headers: HeadersInit = {
+                    "Content-Type": "application/json",
+                };
+                if (token) headers["Authorization"] = `Bearer ${token}`;
+
+                const response = await fetch(url, {
+                    method: "PATCH",
+                    headers,
+                    body: JSON.stringify(data),
+                    credentials: "include",
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    return { error: { status: response.status, data: errorData } };
+                }
+
+                return { data: await response.json() };
             },
             invalidatesTags: ["Announcement"],
         }),
@@ -590,11 +301,14 @@ export const announcementApi = createApi({
             invalidatesTags: ["Announcement"],
         }),
 
-        getPresignedUrl: builder.mutation<{ presigned_url: string; file_name: string }, { file_name: string; content_type: string }>({
-            query: ({ file_name, content_type }) => ({
+        getPresignedUrl: builder.mutation<
+            { presigned_url: string; file_name: string },
+            { file_name: string; content_type: string }
+        >({
+            query: (body) => ({
                 url: "announcements/upload-url",
                 method: "POST",
-                body: { file_name, content_type },
+                body,
             }),
         }),
     }),
@@ -602,7 +316,6 @@ export const announcementApi = createApi({
 
 export const {
     useGetAnnouncementsQuery,
-    useGetMyAnnouncementsQuery,
     useGetFavoriteAnnouncementsQuery,
     useGetAnnouncementByIdQuery,
     useAddAnnouncementMutation,
@@ -613,5 +326,3 @@ export const {
     useRejectAnnouncementMutation,
     useGetPresignedUrlMutation,
 } = announcementApi;
-
-

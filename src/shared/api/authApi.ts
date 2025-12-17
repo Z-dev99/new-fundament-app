@@ -1,5 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import Cookies from 'js-cookie';
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import Cookies from "js-cookie";
 
 export interface SignInPayload {
     username: string;
@@ -11,13 +11,13 @@ export interface SignInResponse {
 }
 
 export const authApi = createApi({
-    reducerPath: 'authApi',
+    reducerPath: "authApi",
     baseQuery: fetchBaseQuery({
-        baseUrl: process.env.NEXT_PUBLIC_API_URL,
+        baseUrl: process.env.NEXT_PUBLIC_API_URL as string,
         prepareHeaders: (headers) => {
-            const token = Cookies.get('token');
+            const token = Cookies.get("token");
             if (token) {
-                headers.set('Authorization', `Bearer ${token}`);
+                headers.set("Authorization", `Bearer ${token}`);
             }
             return headers;
         },
@@ -25,8 +25,8 @@ export const authApi = createApi({
     endpoints: (builder) => ({
         signInModerator: builder.mutation<SignInResponse, SignInPayload>({
             query: (body) => ({
-                url: '/auth/moderator/signin',
-                method: 'POST',
+                url: "auth/moderator/signin",
+                method: "POST",
                 body,
             }),
         }),

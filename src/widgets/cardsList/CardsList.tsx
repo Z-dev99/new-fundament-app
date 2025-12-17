@@ -14,7 +14,6 @@ interface Props {
 
 const PER_PAGE = 24;
 
-// Утилита для получения URL изображения
 const getImageUrl = (imagePath: string): string => {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
         return imagePath;
@@ -31,7 +30,6 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
         currency: "UZS",
     });
 
-    // Формируем фильтры для API запроса
     const currentFilters = useMemo(() => {
         const result: Partial<AnnouncementsFilters> = {
             page,
@@ -39,7 +37,6 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
             currency: filters.currency || "UZS",
         };
 
-        // Добавляем все остальные фильтры
         Object.entries(filters).forEach(([key, value]) => {
             if (key !== 'page' && key !== 'page_size' && value !== undefined && value !== null && value !== "") {
                 (result as Record<string, any>)[key] = value;
@@ -49,12 +46,10 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
         return result as AnnouncementsFilters;
     }, [filters, page]);
 
-    // Запрос данных
     const { data, isLoading, isError, error, isFetching } = useGetAnnouncementsQuery(currentFilters, {
         refetchOnMountOrArgChange: true,
     });
 
-    // Обработчик смены страницы
     const handlePageChange = useCallback((newPage: number) => {
         if (newPage >= 1) {
             setPage(newPage);
@@ -73,21 +68,18 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
             apiFilters.announcement_type = "RENT";
         }
 
-        // Преобразуем priceFrom -> min_price и priceTo -> max_price как строки
         if (newFilters.priceFrom) apiFilters.min_price = String(newFilters.priceFrom);
         if (newFilters.priceTo) apiFilters.max_price = String(newFilters.priceTo);
-        
+
         if (newFilters.rooms) {
             const roomsNum = Number(newFilters.rooms);
             apiFilters.min_rooms = roomsNum;
             apiFilters.max_rooms = roomsNum;
         }
-        
-        // Площади теперь строки, а не числа
+
         if (newFilters.areaFrom) apiFilters.min_area_total = String(newFilters.areaFrom);
         if (newFilters.areaTo) apiFilters.max_area_total = String(newFilters.areaTo);
 
-        // Дополнительные фильтры
         if (newFilters.city) apiFilters.city = newFilters.city;
         if (newFilters.district) apiFilters.district = newFilters.district;
         if (newFilters.street) apiFilters.street = newFilters.street;
@@ -97,13 +89,13 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
         if (newFilters.order_by) apiFilters.order_by = newFilters.order_by;
         if (newFilters.country) apiFilters.country = newFilters.country;
         if (newFilters.region) apiFilters.region = newFilters.region;
-        
+
         // Площади теперь строки
         if (newFilters.min_area_living) apiFilters.min_area_living = String(newFilters.min_area_living);
         if (newFilters.max_area_living) apiFilters.max_area_living = String(newFilters.max_area_living);
         if (newFilters.min_area_kitchen) apiFilters.min_area_kitchen = String(newFilters.min_area_kitchen);
         if (newFilters.max_area_kitchen) apiFilters.max_area_kitchen = String(newFilters.max_area_kitchen);
-        
+
         // Новые поля из API
         if (newFilters.layout_type) apiFilters.layout_type = newFilters.layout_type;
         if (newFilters.city_side) apiFilters.city_side = newFilters.city_side;
@@ -149,13 +141,11 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
         return mapped;
     }, [data, page]);
 
-    // Расчет общего количества страниц
     const totalPages = useMemo(() => {
         if (!data?.total) return 1;
         return Math.max(1, Math.ceil(data.total / PER_PAGE));
     }, [data?.total]);
 
-    // Состояния загрузки
     const isInitialLoading = isLoading && !data;
     const hasData = data && data.announcements && Array.isArray(data.announcements);
     const hasItems = items.length > 0;
@@ -168,14 +158,12 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
                 totalCount={data?.total}
             />
 
-            {/* Информация о количестве результатов */}
             {data?.total !== undefined && (
                 <div className={styles.resultsInfo}>
                     Найдено объявлений: <strong>{data.total.toLocaleString("ru-RU")}</strong>
                 </div>
             )}
 
-            {/* Состояние начальной загрузки */}
             {isInitialLoading && (
                 <div className={styles.emptyState}>
                     <div className={styles.loader}></div>
@@ -183,7 +171,6 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
                 </div>
             )}
 
-            {/* Состояние ошибки */}
             {isError && !isInitialLoading && (
                 <div className={styles.emptyState}>
                     <p>Ошибка загрузки объявлений</p>
@@ -193,7 +180,6 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
                 </div>
             )}
 
-            {/* Индикатор загрузки при обновлении данных */}
             {isFetching && hasData && (
                 <div style={{
                     textAlign: "center",
@@ -205,7 +191,6 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
                 </div>
             )}
 
-            {/* Пустое состояние - нет результатов */}
             {!isInitialLoading && !isError && hasData && !hasItems && (
                 <div className={styles.emptyState}>
                     <p>Объявления не найдены</p>
@@ -215,7 +200,6 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
                 </div>
             )}
 
-            {/* Список карточек */}
             {!isInitialLoading && !isError && hasItems && (
                 <div
                     key={`grid-${page}-${JSON.stringify(filters)}`}
@@ -235,7 +219,6 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
                 </div>
             )}
 
-            {/* Пагинация */}
             {!isInitialLoading && !isError && totalPages > 1 && hasData && (
                 <Pagination
                     page={page}
