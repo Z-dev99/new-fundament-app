@@ -62,3 +62,5 @@ export const HowToFind = () => {
         </motion.div>
     );
 };
+
+

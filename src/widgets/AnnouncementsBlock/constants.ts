@@ -53,3 +53,5 @@ export const RENOVATION_TYPES = [
     { value: "EURO", label: "Евроремонт" },
 ] as const;
 
+
+

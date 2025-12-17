@@ -55,3 +55,5 @@ export const SocialNetworks = () => {
         </motion.div>
     );
 };
+
+
