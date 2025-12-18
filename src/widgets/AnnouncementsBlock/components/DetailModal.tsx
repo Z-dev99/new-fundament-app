@@ -50,10 +50,10 @@ export const DetailModal: React.FC<DetailModalProps> = ({ announcementId, onClos
                 <div className={styles.modalHeader}>
                     <h2>Детали объявления</h2>
                     <div className={styles.modalActions}>
-                        <button className={styles.editBtn} onClick={onEdit}>
+                        {/* <button className={styles.editBtn} onClick={onEdit}>
                             <Edit size={18} />
                             Редактировать
-                        </button>
+                        </button> */}
                         <button className={styles.closeBtn} onClick={onClose}>
                             <X size={20} />
                         </button>

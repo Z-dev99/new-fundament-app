@@ -6,6 +6,7 @@ import {
     useCreateBannerMutation,
     useDeleteBannerByTypeMutation,
     useDeleteBannerByFileNameMutation,
+    useDeleteBannerByIdMutation,
     type BannerType,
     type Banner,
 } from "@/shared/api/bannersApi";
@@ -29,6 +30,7 @@ export const BannersBlock: React.FC = () => {
     const [createBanner, { isLoading: isCreating }] = useCreateBannerMutation();
     const [deleteBanner, { isLoading: isDeleting }] = useDeleteBannerByTypeMutation();
     const [deleteBannerByFileName] = useDeleteBannerByFileNameMutation();
+    const [deleteBannerById] = useDeleteBannerByIdMutation();
 
     const [uploadingType, setUploadingType] = useState<BannerType | null>(null);
     const [deletingType, setDeletingType] = useState<BannerType | null>(null);
@@ -60,7 +62,7 @@ export const BannersBlock: React.FC = () => {
         try {
             setUploadingType(type);
 
-            // Используем имя файла напрямую (как для объявлений)
+            // Используем имя файла из выбранного файла
             const file_name = file.name;
 
             // Для статических баннеров (LEFT_SIDE, RIGHT_SIDE) - заменяем существующий
@@ -71,8 +73,23 @@ export const BannersBlock: React.FC = () => {
                 }
             }
 
-            // Создаем новый баннер с file_name из выбранного файла (без загрузки через presigned URL)
-            await createBanner({ banner_type: type, file_name }).unwrap();
+            // Создаем баннер и получаем presigned URL
+            const result = await createBanner({ banner_type: type, file_name }).unwrap();
+            
+            // Загружаем файл на presigned URL
+            if (result.presigned_url) {
+                const uploadResponse = await fetch(result.presigned_url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': file.type,
+                    },
+                    body: file,
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error('Ошибка загрузки файла');
+                }
+            }
             
             const label = type === "MIDDLE_SIDE" 
                 ? SLIDER_BANNER_TYPE.label 
@@ -81,7 +98,7 @@ export const BannersBlock: React.FC = () => {
             toast.success(`Баннер "${label}" успешно ${type === "MIDDLE_SIDE" ? "добавлен" : "обновлен"}!`);
             refetch();
         } catch (err: any) {
-            toast.error(err.data?.message || "Ошибка при загрузке баннера");
+            toast.error(err.data?.message || err.message || "Ошибка при загрузке баннера");
         } finally {
             setUploadingType(null);
         }
@@ -104,21 +121,22 @@ export const BannersBlock: React.FC = () => {
         }
     };
 
-    const handleDeleteSliderBanner = async (file_name: string) => {
+    const handleDeleteSliderBanner = async (banner: Banner) => {
         if (!confirm("Вы уверены, что хотите удалить этот баннер из слайдера?")) {
             return;
         }
 
         try {
-            setDeletingFileName(file_name);
-            await deleteBannerByFileName({ 
-                banner_type: "MIDDLE_SIDE", 
-                file_name 
-            }).unwrap();
+            setDeletingFileName(banner.file_name);
+            
+            // Для MIDDLE_SIDE используем deleteBannerByType с типом MIDDLE_SIDE
+            // Запрос будет: DELETE /banner/MIDDLE_SIDE
+            await deleteBanner("MIDDLE_SIDE").unwrap();
+            
             toast.success("Баннер успешно удален из слайдера!");
             refetch();
         } catch (err: any) {
-            toast.error(err.data?.message || "Ошибка при удалении баннера");
+            toast.error(err.data?.message || err.message || "Ошибка при удалении баннера");
         } finally {
             setDeletingFileName(null);
         }
@@ -269,7 +287,7 @@ export const BannersBlock: React.FC = () => {
 
                                         <button
                                             className={styles.deleteBtn}
-                                            onClick={() => handleDeleteSliderBanner(banner.file_name)}
+                                            onClick={() => handleDeleteSliderBanner(banner)}
                                             disabled={isDeleting || uploadingType === "MIDDLE_SIDE"}
                                         >
                                             {isDeleting ? "Удаляем..." : "Удалить"}

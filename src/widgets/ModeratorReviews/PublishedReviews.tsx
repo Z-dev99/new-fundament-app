@@ -1,32 +1,33 @@
 "use client";
 
-import { useGetLeadRequestsQuery, useDeleteLeadRequestMutation } from "@/shared/api/leadApi";
-import { useState } from "react";
+import React, { useState } from "react";
+import {
+    useGetReviewsQuery,
+    useDeleteReviewMutation
+} from "@/shared/api/reviewsApi";
 import styles from "./styles.module.scss";
 import toast, { Toaster } from "react-hot-toast";
-import { User, Phone, FileText, Calendar, Trash2, Users, ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { MessageSquare, Trash2, User, Calendar, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 
-export const LeadRequests: React.FC = () => {
+export const PublishedReviews: React.FC = () => {
     const [page, setPage] = useState(1);
-    const pageSize = 10;
+    const pageSize = 12;
+    const [processingId, setProcessingId] = useState<string | null>(null);
 
-    const { data, isLoading, error, refetch } = useGetLeadRequestsQuery({ page, page_size: pageSize });
-    const [deleteRequest, { isLoading: isDeleting }] = useDeleteLeadRequestMutation();
-    const [deletingId, setDeletingId] = useState<string | null>(null);
+    const { data, isLoading, error, refetch } = useGetReviewsQuery({ page, page_size: pageSize });
+    const [deleteReview, { isLoading: isDeleting }] = useDeleteReviewMutation();
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Вы уверены, что хотите удалить эту заявку?")) return;
-
+        if (!confirm("Вы уверены, что хотите удалить этот отзыв?")) return;
+        setProcessingId(id);
         try {
-            setDeletingId(id);
-            await deleteRequest(id).unwrap();
-            toast.success("Заявка успешно удалена!");
+            await deleteReview(id).unwrap();
+            toast.success("Отзыв удалён!");
             refetch();
         } catch (err) {
-            toast.error("Ошибка при удалении заявки");
+            toast.error("Ошибка при удалении отзыва");
         } finally {
-            setDeletingId(null);
+            setProcessingId(null);
         }
     };
 
@@ -41,19 +42,11 @@ export const LeadRequests: React.FC = () => {
         });
     };
 
-    const formatPhone = (phone: string) => {
-        // Форматируем телефон в читаемый вид
-        if (phone.startsWith("998")) {
-            return `+${phone.slice(0, 3)} ${phone.slice(3, 5)} ${phone.slice(5, 8)}-${phone.slice(8, 10)}-${phone.slice(10)}`;
-        }
-        return phone;
-    };
-
     if (isLoading) {
         return (
             <div className={styles.loadingContainer}>
                 <div className={styles.spinner}></div>
-                <p>Загрузка заявок...</p>
+                <p>Загрузка отзывов...</p>
             </div>
         );
     }
@@ -61,7 +54,7 @@ export const LeadRequests: React.FC = () => {
     if (error) {
         return (
             <div className={styles.errorContainer}>
-                <p>Ошибка загрузки заявок</p>
+                <p>Ошибка загрузки отзывов</p>
             </div>
         );
     }
@@ -71,83 +64,61 @@ export const LeadRequests: React.FC = () => {
     const handleNext = () => setPage((prev) => Math.min(prev + 1, totalPages));
 
     return (
-        <div className={styles.leadRequestsBlock}>
+        <div className={styles.moderatorBlock}>
             <Toaster position="top-right" />
-
+            
             <div className={styles.header}>
                 <div className={styles.headerContent}>
-                    <div className={styles.headerIcon}>
-                        <Users size={28} />
+                    <div className={styles.headerIcon} style={{ background: "linear-gradient(135deg, rgba(67, 233, 123, 0.1) 0%, rgba(56, 249, 215, 0.1) 100%)", color: "#43e97b" }}>
+                        <CheckCircle2 size={28} />
                     </div>
                     <div>
-                        <h2>Заявки пользователей</h2>
+                        <h2>Опубликованные отзывы</h2>
                         <p className={styles.subtitle}>
-                            {data?.total ? `${data.total} заяв${data.total > 1 ? 'ок' : 'ка'} от пользователей` : 'Нет заявок'}
+                            {data?.total ? `${data.total} опубликованных отзыв${data.total > 1 ? 'ов' : ''}` : 'Нет опубликованных отзывов'}
                         </p>
                     </div>
                 </div>
             </div>
 
-            {data?.support_requests.length ? (
+            {data?.reviews.length ? (
                 <>
                     <div className={styles.cards}>
-                        {data.support_requests.map((req, index) => {
-                            const isDeleting = deletingId === req.id;
+                        {data.reviews.map((review, index) => {
+                            const isProcessing = processingId === review.id;
                             const gradientClass = `gradient${(index % 3) + 1}`;
 
                             return (
-                                <div key={req.id} className={`${styles.card} ${styles[gradientClass]}`}>
+                                <div key={review.id} className={`${styles.card} ${styles[gradientClass]}`}>
                                     <div className={styles.cardHeader}>
                                         <div className={styles.userInfo}>
                                             <div className={styles.userIcon}>
-                                                <User size={20} />
+                                                <User size={18} />
                                             </div>
-                                            <div className={styles.userDetails}>
-                                                <span className={styles.name}>{req.first_name}</span>
+                                            <div>
+                                                <span className={styles.name}>
+                                                    {review.first_name} {review.last_name}
+                                                </span>
                                                 <div className={styles.date}>
                                                     <Calendar size={14} />
-                                                    <span>{formatDate(req.created_at)}</span>
+                                                    <span>{formatDate(review.created_at)}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className={styles.cardContent}>
-                                        <div className={styles.infoItem}>
-                                            <div className={styles.infoIcon}>
-                                                <FileText size={18} />
-                                            </div>
-                                            <div className={styles.infoContent}>
-                                                <span className={styles.infoLabel}>ID объявления</span>
-                                                <Link 
-                                                    href={`/property/${req.announcement_id}`}
-                                                    className={styles.infoValue}
-                                                >
-                                                    {req.announcement_id}
-                                                </Link>
-                                            </div>
-                                        </div>
-
-                                        <div className={styles.infoItem}>
-                                            <div className={styles.infoIcon}>
-                                                <Phone size={18} />
-                                            </div>
-                                            <div className={styles.infoContent}>
-                                                <span className={styles.infoLabel}>Телефон</span>
-                                                <a href={`tel:${req.phone_number}`} className={styles.infoValue}>
-                                                    {formatPhone(req.phone_number)}
-                                                </a>
-                                            </div>
-                                        </div>
+                                    <div className={styles.reviewText}>
+                                        <div className={styles.quoteIcon}>"</div>
+                                        <p>{review.review}</p>
                                     </div>
 
                                     <div className={styles.actions}>
                                         <button
                                             className={styles.deleteBtn}
-                                            onClick={() => handleDelete(req.id)}
-                                            disabled={isDeleting}
+                                            disabled={isProcessing}
+                                            onClick={() => handleDelete(review.id)}
                                         >
-                                            {isDeleting ? (
+                                            {isProcessing && isDeleting ? (
                                                 <>
                                                     <span className={styles.spinnerSmall}></span>
                                                     Удаляем...
@@ -193,9 +164,9 @@ export const LeadRequests: React.FC = () => {
                 </>
             ) : (
                 <div className={styles.emptyState}>
-                    <Users size={64} />
-                    <h3>Нет заявок</h3>
-                    <p>Пока нет заявок от пользователей</p>
+                    <CheckCircle2 size={64} />
+                    <h3>Нет опубликованных отзывов</h3>
+                    <p>Опубликованные отзывы появятся здесь после модерации</p>
                 </div>
             )}
         </div>

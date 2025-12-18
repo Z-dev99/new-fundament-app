@@ -719,7 +719,8 @@ $radius: 16px;
 
             textarea {
                 resize: vertical;
-                min-height: 100px;
+                min-height: 150px;
+                width: 100%;
             }
         }
     }
@@ -1000,6 +1001,9 @@ $radius: 16px;
         }
     }
 }
+
+
+
 
 
 

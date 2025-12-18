@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import toast from "react-hot-toast";
 import { Navbar } from "@/widgets/navbar/ui/Navbar";
 import styles from "./Property.module.scss";
 import { ImageSlider } from "@/widgets/imageSlider/ImageSlider";
@@ -15,6 +16,9 @@ import {
 
 // Динамический импорт карты для избежания проблем с SSR
 const PropertyMap = dynamic(() => import("./PropertyMap"), { ssr: false });
+
+// Импорт блоков для страницы property
+import { WhyThisProperty, HowToMakeDeal, NeedConsultation } from "@/widgets/propertyBlocks";
 import {
     Home,
     MapPin,
@@ -23,7 +27,6 @@ import {
     Flame,
     Phone,
     Share2,
-    Heart,
     Maximize2,
     Loader2,
     Calendar,
@@ -32,6 +35,7 @@ import {
     Wrench,
     Car,
     Mail,
+    Copy,
 } from "lucide-react";
 
 // Константы для переводов enum значений
@@ -96,7 +100,6 @@ export default function PropertyPage() {
     const { data: announcement, isLoading, error } = useGetAnnouncementByIdQuery(id);
     const { data: contacts, isLoading: loadingContacts } = useGetAnnouncementContactsQuery(id);
     
-    const [isFavorite, setIsFavorite] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [showPhone, setShowPhone] = useState(false);
 
@@ -123,6 +126,7 @@ export default function PropertyPage() {
         ].filter(Boolean);
 
         return {
+            id: announcement.id,
             title: announcement.title,
             price: `${Number(announcement.price).toLocaleString('ru-RU')} ${announcement.currency}`,
             address: addressParts.join(", ") || `${announcement.city}, ${announcement.district}`,
@@ -268,21 +272,59 @@ export default function PropertyPage() {
                                     <h1 className={styles.title}>{propertyData.title}</h1>
                                     <div className={styles.actions}>
                                         <motion.button
-                                            className={`${styles.actionBtn} ${isFavorite ? styles.favorite : ""}`}
-                                            onClick={() => setIsFavorite(!isFavorite)}
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.9 }}
-                                        >
-                                            <Heart size={20} />
-                                        </motion.button>
-                                        <motion.button
                                             className={styles.actionBtn}
+                                            onClick={async () => {
+                                                try {
+                                                    const url = window.location.href;
+                                                    const title = propertyData.title;
+                                                    const text = `${title} - ${propertyData.price} - ${propertyData.address}`;
+
+                                                    // Используем Web Share API, если доступен
+                                                    if (navigator.share) {
+                                                        await navigator.share({
+                                                            title,
+                                                            text,
+                                                            url,
+                                                        });
+                                                    } else {
+                                                        // Копируем ссылку в буфер обмена
+                                                        await navigator.clipboard.writeText(url);
+                                                        toast.success("Ссылка скопирована в буфер обмена!");
+                                                    }
+                                                } catch (error) {
+                                                    // Пользователь отменил или произошла ошибка
+                                                    if (error instanceof Error && error.name !== 'AbortError') {
+                                                        console.error('Ошибка при попытке поделиться:', error);
+                                                    }
+                                                }
+                                            }}
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                         >
                                             <Share2 size={20} />
                                         </motion.button>
                                     </div>
+                                </div>
+                                <div className={styles.idSection}>
+                                    <span className={styles.idLabel}>ID объекта:</span>
+                                    <span className={styles.idValue}>{propertyData.id}</span>
+                                    <motion.button
+                                        className={styles.copyIdBtn}
+                                        onClick={async () => {
+                                            try {
+                                                await navigator.clipboard.writeText(propertyData.id);
+                                                toast.success("ID скопирован в буфер обмена!");
+                                            } catch (error) {
+                                                console.error('Ошибка при копировании ID:', error);
+                                                toast.error("Не удалось скопировать ID");
+                                            }
+                                        }}
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        title="Копировать ID"
+                                    >
+                                        <Copy size={16} />
+                                    </motion.button>
                                 </div>
                                 <div className={styles.price}>{propertyData.price}</div>
                                 <div className={styles.location}>
@@ -415,6 +457,13 @@ export default function PropertyPage() {
                     </motion.div>
                 </div>
             </section>
+
+            <WhyThisProperty 
+                propertyType={propertyData?.propertyType}
+                district={propertyData?.address.split(",")[1]?.trim()}
+            />
+            <HowToMakeDeal />
+            <NeedConsultation announcementId={announcement?.id || ""} />
         </>
     );
 }

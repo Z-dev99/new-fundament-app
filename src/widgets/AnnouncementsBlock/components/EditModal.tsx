@@ -8,6 +8,7 @@ import { useAnnouncementForm } from "../hooks/useAnnouncementForm";
 import { getImageUrl } from "../utils";
 import {
     MAX_IMAGES,
+    MIN_IMAGES,
     ANNOUNCEMENT_TYPES,
     PROPERTY_TYPES,
     LAYOUT_TYPES,
@@ -100,11 +101,12 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Планировка</label>
+                                <label>Планировка *</label>
                                 <select
                                     name="layout_type"
                                     value={formData.layout_type || ""}
                                     onChange={handleInputChange}
+                                    required
                                 >
                                     <option value="">Выберите планировку</option>
                                     {LAYOUT_TYPES.map((option) => (
@@ -164,22 +166,24 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Площадь жилая</label>
+                                <label>Площадь жилая *</label>
                                 <input
                                     type="text"
                                     name="area_living"
                                     value={formData.area_living}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Площадь кухни</label>
+                                <label>Площадь кухни *</label>
                                 <input
                                     type="text"
                                     name="area_kitchen"
                                     value={formData.area_kitchen}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
@@ -208,18 +212,19 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Высота потолков</label>
+                                <label>Высота потолков *</label>
                                 <input
                                     type="number"
                                     name="ceiling_height"
                                     value={formData.ceiling_height}
                                     onChange={handleInputChange}
                                     step="0.1"
+                                    required
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Год постройки</label>
+                                <label>Год постройки *</label>
                                 <input
                                     type="number"
                                     name="year_built"
@@ -227,6 +232,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                     onChange={handleInputChange}
                                     min="1900"
                                     max={new Date().getFullYear()}
+                                    required
                                 />
                             </div>
                         </div>
@@ -236,22 +242,24 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                         <h3>Адрес</h3>
                         <div className={styles.formGrid}>
                             <div className={styles.formGroup}>
-                                <label>Страна</label>
+                                <label>Страна *</label>
                                 <input
                                     type="text"
                                     name="country"
                                     value={formData.country}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Регион</label>
+                                <label>Регион *</label>
                                 <input
                                     type="text"
                                     name="region"
                                     value={formData.region}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
@@ -278,42 +286,46 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Улица</label>
+                                <label>Улица *</label>
                                 <input
                                     type="text"
                                     name="street"
                                     value={formData.street}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Номер дома</label>
+                                <label>Номер дома *</label>
                                 <input
                                     type="text"
                                     name="house_number"
                                     value={formData.house_number}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Корпус</label>
+                                <label>Корпус *</label>
                                 <input
                                     type="text"
                                     name="block"
                                     value={formData.block}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Квартира</label>
+                                <label>Квартира *</label>
                                 <input
                                     type="text"
                                     name="apartment"
                                     value={formData.apartment}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
                         </div>
@@ -323,11 +335,12 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                         <h3>Дополнительно</h3>
                         <div className={styles.formGrid}>
                             <div className={styles.formGroup}>
-                                <label>Материал стен</label>
+                                <label>Материал стен *</label>
                                 <select
                                     name="wall_material"
                                     value={formData.wall_material || ""}
                                     onChange={handleInputChange}
+                                    required
                                 >
                                     <option value="">Выберите материал</option>
                                     {WALL_MATERIALS.map((option) => (
@@ -339,11 +352,12 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Планировка санузла</label>
+                                <label>Планировка санузла *</label>
                                 <select
                                     name="bathroom_layout"
                                     value={formData.bathroom_layout || ""}
                                     onChange={handleInputChange}
+                                    required
                                 >
                                     <option value="">Выберите планировку</option>
                                     {BATHROOM_LAYOUTS.map((option) => (
@@ -355,11 +369,12 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Тип отопления</label>
+                                <label>Тип отопления *</label>
                                 <select
                                     name="heating_type"
                                     value={formData.heating_type || ""}
                                     onChange={handleInputChange}
+                                    required
                                 >
                                     <option value="">Выберите тип отопления</option>
                                     {HEATING_TYPES.map((option) => (
@@ -371,11 +386,12 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Сторона города</label>
+                                <label>Сторона города *</label>
                                 <select
                                     name="city_side"
                                     value={formData.city_side || ""}
                                     onChange={handleInputChange}
+                                    required
                                 >
                                     <option value="">Выберите сторону</option>
                                     {CITY_SIDES.map((option) => (
@@ -387,11 +403,12 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Тип ремонта</label>
+                                <label>Тип ремонта *</label>
                                 <select
                                     name="renovation_type"
                                     value={formData.renovation_type || ""}
                                     onChange={handleInputChange}
+                                    required
                                 >
                                     <option value="">Выберите тип ремонта</option>
                                     {RENOVATION_TYPES.map((option) => (
@@ -402,33 +419,36 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 </select>
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label>Описание</label>
+                            <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+                                <label>Описание *</label>
                                 <textarea
                                     name="description"
                                     value={formData.description}
                                     onChange={handleInputChange}
-                                    rows={4}
+                                    rows={8}
+                                    required
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Доступно с</label>
+                                <label>Доступно с *</label>
                                 <input
                                     type="date"
                                     name="available_from"
                                     value={formData.available_from}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Кадастровый номер</label>
+                                <label>Кадастровый номер *</label>
                                 <input
                                     type="text"
                                     name="cadastral_number"
                                     value={formData.cadastral_number}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
@@ -447,36 +467,39 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Широта</label>
+                                <label>Широта *</label>
                                 <input
                                     type="text"
                                     name="latitude"
                                     value={formData.latitude}
                                     onChange={handleInputChange}
                                     readOnly
+                                    required
                                     style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed" }}
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Долгота</label>
+                                <label>Долгота *</label>
                                 <input
                                     type="text"
                                     name="longitude"
                                     value={formData.longitude}
                                     onChange={handleInputChange}
                                     readOnly
+                                    required
                                     style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed" }}
                                 />
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Почтовый индекс</label>
+                                <label>Почтовый индекс *</label>
                                 <input
                                     type="text"
                                     name="postal_code"
                                     value={formData.postal_code}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
                         </div>
@@ -497,12 +520,13 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label>Email</label>
+                                <label>Email *</label>
                                 <input
                                     type="email"
                                     name="contact_email"
                                     value={formData.contact_email}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
 
@@ -521,7 +545,9 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                     </div>
 
                     <div className={styles.formSection}>
-                        <h3>Фотографии (максимум {MAX_IMAGES})</h3>
+                        <h3>
+                            Фотографии {isEdit ? `(максимум ${MAX_IMAGES})` : `(минимум ${MIN_IMAGES}, максимум ${MAX_IMAGES})`}
+                        </h3>
                         <div className={styles.imagesUpload}>
                             <label className={styles.uploadLabel}>
                                 <Upload size={20} />

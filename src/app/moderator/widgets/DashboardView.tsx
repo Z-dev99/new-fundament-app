@@ -8,6 +8,7 @@ import AnalyticsBlock from "@/widgets/AnalyticsBlock/AnalyticsBlock";
 import { SupportCards } from "@/widgets/Support/SupportCards";
 import { LeadRequests } from "@/widgets/LeadRequests/LeadRequests";
 import { ModeratorReviews } from "@/widgets/ModeratorReviews/ModeratorReviews";
+import { PublishedReviews } from "@/widgets/ModeratorReviews/PublishedReviews";
 import { BannersBlock } from "@/widgets/bannersBlock/BannersBlock";
 import { AnnouncementsBlock } from "@/widgets/AnnouncementsBlock/AnnouncementsBlock";
 import { 
@@ -52,7 +53,12 @@ export default function DashboardView({ onLogout }: DashboardViewProps) {
             case "Аналитика":
                 return <AnalyticsBlock />;
             case "Отзывы":
-                return <ModeratorReviews />;
+                return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "48px" }}>
+                        <ModeratorReviews />
+                        <PublishedReviews />
+                    </div>
+                );
             default:
                 return (
                     <div className={styles.emptyTab}>

@@ -1,4 +1,5 @@
-export const MAX_IMAGES = 10;
+export const MAX_IMAGES = 15;
+export const MIN_IMAGES = 4;
 
 export const ANNOUNCEMENT_TYPES = [
     { value: "SALE", label: "Продажа" },
@@ -52,6 +53,9 @@ export const RENOVATION_TYPES = [
     { value: "DESIGNER", label: "Дизайнерский ремонт" },
     { value: "EURO", label: "Евроремонт" },
 ] as const;
+
+
+
 
 
 

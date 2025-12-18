@@ -196,6 +196,16 @@ $radius: 16px;
                             font-size: 15px;
                             font-weight: 600;
                             color: $text-primary;
+                            text-decoration: none;
+                            transition: all 0.2s ease;
+                            cursor: pointer;
+                            display: inline-block;
+                            word-break: break-all;
+
+                            &:hover {
+                                color: #667eea;
+                                text-decoration: underline;
+                            }
 
                             a {
                                 color: #667eea;

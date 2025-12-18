@@ -25,44 +25,44 @@ export interface AnnouncementsResponse {
 }
 
 export interface AnnouncementsFilters {
-    page: number;
-    page_size: number;
-    announcement_type?: string | null; // RENT, SALE
-    property_type?: string | null; // APARTMENT, HOUSE, ROOM, LAND, COMMERCIAL
-    layout_type?: string | null; // STUDIO, SEPARATE_ROOMS, OPEN_PLAN
-    country?: string | null;
-    region?: string | null;
-    city?: string | null;
-    district?: string | null;
-    street?: string | null;
-    city_side?: string | null; // LEFT, RIGHT
-    wall_material?: string | null; // BRICK, PANEL, MONOLITH, WOOD, BLOCK, FRAME, OTHER
-    bathroom_layout?: string | null; // COMBINED, SEPARATE
-    heating_type?: string | null; // CENTRAL, AUTONOMOUS, DECENTRALIZED
-    renovation_type?: string | null; // SHELL, BLACK, COSMETIC, DESIGNER, EURO
-    min_price?: string | null;
-    max_price?: string | null;
-    priceFrom?: string | number | null; // Алиас для min_price (будет преобразован в min_price)
-    priceTo?: string | number | null; // Алиас для max_price (будет преобразован в max_price)
-    currency?: string | null;
-    min_rooms?: number | null;
-    max_rooms?: number | null;
-    min_area_total?: string | null;
-    max_area_total?: string | null;
-    min_area_living?: string | null;
-    max_area_living?: string | null;
-    min_area_kitchen?: string | null;
-    max_area_kitchen?: string | null;
-    min_floor?: number | null;
-    max_floor?: number | null;
-    min_floors_total?: number | null;
-    max_floors_total?: number | null;
-    min_ceiling_height?: number | null;
-    max_ceiling_height?: number | null;
-    min_year_built?: number | null;
-    max_year_built?: number | null;
-    available_from?: string | null;
+    announcement_type?: string;
+    property_type?: string;
     order_by?: string;
+    currency?: string;
+    priceFrom?: number;
+    priceTo?: number;
+    min_price?: string;
+    max_price?: string;
+    min_rooms?: number;
+    max_rooms?: number;
+    min_area_total?: string;
+    max_area_total?: string;
+    min_area_living?: string;
+    max_area_living?: string;
+    min_area_kitchen?: string;
+    max_area_kitchen?: string;
+    min_floor?: number;
+    max_floor?: number;
+    min_floors_total?: number;
+    max_floors_total?: number;
+    min_year_built?: number;
+    max_year_built?: number;
+    min_ceiling_height?: number;
+    max_ceiling_height?: number;
+    available_from?: string;
+    country?: string;
+    region?: string;
+    city?: string;
+    district?: string;
+    street?: string;
+    wall_material?: string;
+    bathroom_layout?: string;
+    layout_type?: string;
+    city_side?: string;
+    heating_type?: string;
+    renovation_type?: string;
+    page?: number;
+    page_size?: number;
 }
 
 export interface AddAnnouncementBody {
@@ -70,7 +70,6 @@ export interface AddAnnouncementBody {
     description: string;
     type: "RENT" | "SALE";
     property_type: string;
-    layout_type: string;
     rooms_count: number;
     floor: number;
     floors_total: number;
@@ -81,9 +80,10 @@ export interface AddAnnouncementBody {
     year_built: number;
     wall_material: string;
     bathroom_layout: string;
+    layout_type: string;
     heating_type: string;
-    renovation_type: string;
     city_side: string;
+    renovation_type: string;
     price: string;
     currency: string;
     country: string;
@@ -100,9 +100,9 @@ export interface AddAnnouncementBody {
     cadastral_number: string;
     available_from: string;
     contact_phone: string;
+    contact_email: string;
     images: string[];
-    contact_email?: string;
-    subscription_id?: string;
+    subscription_id: string;
 }
 
 export interface UpdateAnnouncementBody extends Partial<AddAnnouncementBody> { }
@@ -134,41 +134,69 @@ export interface AnnouncementContacts {
     email: string;
 }
 
-const baseQuery = fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL as string,
-    prepareHeaders: (headers) => {
-        const token = Cookies.get("token");
-        if (token) {
-            headers.set("Authorization", `Bearer ${token}`);
-        }
-        return headers;
-    },
-});
+const baseQueryWithLogging = async (args: any, api: any, extraOptions: any) => {
+    let baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://147.45.68.231:8081/api/v1/";
+    // Нормализуем baseUrl - убираем все слэши в конце
+    baseUrl = baseUrl.replace(/\/+$/, "");
+    // Добавляем один слэш в конце для правильного объединения
+    baseUrl = `${baseUrl}/`;
+
+    const token = Cookies.get("token");
+
+    // Нормализуем URL в args - убираем начальный слэш, если есть
+    let normalizedArgs = args;
+    if (typeof args === "object" && args.url) {
+        normalizedArgs = {
+            ...args,
+            url: args.url.startsWith("/") ? args.url.substring(1) : args.url,
+        };
+    }
+
+    const url = typeof normalizedArgs === "string" ? normalizedArgs : normalizedArgs.url;
+    const method = typeof normalizedArgs === "string" ? "GET" : normalizedArgs.method || "GET";
+    const body = typeof normalizedArgs === "string" ? undefined : normalizedArgs.body;
+
+    // Если body - это FormData, не устанавливаем Content-Type (браузер установит автоматически с boundary)
+    const isFormData = body instanceof FormData;
+
+    try {
+        const rawBaseQuery = fetchBaseQuery({
+            baseUrl,
+            prepareHeaders: (headers, { extra, endpoint }) => {
+                if (token) headers.set("Authorization", `Bearer ${token}`);
+                // Для FormData не устанавливаем Content-Type - браузер установит автоматически
+                if (!isFormData && body) {
+                    headers.set("Content-Type", "application/json");
+                }
+                return headers;
+            },
+        });
+
+        const result = await rawBaseQuery(normalizedArgs, api, extraOptions);
+        return result;
+    } catch (error: any) {
+        throw error;
+    }
+};
 
 export const announcementApi = createApi({
     reducerPath: "announcementApi",
-    baseQuery,
+    baseQuery: baseQueryWithLogging,
     tagTypes: ["Announcement"],
     endpoints: (builder) => ({
         getAnnouncements: builder.query<AnnouncementsResponse, AnnouncementsFilters>({
             query: (filters) => {
                 const params = new URLSearchParams();
                 Object.entries(filters).forEach(([key, value]) => {
+                    // Пропускаем undefined, null и пустые строки
                     if (value !== undefined && value !== null && value !== "") {
-                        let paramKey = key;
-                        if (key === "priceFrom" && !filters.min_price) {
-                            paramKey = "min_price";
-                        } else if (key === "priceTo" && !filters.max_price) {
-                            paramKey = "max_price";
-                        }
-                        if (paramKey !== "priceFrom" && paramKey !== "priceTo") {
-                            params.append(paramKey, String(value));
-                        }
+                        params.append(key, value.toString());
                     }
                 });
                 const queryString = params.toString();
-                return `announcements${queryString ? `?${queryString}` : ""}`;
+                return `announcements${queryString ? `?${queryString}` : ''}`;
             },
+            // Отключаем кеширование для этого запроса, чтобы всегда получать свежие данные
             keepUnusedDataFor: 0,
             transformResponse: (response: AnnouncementsResponse) => ({
                 ...response,
@@ -177,10 +205,13 @@ export const announcementApi = createApi({
             providesTags: ["Announcement"],
         }),
 
-        getFavoriteAnnouncements: builder.query<
-            AnnouncementsResponse,
-            { page?: number; page_size?: number }
-        >({
+        getMyAnnouncements: builder.query<AnnouncementsResponse, { page?: number; page_size?: number }>({
+            query: ({ page = 1, page_size = 12 } = {}) =>
+                `announcements/me?page=${page}&page_size=${page_size}`,
+            providesTags: ["Announcement"],
+        }),
+
+        getFavoriteAnnouncements: builder.query<AnnouncementsResponse, { page?: number; page_size?: number }>({
             query: ({ page = 1, page_size = 12 } = {}) =>
                 `announcements/favorites?page=${page}&page_size=${page_size}`,
             providesTags: ["Announcement"],
@@ -191,84 +222,233 @@ export const announcementApi = createApi({
             providesTags: ["Announcement"],
         }),
 
-        addAnnouncement: builder.mutation<Announcement, { data: AddAnnouncementBody }>({
-            query: ({ data }) => ({
-                url: "announcements",
-                method: "POST",
-                body: data,
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }),
-            invalidatesTags: ["Announcement"],
-        }),
-
-        updateAnnouncement: builder.mutation<
-            Announcement,
-            { id: string; data: UpdateAnnouncementBody; files?: File[] }
+        addAnnouncement: builder.mutation<
+            string[],
+            { data: AddAnnouncementBody; files?: File[] }
         >({
-            queryFn: async ({ id, data, files }) => {
+            queryFn: async ({ data, files }) => {
+                const baseUrl =
+                    (process.env.NEXT_PUBLIC_API_URL ||
+                        "http://147.45.68.231:8081/api/v1/")
+                        .replace(/\/+$/, "") + "/";
+
                 const token = Cookies.get("token");
-                const baseUrl = process.env.NEXT_PUBLIC_API_URL as string;
-                const url = `${baseUrl}announcements/${id}`;
+                const url = `${baseUrl}announcements`;
 
-                if (files && files.length > 0) {
-                    const formData = new FormData();
-
-                    Object.entries(data).forEach(([key, value]) => {
-                        if (key === "images") return;
-                        if (value !== undefined && value !== null) {
-                            formData.append(
-                                key,
-                                typeof value === "object" ? JSON.stringify(value) : String(value)
-                            );
-                        }
-                    });
-
-                    files.forEach((file) => {
-                        formData.append("images", file, file.name);
-                    });
-
-                    if (Array.isArray(data.images) && data.images.length > 0) {
-                        formData.append("existing_images", JSON.stringify(data.images));
-                    }
-
-                    const headers: HeadersInit = {};
-                    if (token) headers["Authorization"] = `Bearer ${token}`;
-
+                try {
+                    // =========================
+                    // 1️⃣ Создание объявления
+                    // =========================
                     const response = await fetch(url, {
-                        method: "PATCH",
-                        headers,
-                        body: formData,
-                        credentials: "include",
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            ...(token && { Authorization: `Bearer ${token}` }),
+                        },
+                        body: JSON.stringify(data),
                     });
 
                     if (!response.ok) {
-                        const errorData = await response.json();
-                        return { error: { status: response.status, data: errorData } };
+                        const errorData = await response.json().catch(() => null);
+                        return {
+                            error: {
+                                status: response.status,
+                                data: errorData ?? "Failed to create announcement",
+                            },
+                        };
                     }
 
-                    return { data: await response.json() };
+                    // ✅ backend реально возвращает string[]
+                    const presignedUrls: string[] = await response.json();
+                    console.log("📥 Received presigned URLs:", JSON.stringify(presignedUrls, null, 2));
+                    console.log(`📁 Files to upload: ${files?.length || 0}`);
+
+                    // =========================
+                    // 2️⃣ Загрузка файлов
+                    // =========================
+                    if (files && files.length > 0) {
+                        console.log(`🚀 Starting file upload process for ${files.length} files...`);
+                        if (presignedUrls.length !== files.length) {
+                            return {
+                                error: {
+                                    status: "CUSTOM_ERROR" as const,
+                                    error: `Files count mismatch: received ${presignedUrls.length} URLs but have ${files.length} files`,
+                                },
+                            };
+                        }
+
+                        // Последовательно загружаем каждый файл по соответствующей presigned URL
+                        for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
+                            const presignedUrl = presignedUrls[i];
+
+                            console.log(`Uploading file ${i + 1}/${files.length}: ${file.name} to ${presignedUrl}`);
+
+                            try {
+                                const uploadResponse = await fetch(presignedUrl, {
+                                    method: "PUT",
+                                    headers: {
+                                        "Content-Type": file.type,
+                                    },
+                                    body: file,
+                                });
+
+                                if (!uploadResponse.ok) {
+                                    const errorText = await uploadResponse.text().catch(() => "Unknown error");
+                                    console.error(`Failed to upload file ${i + 1}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                                    return {
+                                        error: {
+                                            status: "CUSTOM_ERROR" as const,
+                                            error: `Failed to upload ${file.name}: ${uploadResponse.statusText}`,
+                                        },
+                                    };
+                                }
+
+                                console.log(`Successfully uploaded file ${i + 1}/${files.length}: ${file.name}`);
+                            } catch (uploadError: any) {
+                                console.error(`Error uploading file ${i + 1}:`, uploadError);
+                                return {
+                                    error: {
+                                        status: "FETCH_ERROR" as const,
+                                        error: `Failed to upload ${file.name}: ${uploadError.message}`,
+                                    },
+                                };
+                            }
+                        }
+
+                        console.log(`All ${files.length} files uploaded successfully`);
+                    }
+
+                    // ✅ ВАЖНО: возвращаем ТО ЖЕ, что вернул backend
+                    return { data: presignedUrls };
+                } catch (error: any) {
+                    return {
+                        error: {
+                            status: "FETCH_ERROR" as const,
+                            error: error.message || "Unknown error",
+                        },
+                    };
                 }
+            },
+            invalidatesTags: ["Announcement"],
+        }),
 
-                const headers: HeadersInit = {
-                    "Content-Type": "application/json",
-                };
-                if (token) headers["Authorization"] = `Bearer ${token}`;
 
-                const response = await fetch(url, {
-                    method: "PATCH",
-                    headers,
-                    body: JSON.stringify(data),
-                    credentials: "include",
-                });
+        updateAnnouncement: builder.mutation<string[], { id: string; data: UpdateAnnouncementBody; files?: File[] }>({
+            queryFn: async ({ id, data, files }) => {
+                const baseUrl =
+                    (process.env.NEXT_PUBLIC_API_URL ||
+                        "http://147.45.68.231:8081/api/v1/")
+                        .replace(/\/+$/, "") + "/";
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    return { error: { status: response.status, data: errorData } };
+                const token = Cookies.get("token");
+                const url = `${baseUrl}announcements/${id}`;
+
+                try {
+                    // =========================
+                    // 1️⃣ Обновление объявления (отправка JSON данных)
+                    // =========================
+                    const response = await fetch(url, {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            ...(token && { Authorization: `Bearer ${token}` }),
+                        },
+                        body: JSON.stringify(data),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => null);
+                        console.log("Error response:", JSON.stringify(errorData, null, 2));
+                        return {
+                            error: {
+                                status: response.status,
+                                data: errorData ?? "Failed to update announcement",
+                            },
+                        };
+                    }
+
+                    // ✅ backend возвращает string[] (presigned URLs)
+                    const presignedUrls: string[] = await response.json();
+                    console.log("📥 Received presigned URLs:", JSON.stringify(presignedUrls, null, 2));
+                    console.log(`📁 Files to upload: ${files?.length || 0}`);
+
+                    // =========================
+                    // 2️⃣ Загрузка файлов (если есть новые файлы)
+                    // =========================
+                    if (files && files.length > 0) {
+                        // Если нет presigned URLs, но есть файлы - ошибка
+                        if (!presignedUrls || presignedUrls.length === 0) {
+                            return {
+                                error: {
+                                    status: "CUSTOM_ERROR" as const,
+                                    error: "No presigned URLs received for file upload",
+                                },
+                            };
+                        }
+
+                        console.log(`🚀 Starting file upload process for ${files.length} files...`);
+                        if (presignedUrls.length !== files.length) {
+                            return {
+                                error: {
+                                    status: "CUSTOM_ERROR" as const,
+                                    error: `Files count mismatch: received ${presignedUrls.length} URLs but have ${files.length} files`,
+                                },
+                            };
+                        }
+
+                        // Последовательно загружаем каждый файл по соответствующей presigned URL
+                        for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
+                            const presignedUrl = presignedUrls[i];
+
+                            console.log(`Uploading file ${i + 1}/${files.length}: ${file.name} to ${presignedUrl}`);
+
+                            try {
+                                const uploadResponse = await fetch(presignedUrl, {
+                                    method: "PUT",
+                                    headers: {
+                                        "Content-Type": file.type,
+                                    },
+                                    body: file,
+                                });
+
+                                if (!uploadResponse.ok) {
+                                    const errorText = await uploadResponse.text().catch(() => "Unknown error");
+                                    console.error(`Failed to upload file ${i + 1}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                                    return {
+                                        error: {
+                                            status: "CUSTOM_ERROR" as const,
+                                            error: `Failed to upload ${file.name}: ${uploadResponse.statusText}`,
+                                        },
+                                    };
+                                }
+
+                                console.log(`Successfully uploaded file ${i + 1}/${files.length}: ${file.name}`);
+                            } catch (uploadError: any) {
+                                console.error(`Error uploading file ${i + 1}:`, uploadError);
+                                return {
+                                    error: {
+                                        status: "FETCH_ERROR" as const,
+                                        error: `Failed to upload ${file.name}: ${uploadError.message}`,
+                                    },
+                                };
+                            }
+                        }
+
+                        console.log(`All ${files.length} files uploaded successfully`);
+                    }
+
+                    // ✅ ВАЖНО: возвращаем ТО ЖЕ, что вернул backend
+                    return { data: presignedUrls };
+                } catch (error: any) {
+                    return {
+                        error: {
+                            status: "FETCH_ERROR" as const,
+                            error: error.message || "Unknown error",
+                        },
+                    };
                 }
-
-                return { data: await response.json() };
             },
             invalidatesTags: ["Announcement"],
         }),
@@ -301,14 +481,11 @@ export const announcementApi = createApi({
             invalidatesTags: ["Announcement"],
         }),
 
-        getPresignedUrl: builder.mutation<
-            { presigned_url: string; file_name: string },
-            { file_name: string; content_type: string }
-        >({
-            query: (body) => ({
+        getPresignedUrl: builder.mutation<{ presigned_url: string; file_name: string }, { file_name: string; content_type: string }>({
+            query: ({ file_name, content_type }) => ({
                 url: "announcements/upload-url",
                 method: "POST",
-                body,
+                body: { file_name, content_type },
             }),
         }),
     }),
@@ -316,6 +493,7 @@ export const announcementApi = createApi({
 
 export const {
     useGetAnnouncementsQuery,
+    useGetMyAnnouncementsQuery,
     useGetFavoriteAnnouncementsQuery,
     useGetAnnouncementByIdQuery,
     useAddAnnouncementMutation,
@@ -326,3 +504,5 @@ export const {
     useRejectAnnouncementMutation,
     useGetPresignedUrlMutation,
 } = announcementApi;
+
+

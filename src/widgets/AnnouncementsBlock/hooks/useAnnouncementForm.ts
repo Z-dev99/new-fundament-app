@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useGetAnnouncementByIdQuery, useAddAnnouncementMutation, useUpdateAnnouncementMutation, type AddAnnouncementBody } from "@/shared/api/announcementsApi";
 import toast from "react-hot-toast";
-import { MAX_IMAGES } from "../constants";
+import { MAX_IMAGES, MIN_IMAGES } from "../constants";
 
 export interface UseAnnouncementFormProps {
     announcementId?: string;
@@ -271,9 +271,9 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                     cadastral_number: formData.cadastral_number || "",
                     available_from: formData.available_from || "",
                     contact_phone: formData.contact_phone || "",
+                    contact_email: formData.contact_email || "",
+                    subscription_id: formData.subscription_id || "",
                     images: allImageNames,
-                    ...(formData.contact_email && { contact_email: formData.contact_email }),
-                    ...(formData.subscription_id && { subscription_id: formData.subscription_id }),
                 };
                 
                 if (!submitData.title) {
@@ -293,7 +293,16 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                     return;
                 }
                 
-                await addAnnouncement({ data: submitData }).unwrap();
+                // Валидация минимум 4 фото для нового объявления
+                if (imageFiles.length < MIN_IMAGES) {
+                    toast.error(`Необходимо загрузить минимум ${MIN_IMAGES} фотографий`);
+                    return;
+                }
+                
+                await addAnnouncement({ 
+                    data: submitData,
+                    files: imageFiles.length > 0 ? imageFiles : undefined
+                }).unwrap();
                 toast.success("Объявление успешно добавлено!");
             }
 

@@ -80,10 +80,10 @@ export const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
                     <Eye size={18} />
                     Просмотр
                 </button>
-                <button className={styles.editBtn} onClick={() => onEdit(announcement.id)}>
+                {/* <button className={styles.editBtn} onClick={() => onEdit(announcement.id)}>
                     <Edit size={18} />
                     Редактировать
-                </button>
+                </button> */}
             </div>
 
             <div className={styles.deleteAction}>
@@ -108,6 +108,9 @@ export const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
         </div>
     );
 };
+
+
+
 
 
 

@@ -8,7 +8,6 @@ import { Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 
-// Placeholder изображение в формате SVG (серый фон)
 const PLACEHOLDER_IMAGE = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
 
 const getImageUrl = (fileName: string): string => {
@@ -87,11 +86,11 @@ export const AdBlock: FC = () => {
                 className={styles.swiper}
             >
                 {middleBanners.map((banner, index) => {
-                    const imageSrc = imageErrors[banner.file_name] 
-                        ? PLACEHOLDER_IMAGE 
+                    const imageSrc = imageErrors[banner.file_name]
+                        ? PLACEHOLDER_IMAGE
                         : getImageUrl(banner.file_name);
                     const isLoaded = loadedImages[banner.file_name];
-                    
+
                     return (
                         <SwiperSlide key={`${banner.banner_type}-${banner.file_name}-${index}`} className={styles.slideWrapper}>
                             <div className={styles.slide}>

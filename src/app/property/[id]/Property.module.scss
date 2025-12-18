@@ -196,6 +196,60 @@ $radius-sm: 12px;
     }
 }
 
+.idSection {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(0, 37, 116, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 37, 116, 0.1);
+}
+
+.idLabel {
+    font-size: 14px;
+    color: $text-secondary;
+    font-weight: 500;
+}
+
+.idValue {
+    font-size: 14px;
+    color: $text-primary;
+    font-weight: 600;
+    font-family: monospace;
+    padding: 4px 8px;
+    background: $bg-primary;
+    border-radius: 4px;
+    border: 1px solid $border-color;
+}
+
+.copyIdBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid $border-color;
+    background: $bg-primary;
+    border-radius: 6px;
+    cursor: pointer;
+    color: $text-secondary;
+    transition: all 0.2s ease;
+    margin-left: auto;
+
+    &:hover {
+        border-color: $primary-color;
+        color: $primary-color;
+        background: rgba(0, 37, 116, 0.05);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
 .price {
     font-size: clamp(28px, 5vw, 36px);
     font-weight: 800;
