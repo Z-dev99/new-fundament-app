@@ -7,7 +7,8 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 // import { CitySelect } from "./CitySelect";
 import { ContactModal } from "@/widgets/modal/ContactModal";
-import { Menu, X, Home, Phone, MessageSquare, FileText } from "lucide-react";
+import { AddAnnouncementModal } from "@/widgets/modal/AddAnnouncementModal";
+import { Menu, X, Home, Phone, MessageSquare, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 
 const navItems = [
@@ -18,6 +19,7 @@ const navItems = [
 
 export const Navbar = () => {
     const [modalOpen, setModalOpen] = useState(false);
+    const [addAnnouncementModalOpen, setAddAnnouncementModalOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const pathname = usePathname();
 
@@ -86,6 +88,16 @@ export const Navbar = () => {
                         </nav>
 
                         <div className={styles.rightSide}>
+                            <motion.button
+                                className={styles.addAnnouncementBtn}
+                                whileTap={{ scale: 0.95 }}
+                                whileHover={{ scale: 1.05 }}
+                                onClick={() => setAddAnnouncementModalOpen(true)}
+                            >
+                                <Plus size={18} />
+                                <span>Добавить объявление</span>
+                            </motion.button>
+                            
                             <motion.button
                                 className={styles.requestDesktop}
                                 whileTap={{ scale: 0.95 }}
@@ -197,13 +209,28 @@ export const Navbar = () => {
                             <motion.button
                                 className={styles.mobileBtn}
                                 onClick={() => {
-                                    setModalOpen(true);
+                                    setAddAnnouncementModalOpen(true);
                                     closeMenu();
                                 }}
                                 whileTap={{ scale: 0.95 }}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 }}
+                            >
+                                <Plus size={20} />
+                                <span>Добавить объявление</span>
+                            </motion.button>
+                            
+                            <motion.button
+                                className={styles.mobileBtn}
+                                onClick={() => {
+                                    setModalOpen(true);
+                                    closeMenu();
+                                }}
+                                whileTap={{ scale: 0.95 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.35 }}
                             >
                                 <FileText size={20} />
                                 <span>Подать заявку</span>
@@ -214,6 +241,7 @@ export const Navbar = () => {
             </AnimatePresence>
 
             <ContactModal open={modalOpen} onClose={() => setModalOpen(false)} />
+            <AddAnnouncementModal open={addAnnouncementModalOpen} onClose={() => setAddAnnouncementModalOpen(false)} />
         </>
     );
 };

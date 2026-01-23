@@ -11,12 +11,12 @@ import { ModeratorReviews } from "@/widgets/ModeratorReviews/ModeratorReviews";
 import { PublishedReviews } from "@/widgets/ModeratorReviews/PublishedReviews";
 import { BannersBlock } from "@/widgets/bannersBlock/BannersBlock";
 import { AnnouncementsBlock } from "@/widgets/AnnouncementsBlock/AnnouncementsBlock";
-import { 
-    Megaphone, 
-    Users, 
-    Mail, 
-    Image as ImageIcon, 
-    BarChart3, 
+import {
+    Megaphone,
+    Users,
+    Mail,
+    Image as ImageIcon,
+    BarChart3,
     MessageSquare,
     LogOut,
     Menu,
@@ -105,9 +105,9 @@ export default function DashboardView({ onLogout }: DashboardViewProps) {
                         <button
                             key={tab.title}
                             className={`${styles.navItem} ${activeTab === tab.title ? styles.active : ""}`}
-                            onClick={() => { 
-                                setActiveTab(tab.title); 
-                                setSidebarOpen(false); 
+                            onClick={() => {
+                                setActiveTab(tab.title);
+                                setSidebarOpen(false);
                             }}
                         >
                             <span className={styles.icon}>{tab.icon}</span>

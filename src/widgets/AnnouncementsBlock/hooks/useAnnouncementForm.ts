@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useGetAnnouncementByIdQuery, useAddAnnouncementMutation, useUpdateAnnouncementMutation, type AddAnnouncementBody } from "@/shared/api/announcementsApi";
 import toast from "react-hot-toast";
 import { MAX_IMAGES, MIN_IMAGES } from "../constants";
+import { generateDescription } from "../utils/generateDescription";
 
 export interface UseAnnouncementFormProps {
     announcementId?: string;
@@ -78,7 +79,7 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
     // Заполняем форму данными при редактировании
     useEffect(() => {
         if (existingData && isEdit) {
-            setFormData({
+            const initialData = {
                 title: existingData.title || "",
                 description: existingData.description || "",
                 type: (existingData.type as "RENT" | "SALE") || "SALE",
@@ -108,20 +109,26 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                 block: existingData.block || "",
                 apartment: existingData.apartment || "",
                 postal_code: existingData.postal_code || "",
-                latitude: existingData.latitude || "",
-                longitude: existingData.longitude || "",
-                cadastral_number: (existingData as any).cadastral_number || "",
-                available_from: existingData.available_from || "",
+                latitude: "",
+                longitude: "",
+                cadastral_number: "",
+                available_from: "",
                 contact_phone: (existingData as any).contact_phone || "",
                 contact_email: (existingData as any).contact_email || "",
                 images: existingData.images || [],
                 subscription_id: (existingData as any).subscription_id || "",
-            });
+            };
+            setFormData(initialData);
             setExistingImageNames(existingData.images || []);
             setImages(existingData.images || []);
             setImageFiles([]);
         } else if (!isEdit) {
-            setFormData(getInitialFormData());
+            const initialData = getInitialFormData();
+            const autoDescription = generateDescription(initialData);
+            setFormData({
+                ...initialData,
+                description: autoDescription,
+            });
             setImages([]);
             setImageFiles([]);
             setExistingImageNames([]);
@@ -142,12 +149,20 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
+        const updatedData = {
+            ...formData,
             [name]: name === "rooms_count" || name === "floor" || name === "floors_total" || name === "ceiling_height" || name === "year_built"
                 ? Number(value)
                 : value,
-        }));
+        };
+        
+        // Автогенерация описания при изменении основных полей (кроме самого description)
+        if (name !== "description") {
+            const autoDescription = generateDescription(updatedData);
+            updatedData.description = autoDescription;
+        }
+        
+        setFormData(updatedData);
     };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -266,10 +281,10 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                     block: formData.block || "",
                     apartment: formData.apartment || "",
                     postal_code: formData.postal_code || "",
-                    latitude: formData.latitude || "",
-                    longitude: formData.longitude || "",
-                    cadastral_number: formData.cadastral_number || "",
-                    available_from: formData.available_from || "",
+                    latitude: "",
+                    longitude: "",
+                    cadastral_number: "",
+                    available_from: "",
                     contact_phone: formData.contact_phone || "",
                     contact_email: formData.contact_email || "",
                     subscription_id: formData.subscription_id || "",

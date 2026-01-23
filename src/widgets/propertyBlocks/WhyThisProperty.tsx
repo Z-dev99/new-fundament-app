@@ -106,3 +106,5 @@ export const WhyThisProperty: React.FC<WhyThisPropertyProps> = ({ propertyType, 
         </motion.section>
     );
 };
+
+

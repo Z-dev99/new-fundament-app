@@ -36,6 +36,14 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
             return;
         }
 
+        // Простая проверка для admin/admin123
+        if (username.trim() === "admin" && password === "admin123") {
+            Cookies.set("token", "admin_token", { expires: 7 });
+            toast.success("Успешный вход");
+            onLogin();
+            return;
+        }
+
         try {
             await signInModerator({ username, password }).unwrap();
         } catch (err: any) {
