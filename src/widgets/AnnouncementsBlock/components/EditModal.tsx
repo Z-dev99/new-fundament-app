@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { X, Upload } from "lucide-react";
 import { useAnnouncementForm } from "../hooks/useAnnouncementForm";
@@ -18,6 +19,8 @@ import {
     RENOVATION_TYPES,
 } from "../constants";
 import styles from "../styles.module.scss";
+
+const MapPicker = dynamic(() => import("../MapPicker"), { ssr: false });
 
 interface EditModalProps {
     announcementId?: string;
@@ -437,6 +440,81 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <p style={{ fontSize: "12px", color: "#718096", marginTop: "4px" }}>
                                     Описание генерируется автоматически на основе заполненных данных
                                 </p>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Доступно с *</label>
+                                <input
+                                    type="date"
+                                    name="available_from"
+                                    value={formData.available_from}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Кадастровый номер *</label>
+                                <input
+                                    type="text"
+                                    name="cadastral_number"
+                                    value={formData.cadastral_number}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+                                <label>Выберите местоположение на карте *</label>
+                                <MapPicker
+                                    latitude={formData.latitude || ""}
+                                    longitude={formData.longitude || ""}
+                                    onLocationSelect={(lat, lng) => {
+                                        updateFormData({
+                                            latitude: lat.toFixed(8),
+                                            longitude: lng.toFixed(8),
+                                        });
+                                    }}
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Широта *</label>
+                                <input
+                                    type="text"
+                                    name="latitude"
+                                    value={formData.latitude}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="Выберите точку на карте"
+                                    style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed" }}
+                                    readOnly
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Долгота *</label>
+                                <input
+                                    type="text"
+                                    name="longitude"
+                                    value={formData.longitude}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="Выберите точку на карте"
+                                    style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed" }}
+                                    readOnly
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Почтовый индекс *</label>
+                                <input
+                                    type="text"
+                                    name="postal_code"
+                                    value={formData.postal_code}
+                                    onChange={handleInputChange}
+                                    required
+                                />
                             </div>
                         </div>
                     </div>

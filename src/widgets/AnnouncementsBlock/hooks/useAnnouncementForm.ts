@@ -10,6 +10,26 @@ export interface UseAnnouncementFormProps {
     onClose: () => void;
 }
 
+const defaultLat = "41.2995";
+const defaultLng = "69.2401";
+
+function toDateOnly(value: string | undefined): string {
+    if (!value) return "";
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 10);
+}
+
+function toDatetime(value: string): string {
+    if (!value) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return `${value}T00:00:00.000Z`;
+    }
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 23);
+}
+
 const getInitialFormData = (): Partial<AddAnnouncementBody & {
     layout_type?: string;
     heating_type?: string;
@@ -45,10 +65,10 @@ const getInitialFormData = (): Partial<AddAnnouncementBody & {
     block: "",
     apartment: "",
     postal_code: "",
-    latitude: "",
-    longitude: "",
+    latitude: defaultLat,
+    longitude: defaultLng,
     cadastral_number: "",
-    available_from: "",
+    available_from: new Date().toISOString().slice(0, 10),
     contact_phone: "",
     contact_email: "",
     images: [],
@@ -79,6 +99,10 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
     // Заполняем форму данными при редактировании
     useEffect(() => {
         if (existingData && isEdit) {
+            const lat = existingData.latitude != null && existingData.latitude !== ""
+                ? String(existingData.latitude) : defaultLat;
+            const lng = existingData.longitude != null && existingData.longitude !== ""
+                ? String(existingData.longitude) : defaultLng;
             const initialData = {
                 title: existingData.title || "",
                 description: existingData.description || "",
@@ -109,10 +133,10 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                 block: existingData.block || "",
                 apartment: existingData.apartment || "",
                 postal_code: existingData.postal_code || "",
-                latitude: "",
-                longitude: "",
-                cadastral_number: "",
-                available_from: "",
+                latitude: lat,
+                longitude: lng,
+                cadastral_number: (existingData as any).cadastral_number || "",
+                available_from: toDateOnly((existingData as any).available_from) || new Date().toISOString().slice(0, 10),
                 contact_phone: (existingData as any).contact_phone || "",
                 contact_email: (existingData as any).contact_email || "",
                 images: existingData.images || [],
@@ -240,9 +264,23 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
             const allImageNames = [...existingImageNames, ...newImageNames];
 
             if (isEdit && announcementId) {
+                const latRaw = (formData.latitude ?? "").trim();
+                const lngRaw = (formData.longitude ?? "").trim();
+                const latNum = latRaw ? parseFloat(latRaw) : NaN;
+                const lngNum = lngRaw ? parseFloat(lngRaw) : NaN;
+                const latitude = !isNaN(latNum) ? String(latNum) : defaultLat;
+                const longitude = !isNaN(lngNum) ? String(lngNum) : defaultLng;
+                const availRaw = (formData.available_from ?? "").trim();
+                const available_from = availRaw ? toDatetime(availRaw) : toDatetime(new Date().toISOString().slice(0, 10));
+
                 const updateData = {
                     ...formData,
                     images: allImageNames,
+                    latitude,
+                    longitude,
+                    available_from,
+                    postal_code: formData.postal_code || "",
+                    cadastral_number: formData.cadastral_number || "",
                 };
                 await updateAnnouncement({ 
                     id: announcementId, 
@@ -251,6 +289,16 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                 }).unwrap();
                 toast.success("Объявление успешно обновлено!");
             } else {
+                const latRaw = (formData.latitude ?? "").trim();
+                const lngRaw = (formData.longitude ?? "").trim();
+                const latNum = latRaw ? parseFloat(latRaw) : NaN;
+                const lngNum = lngRaw ? parseFloat(lngRaw) : NaN;
+                const latitude = !isNaN(latNum) ? String(latNum) : defaultLat;
+                const longitude = !isNaN(lngNum) ? String(lngNum) : defaultLng;
+
+                const availRaw = (formData.available_from ?? "").trim();
+                const available_from = availRaw ? toDatetime(availRaw) : toDatetime(new Date().toISOString().slice(0, 10));
+
                 const submitData: AddAnnouncementBody = {
                     title: formData.title || "",
                     description: formData.description || "",
@@ -281,16 +329,16 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                     block: formData.block || "",
                     apartment: formData.apartment || "",
                     postal_code: formData.postal_code || "",
-                    latitude: "",
-                    longitude: "",
-                    cadastral_number: "",
-                    available_from: "",
+                    latitude,
+                    longitude,
+                    cadastral_number: formData.cadastral_number || "",
+                    available_from,
                     contact_phone: formData.contact_phone || "",
                     contact_email: formData.contact_email || "",
                     subscription_id: formData.subscription_id || "",
                     images: allImageNames,
                 };
-                
+
                 if (!submitData.title) {
                     toast.error("Пожалуйста, заполните название");
                     return;
@@ -307,7 +355,15 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                     toast.error("Пожалуйста, заполните телефон");
                     return;
                 }
-                
+                if (!latRaw || !lngRaw || isNaN(latNum) || isNaN(lngNum)) {
+                    toast.error("Выберите местоположение на карте");
+                    return;
+                }
+                if (!availRaw) {
+                    toast.error("Укажите дату «Доступно с»");
+                    return;
+                }
+
                 // Валидация минимум 4 фото для нового объявления
                 if (imageFiles.length < MIN_IMAGES) {
                     toast.error(`Необходимо загрузить минимум ${MIN_IMAGES} фотографий`);
