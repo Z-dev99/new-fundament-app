@@ -338,7 +338,10 @@ export default function PropertyPage() {
                                     className={styles.description}
                                 >
                                     <h2 className={styles.sectionTitle}>Описание</h2>
-                                    <p>{propertyData.description}</p>
+                                    <div 
+                                        className={styles.descriptionContent}
+                                        dangerouslySetInnerHTML={{ __html: propertyData.description }}
+                                    />
                                 </motion.div>
                             )}
 

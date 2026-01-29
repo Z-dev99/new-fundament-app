@@ -97,7 +97,7 @@ export const generateDescription = (formData: FormData): string => {
     }
 
     if (introParts.length > 0) {
-        parts.push(introParts.join(" ") + ".");
+        parts.push(`<p>${introParts.join(" ")}.</p>`);
     }
 
     // Секция "Планировка и характеристики"
@@ -111,77 +111,76 @@ export const generateDescription = (formData: FormData): string => {
             : formData.rooms_count < 5 
                 ? `${formData.rooms_count} комнаты` 
                 : `${formData.rooms_count} комнат`;
-        characteristics.push(`формат: ${layoutType.label.toLowerCase()} + ${roomsText}`);
+        characteristics.push(`<li><strong>формат:</strong> ${layoutType.label.toLowerCase()} + ${roomsText}</li>`);
     }
 
     // Площади
     if (formData.area_total) {
-        characteristics.push(`общая площадь: ${formData.area_total} м²`);
+        characteristics.push(`<li><strong>общая площадь:</strong> ${formData.area_total} м²</li>`);
     }
     if (formData.area_living) {
-        characteristics.push(`жилая площадь: ${formData.area_living} м²`);
+        characteristics.push(`<li><strong>жилая площадь:</strong> ${formData.area_living} м²</li>`);
     }
     if (formData.area_kitchen) {
-        characteristics.push(`кухня: ${formData.area_kitchen} м²`);
+        characteristics.push(`<li><strong>кухня:</strong> ${formData.area_kitchen} м²</li>`);
     }
 
     // Высота потолков
     if (formData.ceiling_height) {
-        characteristics.push(`высота потолков: ${formData.ceiling_height.toString().replace(".", ",")} м`);
+        const heightStr = formData.ceiling_height.toString().replace(".", ",");
+        characteristics.push(`<li><strong>высота потолков:</strong> ${heightStr} м</li>`);
     }
 
     // Санузел
     const bathroomLayout = BATHROOM_LAYOUTS.find(t => t.value === formData.bathroom_layout);
     if (bathroomLayout) {
-        characteristics.push(`санузел: ${bathroomLayout.label.toLowerCase()}`);
+        characteristics.push(`<li><strong>санузел:</strong> ${bathroomLayout.label.toLowerCase()}</li>`);
     }
 
     // Отопление
     const heatingType = HEATING_TYPES.find(t => t.value === formData.heating_type);
     if (heatingType) {
-        characteristics.push(`отопление: ${heatingType.label.toLowerCase()}`);
+        characteristics.push(`<li><strong>отопление:</strong> ${heatingType.label.toLowerCase()}</li>`);
     }
 
     // Состояние/ремонт
     const renovationType = RENOVATION_TYPES.find(t => t.value === formData.renovation_type);
     if (renovationType) {
-        let renovationText = `состояние: ${renovationType.label.toLowerCase()}`;
+        let renovationText = `<strong>состояние:</strong> ${renovationType.label.toLowerCase()}`;
         if (renovationType.value === "SHELL") {
             renovationText += " — идеальная возможность реализовать собственный дизайн-проект";
         }
-        characteristics.push(renovationText);
+        characteristics.push(`<li>${renovationText}</li>`);
     }
 
     if (characteristics.length > 0) {
-        parts.push("\nПланировка и характеристики:\n");
-        parts.push(characteristics.join("\n\n"));
+        parts.push(`<h3>Планировка и характеристики:</h3><ul>${characteristics.join("")}</ul>`);
     }
 
     // Секция "Преимущества"
     const advantages: string[] = [];
     
     if (formData.floor && formData.floors_total && formData.floor === formData.floors_total) {
-        advantages.push("верхний этаж — тишина и панорамные виды");
+        advantages.push("<li>верхний этаж — тишина и панорамные виды</li>");
     }
     
     const wallMaterial = WALL_MATERIALS.find(t => t.value === formData.wall_material);
     if (wallMaterial && wallMaterial.value === "BRICK") {
-        advantages.push("кирпичный дом — надёжность и теплоизоляция");
+        advantages.push("<li>кирпичный дом — надёжность и теплоизоляция</li>");
     } else if (wallMaterial && wallMaterial.value === "MONOLITH") {
-        advantages.push("монолитный дом — прочность и долговечность");
+        advantages.push("<li>монолитный дом — прочность и долговечность</li>");
     }
     
-    advantages.push("все коммуникации подключены");
+    advantages.push("<li>все коммуникации подключены</li>");
     
     if (renovationType && renovationType.value !== "SHELL") {
-        advantages.push("дом готов к заселению");
+        advantages.push("<li>дом готов к заселению</li>");
     } else {
-        advantages.push("готово к ремонту по вашему вкусу");
+        advantages.push("<li>готово к ремонту по вашему вкусу</li>");
     }
 
     if (advantages.length > 0) {
-        parts.push("\n\nПреимущества:\n");
-        parts.push(advantages.join("\n\n"));
+        parts.push(`<h3>Преимущества:</h3><ul>${advantages.join("")}</ul>`);
     }
 
     // Адрес
@@ -200,8 +199,7 @@ export const generateDescription = (formData: FormData): string => {
     }
     
     if (addressParts.length > 0) {
-        parts.push("\n\nАдрес:\n");
-        parts.push(addressParts.join(", "));
+        parts.push(`<h3>Адрес:</h3><p>${addressParts.join(", ")}</p>`);
     }
 
     // Цена
@@ -210,21 +208,22 @@ export const generateDescription = (formData: FormData): string => {
         const priceText = formData.currency === "UZS" 
             ? `${parseInt(formData.price).toLocaleString("ru-RU")} ${currency}`
             : `${parseInt(formData.price).toLocaleString("ru-RU")} ${currency}`;
-        parts.push(`\n\nЦена: ${priceText}`);
+        parts.push(`<h3>Цена:</h3><p>${priceText}</p>`);
     }
 
     // Заключительная фраза
     if (parts.length > 0) {
         const finalText = announcementType?.value === "SALE"
-            ? "Отличный вариант как для комфортного проживания, так и для инвестиции.\nЗвоните и записывайтесь на просмотр!"
-            : "Отличный вариант для комфортного проживания.\nЗвоните и записывайтесь на просмотр!";
-        parts.push(`\n\n${finalText}`);
+            ? "Отличный вариант как для комфортного проживания, так и для инвестиции.<br>Звоните и записывайтесь на просмотр!"
+            : "Отличный вариант для комфортного проживания.<br>Звоните и записывайтесь на просмотр!";
+        parts.push(`<p>${finalText}</p>`);
     } else {
-        return "Заполните основные данные для автоматической генерации описания.";
+        return "<p>Заполните основные данные для автоматической генерации описания.</p>";
     }
 
     return parts.join("");
 };
+
 
 
 
