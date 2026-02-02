@@ -120,9 +120,9 @@ export default function PropertyPage() {
             announcement.city,
             announcement.district,
             announcement.street && `ул. ${announcement.street}`,
-            announcement.house_number && `д. ${announcement.house_number}`,
-            announcement.block && `корп. ${announcement.block}`,
-            announcement.apartment && `кв. ${announcement.apartment}`,
+            announcement.house_number && announcement.house_number !== "0" && announcement.house_number !== 0 && `д. ${announcement.house_number}`,
+            announcement.block && announcement.block !== "0" && announcement.block !== 0 && `корп. ${announcement.block}`,
+            announcement.apartment && announcement.apartment !== "0" && announcement.apartment !== 0 && `кв. ${announcement.apartment}`,
         ].filter(Boolean);
 
         return {

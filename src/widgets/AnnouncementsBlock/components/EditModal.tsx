@@ -3,7 +3,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { X, Upload } from "lucide-react";
+import { X, Upload, RefreshCw } from "lucide-react";
 import { useAnnouncementForm } from "../hooks/useAnnouncementForm";
 import { getImageUrl } from "../utils";
 import {
@@ -21,6 +21,14 @@ import {
 import styles from "../styles.module.scss";
 
 const MapPicker = dynamic(() => import("../MapPicker"), { ssr: false });
+
+// Функция для генерации уникального ID
+const generateUniqueId = (): string => {
+    // Используем timestamp + случайные символы для уникальности
+    const timestamp = Date.now().toString(36);
+    const randomPart = Math.random().toString(36).substring(2, 9).toUpperCase();
+    return `${timestamp}-${randomPart}`;
+};
 
 interface EditModalProps {
     announcementId?: string;
@@ -455,27 +463,75 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
 
                             <div className={styles.formGroup}>
                                 <label>Кадастровый номер *</label>
-                                <input
-                                    type="text"
-                                    name="cadastral_number"
-                                    value={formData.cadastral_number}
-                                    onChange={handleInputChange}
-                                    required
-                                />
+                                <div style={{ position: "relative", display: "flex", alignItems: "stretch", width: "100%" }}>
+                                    <input
+                                        type="text"
+                                        name="cadastral_number"
+                                        value={formData.cadastral_number}
+                                        onChange={handleInputChange}
+                                        required
+                                        style={{ 
+                                            paddingRight: "42px",
+                                            width: "100%",
+                                            flex: 1
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const uniqueId = generateUniqueId();
+                                            updateFormData({ cadastral_number: uniqueId });
+                                        }}
+                                        style={{
+                                            position: "absolute",
+                                            right: "6px",
+                                            top: "50%",
+                                            transform: "translateY(-50%)",
+                                            padding: "7px 8px",
+                                            background: "#f3f4f6",
+                                            border: "1px solid #e5e7eb",
+                                            borderRadius: "6px",
+                                            cursor: "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            transition: "all 0.2s ease",
+                                            height: "32px",
+                                            width: "32px"
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = "#e5e7eb";
+                                            e.currentTarget.style.borderColor = "#d1d5db";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = "#f3f4f6";
+                                            e.currentTarget.style.borderColor = "#e5e7eb";
+                                        }}
+                                        title="Сгенерировать уникальный ID"
+                                    >
+                                        <RefreshCw size={16} color="#6b7280" />
+                                    </button>
+                                </div>
                             </div>
 
                             <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
                                 <label>Выберите местоположение на карте *</label>
-                                <MapPicker
-                                    latitude={formData.latitude || ""}
-                                    longitude={formData.longitude || ""}
-                                    onLocationSelect={(lat, lng) => {
-                                        updateFormData({
-                                            latitude: lat.toFixed(8),
-                                            longitude: lng.toFixed(8),
-                                        });
-                                    }}
-                                />
+                                <div style={{ 
+                                    width: "100%", 
+                                    marginTop: "8px",
+                                    display: "block"
+                                }}>
+                                    <MapPicker
+                                        latitude={formData.latitude || ""}
+                                        longitude={formData.longitude || ""}
+                                        onLocationSelect={(lat, lng) => {
+                                            updateFormData({
+                                                latitude: lat.toFixed(8),
+                                                longitude: lng.toFixed(8),
+                                            });
+                                        }}
+                                    />
+                                </div>
                             </div>
 
                             <div className={styles.formGroup}>
@@ -546,14 +602,56 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
 
                             <div className={styles.formGroup}>
                                 <label>ID подписки {!isEdit && "*"}</label>
-                                <input
-                                    type="text"
-                                    name="subscription_id"
-                                    value={formData.subscription_id}
-                                    onChange={handleInputChange}
-                                    placeholder={isEdit ? "Опционально" : "Обязательно"}
-                                    required={!isEdit}
-                                />
+                                <div style={{ position: "relative", display: "flex", alignItems: "stretch", width: "100%" }}>
+                                    <input
+                                        type="text"
+                                        name="subscription_id"
+                                        value={formData.subscription_id}
+                                        onChange={handleInputChange}
+                                        placeholder={isEdit ? "Опционально" : "Обязательно"}
+                                        required={!isEdit}
+                                        style={{ 
+                                            paddingRight: "42px",
+                                            width: "100%",
+                                            flex: 1
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const uniqueId = generateUniqueId();
+                                            updateFormData({ subscription_id: uniqueId });
+                                        }}
+                                        style={{
+                                            position: "absolute",
+                                            right: "6px",
+                                            top: "50%",
+                                            transform: "translateY(-50%)",
+                                            padding: "7px 8px",
+                                            background: "#f3f4f6",
+                                            border: "1px solid #e5e7eb",
+                                            borderRadius: "6px",
+                                            cursor: "pointer",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            transition: "all 0.2s ease",
+                                            height: "32px",
+                                            width: "32px"
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = "#e5e7eb";
+                                            e.currentTarget.style.borderColor = "#d1d5db";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = "#f3f4f6";
+                                            e.currentTarget.style.borderColor = "#e5e7eb";
+                                        }}
+                                        title="Сгенерировать уникальный ID"
+                                    >
+                                        <RefreshCw size={16} color="#6b7280" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -610,6 +708,39 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             </div>
                         )}
                     </div>
+
+                    {(formData.type === "RENT" || formData.type === "rent") && (
+                        <div className={styles.formSection} style={{ display: "block !important", visibility: "visible !important", opacity: "1 !important" }}>
+                            <h3>Дополнительная информация для аренды</h3>
+                            <div className={styles.formGrid}>
+                                <div className={styles.formGroup} style={{ gridColumn: "1 / -1", display: "block !important", visibility: "visible !important", opacity: "1 !important" }}>
+                                    <label>Дополнительная информация</label>
+                                    <textarea
+                                        name="rentAdditionalInfo"
+                                        value={formData.rentAdditionalInfo || ""}
+                                        onChange={handleInputChange}
+                                        placeholder="Например: + оплата за последний месяц, сумма комиссии и т.д."
+                                        rows={3}
+                                        style={{
+                                            width: "100%",
+                                            padding: "12px",
+                                            borderRadius: "8px",
+                                            border: "2px solid #e5e7eb",
+                                            fontSize: "14px",
+                                            fontFamily: "inherit",
+                                            resize: "vertical",
+                                            display: "block !important",
+                                            visibility: "visible !important",
+                                            opacity: "1 !important"
+                                        }}
+                                    />
+                                    <p style={{ marginTop: "8px", fontSize: "12px", color: "#6b7280" }}>
+                                        Эта информация будет добавлена в описание объявления
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className={styles.formActions}>
                         <button type="button" className={styles.cancelBtn} onClick={onClose}>

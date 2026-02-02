@@ -1,19 +1,29 @@
 .wrapper {
     width: 100%;
     min-height: 400px;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .grid {
     width: 100%;
+    max-width: 100%;
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
     padding: 20px 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .cardWrapper {
     width: 100%;
+    max-width: 100%;
     height: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .emptyState {
@@ -90,26 +100,49 @@
     line-height: 1.5;
 }
 
-/* Планшет: 2 колонки */
-@media (min-width: 768px) {
+/* Планшет: 2 колонки (только если высота достаточна) */
+@media (min-width: 768px) and (min-height: 600px) {
     .grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
+        gap: 20px;
         padding: 24px 0;
     }
 }
 
-/* Десктоп: 3 колонки */
-@media (min-width: 1024px) {
+/* Десктоп: 3 колонки (только если высота достаточна) */
+@media (min-width: 1024px) and (min-height: 700px) {
     .grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 28px;
+        gap: 24px;
         padding: 28px 0;
+    }
+}
+
+/* Для широких, но невысоких экранов - максимум 2 колонки */
+@media (min-width: 1024px) and (max-height: 699px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 20px 0;
+    }
+}
+
+/* Для очень широких, но невысоких экранов - 1 колонка */
+@media (min-width: 1200px) and (max-height: 550px) {
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px 0;
     }
 }
 
 /* Мобильный: 1 колонка */
 @media (max-width: 767px) {
+    .wrapper {
+        padding: 0;
+        overflow-x: hidden;
+    }
+
     .emptyState {
         min-height: 300px;
         padding: 40px 20px;
@@ -131,7 +164,17 @@
 
     .grid {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 16px;
         padding: 16px 0;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .cardWrapper {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
     }
 }

@@ -35,6 +35,7 @@ const getInitialFormData = (): Partial<AddAnnouncementBody & {
     heating_type?: string;
     city_side?: string;
     renovation_type?: string;
+    rentAdditionalInfo?: string;
 }> => ({
     title: "",
     description: "",
@@ -73,6 +74,7 @@ const getInitialFormData = (): Partial<AddAnnouncementBody & {
     contact_email: "",
     images: [],
     subscription_id: "",
+    rentAdditionalInfo: "",
 });
 
 export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseAnnouncementFormProps) => {
@@ -89,6 +91,7 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
         heating_type?: string;
         city_side?: string;
         renovation_type?: string;
+        rentAdditionalInfo?: string;
     }>>(getInitialFormData());
 
     const [images, setImages] = useState<string[]>([]);
@@ -273,8 +276,17 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                 const availRaw = (formData.available_from ?? "").trim();
                 const available_from = availRaw ? toDatetime(availRaw) : toDatetime(new Date().toISOString().slice(0, 10));
 
+                // Добавляем дополнительную информацию для аренды в описание
+                let finalDescription = formData.description || "";
+                if (formData.type === "RENT" && formData.rentAdditionalInfo?.trim()) {
+                    finalDescription = finalDescription 
+                        ? `${finalDescription}\n\n${formData.rentAdditionalInfo.trim()}`
+                        : formData.rentAdditionalInfo.trim();
+                }
+
                 const updateData = {
                     ...formData,
+                    description: finalDescription,
                     images: allImageNames,
                     latitude,
                     longitude,
@@ -299,9 +311,17 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                 const availRaw = (formData.available_from ?? "").trim();
                 const available_from = availRaw ? toDatetime(availRaw) : toDatetime(new Date().toISOString().slice(0, 10));
 
+                // Добавляем дополнительную информацию для аренды в описание
+                let finalDescription = formData.description || "";
+                if (formData.type === "RENT" && formData.rentAdditionalInfo?.trim()) {
+                    finalDescription = finalDescription 
+                        ? `${finalDescription}\n\n${formData.rentAdditionalInfo.trim()}`
+                        : formData.rentAdditionalInfo.trim();
+                }
+
                 const submitData: AddAnnouncementBody = {
                     title: formData.title || "",
-                    description: formData.description || "",
+                    description: finalDescription,
                     type: formData.type || "SALE",
                     property_type: formData.property_type || "",
                     layout_type: formData.layout_type || "",

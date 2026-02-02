@@ -5,24 +5,6 @@ import styles from "./FiltersBar.module.scss";
 import { ModalFilter } from "../modal/ModalFilter";
 import type { AnnouncementsFilters } from "@/shared/api/announcementsApi";
 
-const IconMap = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-        <circle cx="12" cy="10" r="3" />
-    </svg>
-);
-
-const IconList = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="8" y1="6" x2="21" y2="6" />
-        <line x1="8" y1="12" x2="21" y2="12" />
-        <line x1="8" y1="18" x2="21" y2="18" />
-        <line x1="3" y1="6" x2="3.01" y2="6" />
-        <line x1="3" y1="12" x2="3.01" y2="12" />
-        <line x1="3" y1="18" x2="3.01" y2="18" />
-    </svg>
-);
-
 const IconFilter = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
@@ -37,12 +19,12 @@ interface FiltersBarProps {
 
 export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: FiltersBarProps = {}) {
     const [dealType, setDealType] = useState<"purchase" | "rent">("purchase");
+    const [currency, setCurrency] = useState<"UZS" | "USD" | "EUR">("UZS");
     const [priceFrom, setPriceFrom] = useState("");
     const [priceTo, setPriceTo] = useState("");
     const [areaFrom, setAreaFrom] = useState("");
     const [areaTo, setAreaTo] = useState("");
     const [rooms, setRooms] = useState<number | null>(null);
-    const [view, setView] = useState<"map" | "list">("map");
     const [modalOpen, setModalOpen] = useState(false);
     const [modalFilters, setModalFilters] = useState<Partial<AnnouncementsFilters>>({});
     const [resultsCount, setResultsCount] = useState(totalCount || 1055);
@@ -81,16 +63,17 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
         const finalAreaFrom = areaFrom || (modalFilters.min_area_total ? String(modalFilters.min_area_total) : "");
         const finalAreaTo = areaTo || (modalFilters.max_area_total ? String(modalFilters.max_area_total) : "");
         const finalRooms = rooms !== null ? String(rooms) : (modalFilters.min_rooms ? String(modalFilters.min_rooms) : null);
+        const finalCurrency = currency || modalFilters.currency || "UZS";
 
         const allFilters = {
             activeTab,
-            view,
             dealType: finalDealType,
             priceFrom: finalPriceFrom,
             priceTo: finalPriceTo,
             areaFrom: finalAreaFrom,
             areaTo: finalAreaTo,
             rooms: finalRooms,
+            currency: finalCurrency,
             // Дополнительные фильтры из модалки (теперь в формате API)
             city: modalFilters.city,
             district: modalFilters.district,
@@ -101,7 +84,6 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
             order_by: modalFilters.order_by,
             country: modalFilters.country,
             region: modalFilters.region,
-            currency: modalFilters.currency || "UZS",
             min_area_living: modalFilters.min_area_living,
             max_area_living: modalFilters.max_area_living,
             min_area_kitchen: modalFilters.min_area_kitchen,
@@ -121,13 +103,16 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
             available_from: modalFilters.available_from,
         };
         onFiltersChange?.(allFilters);
-    }, [activeTab, dealType, priceFrom, priceTo, areaFrom, areaTo, rooms, view, modalFilters, onFiltersChange]);
+    }, [activeTab, dealType, currency, priceFrom, priceTo, areaFrom, areaTo, rooms, modalFilters, onFiltersChange]);
 
     const handleModalApply = useCallback((filters: Partial<AnnouncementsFilters>) => {
         setModalFilters(filters);
         // Синхронизация основных фильтров из модалки
         if (filters.announcement_type) {
             setDealType(filters.announcement_type === "SALE" ? "purchase" : "rent");
+        }
+        if (filters.currency) {
+            setCurrency(filters.currency as "UZS" | "USD" | "EUR");
         }
         // Поддерживаем оба варианта: priceFrom/priceTo и min_price/max_price
         if (filters.min_price) {
@@ -190,6 +175,7 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
 
     const handleClearFilters = useCallback(() => {
         setDealType("purchase");
+        setCurrency("UZS");
         setPriceFrom("");
         setPriceTo("");
         setAreaFrom("");
@@ -199,15 +185,26 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
         // Применяем очищенные фильтры
         onFiltersChange?.({
             activeTab,
-            view,
             dealType: "purchase",
+            currency: "UZS",
             priceFrom: "",
             priceTo: "",
             areaFrom: "",
             areaTo: "",
             rooms: null,
         });
-    }, [activeTab, view, onFiltersChange]);
+    }, [activeTab, onFiltersChange]);
+
+    const getCurrencySymbol = (curr: "UZS" | "USD" | "EUR") => {
+        switch (curr) {
+            case "USD":
+                return "$";
+            case "EUR":
+                return "€";
+            default:
+                return "сум";
+        }
+    };
 
     return (
         <>
@@ -242,33 +239,48 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
                                 <span className={styles.labelIcon}>💰</span>
                                 Стоимость
                             </label>
-                            <div className={styles.inlineInputs}>
-                                <div className={styles.inputWrapper}>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        placeholder="От"
-                                        value={priceFrom}
-                                        onChange={(e) => setPriceFrom(e.target.value)}
-                                        className={styles.input}
-                                    />
-                                    <span className={styles.inputSuffix}>сум</span>
+                            <div className={styles.priceRow}>
+                                <div className={styles.currencySelect}>
+                                    <select
+                                        value={currency}
+                                        onChange={(e) => setCurrency(e.target.value as "UZS" | "USD" | "EUR")}
+                                        className={styles.currencySelectInput}
+                                    >
+                                        <option value="UZS">UZS</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                    </select>
                                 </div>
-                                <div className={styles.rangeSeparator}>—</div>
-                                <div className={styles.inputWrapper}>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        placeholder="До"
-                                        value={priceTo}
-                                        onChange={(e) => setPriceTo(e.target.value)}
-                                        className={styles.input}
-                                    />
-                                    <span className={styles.inputSuffix}>сум</span>
+                                <div className={styles.inlineInputs}>
+                                    <div className={styles.inputWrapper}>
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            placeholder="От"
+                                            value={priceFrom}
+                                            onChange={(e) => setPriceFrom(e.target.value)}
+                                            className={styles.input}
+                                        />
+                                        <span className={styles.inputSuffix}>{getCurrencySymbol(currency)}</span>
+                                    </div>
+                                    <div className={styles.rangeSeparator}>—</div>
+                                    <div className={styles.inputWrapper}>
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            placeholder="До"
+                                            value={priceTo}
+                                            onChange={(e) => setPriceTo(e.target.value)}
+                                            className={styles.input}
+                                        />
+                                        <span className={styles.inputSuffix}>{getCurrencySymbol(currency)}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <div className={styles.bottomFilters}>
                         <div className={styles.group}>
                             <label className={styles.label}>
                                 <span className={styles.labelIcon}>🚪</span>
@@ -322,25 +334,6 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
                     </div>
 
                     <div className={styles.actions}>
-                        <div className={styles.viewSwitch}>
-                            <button
-                                type="button"
-                                className={`${styles.viewBtn} ${view === "map" ? styles.viewActive : ""}`}
-                                onClick={() => setView("map")}
-                            >
-                                <IconMap />
-                                <span>На карте</span>
-                            </button>
-                            <button
-                                type="button"
-                                className={`${styles.viewBtn} ${view === "list" ? styles.viewActive : ""}`}
-                                onClick={() => setView("list")}
-                            >
-                                <IconList />
-                                <span>Список</span>
-                            </button>
-                        </div>
-
                         <div className={styles.right}>
                             <button
                                 type="button"
