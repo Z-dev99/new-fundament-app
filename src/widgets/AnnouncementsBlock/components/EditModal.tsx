@@ -709,11 +709,11 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                         )}
                     </div>
 
-                    {(formData.type === "RENT" || formData.type === "rent") && (
-                        <div className={styles.formSection} style={{ display: "block !important", visibility: "visible !important", opacity: "1 !important" }}>
+                    {formData.type === "RENT" && (
+                        <div className={styles.formSection} style={{ display: "block", visibility: "visible", opacity: 1 }}>
                             <h3>Дополнительная информация для аренды</h3>
                             <div className={styles.formGrid}>
-                                <div className={styles.formGroup} style={{ gridColumn: "1 / -1", display: "block !important", visibility: "visible !important", opacity: "1 !important" }}>
+                                <div className={styles.formGroup} style={{ gridColumn: "1 / -1", display: "block", visibility: "visible", opacity: 1 }}>
                                     <label>Дополнительная информация</label>
                                     <textarea
                                         name="rentAdditionalInfo"
@@ -729,9 +729,9 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                             fontSize: "14px",
                                             fontFamily: "inherit",
                                             resize: "vertical",
-                                            display: "block !important",
-                                            visibility: "visible !important",
-                                            opacity: "1 !important"
+                                            display: "block",
+                                            visibility: "visible",
+                                            opacity: 1
                                         }}
                                     />
                                     <p style={{ marginTop: "8px", fontSize: "12px", color: "#6b7280" }}>
