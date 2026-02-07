@@ -72,7 +72,7 @@ export const metadata: Metadata = {
         },
     },
     verification: {
-        // Добавьте здесь коды верификации для поисковых систем
+        google: "mZOVkjtdcWEcCurwFgaCQoFJw4dYTFkJ_lgldQd1cSk",
     },
 };
 
