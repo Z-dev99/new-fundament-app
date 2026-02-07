@@ -1,7 +1,7 @@
 "use client";
 
 import { useGetSupportRequestsQuery, useDeleteSupportRequestMutation } from "@/shared/api/supportApi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./styles.module.scss";
 import toast, { Toaster } from "react-hot-toast";
 import { MessageCircle, User, Phone, FileText, Calendar, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
@@ -65,8 +65,20 @@ export const SupportCards: React.FC = () => {
     }
 
     const totalPages = data ? Math.ceil(data.total / pageSize) : 1;
-    const handlePrev = () => setPage((prev) => Math.max(prev - 1, 1));
-    const handleNext = () => setPage((prev) => Math.min(prev + 1, totalPages));
+    
+    // Скролл наверх при изменении страницы
+    useEffect(() => {
+        if (!isLoading) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    }, [page, isLoading]);
+    
+    const handlePrev = () => {
+        setPage((prev) => Math.max(prev - 1, 1));
+    };
+    const handleNext = () => {
+        setPage((prev) => Math.min(prev + 1, totalPages));
+    };
 
     return (
         <div className={styles.supportBlock}>

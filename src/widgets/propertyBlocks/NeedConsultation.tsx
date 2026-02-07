@@ -60,8 +60,8 @@ export const NeedConsultation: React.FC<NeedConsultationProps> = ({ announcement
             icon: <Phone size={24} />,
             title: "Позвоните нам",
             description: "Работаем с 9:00 до 20:00",
-            value: "+998 (XX) XXX-XX-XX",
-            link: "tel:+998",
+            value: "+998 88 755 65 56",
+            link: "tel:+998887556556",
         },
         {
             icon: <Mail size={24} />,

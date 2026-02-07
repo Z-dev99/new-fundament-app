@@ -36,6 +36,14 @@ const getInitialFormData = (): Partial<AddAnnouncementBody & {
     city_side?: string;
     renovation_type?: string;
     rentAdditionalInfo?: string;
+    // Дополнительные поля, не отправляемые на сервер
+    bathroom_count?: number;
+    is_duplex?: boolean;
+    is_two_story?: boolean;
+    house_floors?: number;
+    mortgage_available?: boolean;
+    has_balcony?: boolean;
+    balcony_area?: string;
 }> => ({
     title: "",
     description: "",
@@ -75,6 +83,14 @@ const getInitialFormData = (): Partial<AddAnnouncementBody & {
     images: [],
     subscription_id: "",
     rentAdditionalInfo: "",
+    // Дополнительные поля, не отправляемые на сервер
+    bathroom_count: undefined,
+    is_duplex: false,
+    is_two_story: false,
+    house_floors: undefined,
+    mortgage_available: false,
+    has_balcony: false,
+    balcony_area: "",
 });
 
 export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseAnnouncementFormProps) => {
@@ -92,12 +108,81 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
         city_side?: string;
         renovation_type?: string;
         rentAdditionalInfo?: string;
+        // Дополнительные поля, не отправляемые на сервер
+        bathroom_count?: number;
+        is_duplex?: boolean;
+        is_two_story?: boolean;
+        house_floors?: number;
+        mortgage_available?: boolean;
+        has_balcony?: boolean;
+        balcony_area?: string;
     }>>(getInitialFormData());
 
     const [images, setImages] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [existingImageNames, setExistingImageNames] = useState<string[]>([]);
     const blobUrlsRef = useRef<string[]>([]);
+
+    // Функция для парсинга дополнительных полей из описания
+    const parseAdditionalFieldsFromDescription = (description: string) => {
+        const fields: {
+            bathroom_count?: number;
+            balcony_area?: string;
+            is_duplex?: boolean;
+            is_two_story?: boolean;
+            house_floors?: number;
+            mortgage_available?: boolean;
+            has_balcony?: boolean;
+        } = {};
+        
+        // Парсим количество санузлов
+        const bathroomCountMatch = description.match(/<strong>количество санузлов:<\/strong>\s*(\d+)/i);
+        if (bathroomCountMatch) {
+            fields.bathroom_count = parseInt(bathroomCountMatch[1], 10);
+        }
+        
+        // Парсим балкон
+        const balconyMatch = description.match(/<strong>балкон:<\/strong>\s*([^<]+)/i);
+        if (balconyMatch) {
+            const balconyText = balconyMatch[1].trim().toLowerCase();
+            if (balconyText.includes("есть") || balconyText.includes("да")) {
+                fields.has_balcony = true;
+                const areaMatch = balconyText.match(/(\d+(?:[.,]\d+)?)\s*м²/i);
+                if (areaMatch) {
+                    fields.balcony_area = areaMatch[1].replace(",", ".");
+                }
+            }
+        }
+        
+        // Парсим дуплекс
+        const duplexMatch = description.match(/<strong>дуплекс:<\/strong>\s*([^<]+)/i);
+        if (duplexMatch) {
+            const duplexText = duplexMatch[1].trim().toLowerCase();
+            fields.is_duplex = duplexText.includes("да") || duplexText.includes("есть");
+        }
+        
+        // Парсим двухэтажную квартиру
+        const twoStoryMatch = description.match(/<strong>двухэтажная квартира:<\/strong>\s*([^<]+)/i);
+        if (twoStoryMatch) {
+            const twoStoryText = twoStoryMatch[1].trim().toLowerCase();
+            fields.is_two_story = twoStoryText.includes("да") || twoStoryText.includes("есть");
+        }
+        
+        // Парсим этажи домов/участков
+        const houseFloorsMatch = description.match(/<strong>этажи \(дома \/ участки\):<\/strong>\s*(\d+)/i);
+        if (houseFloorsMatch) {
+            fields.house_floors = parseInt(houseFloorsMatch[1], 10);
+        }
+        
+        // Парсим ипотеку
+        const mortgageMatch = description.match(/<strong>ипотека:<\/strong>\s*([^<]+)/i);
+        if (mortgageMatch) {
+            const mortgageText = mortgageMatch[1].trim().toLowerCase();
+            fields.mortgage_available = mortgageText.includes("доступна") || mortgageText.includes("можно");
+        }
+        
+        return fields;
+    };
 
     // Заполняем форму данными при редактировании
     useEffect(() => {
@@ -106,6 +191,12 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                 ? String(existingData.latitude) : defaultLat;
             const lng = existingData.longitude != null && existingData.longitude !== ""
                 ? String(existingData.longitude) : defaultLng;
+            
+            // Парсим дополнительные поля из описания
+            const additionalFields = existingData.description 
+                ? parseAdditionalFieldsFromDescription(existingData.description)
+                : {};
+            
             const initialData = {
                 title: existingData.title || "",
                 description: existingData.description || "",
@@ -144,6 +235,8 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                 contact_email: (existingData as any).contact_email || "",
                 images: existingData.images || [],
                 subscription_id: (existingData as any).subscription_id || "",
+                // Дополнительные поля из описания
+                ...additionalFields,
             };
             setFormData(initialData);
             setExistingImageNames(existingData.images || []);
@@ -175,13 +268,21 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
-        const { name, value } = e.target;
+        const { name, value, type } = e.target;
+        const checked = (e.target as HTMLInputElement).checked;
         const updatedData = {
             ...formData,
-            [name]: name === "rooms_count" || name === "floor" || name === "floors_total" || name === "ceiling_height" || name === "year_built"
-                ? Number(value)
-                : value,
+            [name]: type === "checkbox" 
+                ? checked
+                : name === "rooms_count" || name === "floor" || name === "floors_total" || name === "ceiling_height" || name === "year_built" || name === "bathroom_count" || name === "house_floors"
+                    ? (value === "" ? undefined : Number(value))
+                    : value,
         };
+        
+        // Очищаем площадь балкона, если балкон отключен
+        if (name === "has_balcony" && !checked) {
+            updatedData.balcony_area = "";
+        }
         
         // Автогенерация описания при изменении основных полей (кроме самого description)
         if (name !== "description") {

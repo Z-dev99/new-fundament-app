@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     useGetReviewsQuery,
     useDeleteReviewMutation
@@ -60,8 +60,20 @@ export const PublishedReviews: React.FC = () => {
     }
 
     const totalPages = data ? Math.ceil(data.total / pageSize) : 1;
-    const handlePrev = () => setPage((prev) => Math.max(prev - 1, 1));
-    const handleNext = () => setPage((prev) => Math.min(prev + 1, totalPages));
+    
+    // Скролл наверх при изменении страницы
+    useEffect(() => {
+        if (!isLoading) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    }, [page, isLoading]);
+    
+    const handlePrev = () => {
+        setPage((prev) => Math.max(prev - 1, 1));
+    };
+    const handleNext = () => {
+        setPage((prev) => Math.min(prev + 1, totalPages));
+    };
 
     return (
         <div className={styles.moderatorBlock}>

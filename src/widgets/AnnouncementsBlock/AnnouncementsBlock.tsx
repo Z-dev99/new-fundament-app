@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     useGetAnnouncementsQuery,
     useDeleteAnnouncementMutation,
 } from "@/shared/api/announcementsApi";
 import { DetailModal } from "./components/DetailModal";
 import { EditModal } from "./components/EditModal";
+import { DeleteConfirmModal } from "./components/DeleteConfirmModal";
 import { AnnouncementCard } from "./components/AnnouncementCard";
 import styles from "./styles.module.scss";
 import toast, { Toaster } from "react-hot-toast";
@@ -23,12 +24,20 @@ export const AnnouncementsBlock: React.FC = () => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"list" | "detail" | "edit" | "add">("list");
     const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
     const { data, isLoading, error, refetch } = useGetAnnouncementsQuery({
         page,
         page_size: pageSize,
     });
     const [deleteAnnouncement, { isLoading: isDeleting }] = useDeleteAnnouncementMutation();
+
+    // Скролл наверх при изменении страницы
+    useEffect(() => {
+        if (!isLoading) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    }, [page, isLoading]);
 
     const handleView = (id: string) => {
         setSelectedId(id);
@@ -40,21 +49,28 @@ export const AnnouncementsBlock: React.FC = () => {
         setViewMode(id ? "edit" : "add");
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Вы уверены, что хотите удалить это объявление? Это действие нельзя отменить.")) {
-            return;
-        }
+    const handleDeleteClick = (id: string) => {
+        setDeleteConfirmId(id);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteConfirmId) return;
 
         try {
-            setDeleteId(id);
-            await deleteAnnouncement(id).unwrap();
+            setDeleteId(deleteConfirmId);
+            await deleteAnnouncement(deleteConfirmId).unwrap();
             toast.success("Объявление успешно удалено!");
             refetch();
+            setDeleteConfirmId(null);
         } catch (err: any) {
             toast.error(err.data?.message || "Ошибка при удалении объявления");
         } finally {
             setDeleteId(null);
         }
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteConfirmId(null);
     };
 
     const handleCloseModal = () => {
@@ -88,8 +104,13 @@ export const AnnouncementsBlock: React.FC = () => {
     }
 
     const totalPages = data ? Math.ceil(data.total / pageSize) : 1;
-    const handlePrev = () => setPage((prev) => Math.max(prev - 1, 1));
-    const handleNext = () => setPage((prev) => Math.min(prev + 1, totalPages));
+    
+    const handlePrev = () => {
+        setPage((prev) => Math.max(prev - 1, 1));
+    };
+    const handleNext = () => {
+        setPage((prev) => Math.min(prev + 1, totalPages));
+    };
 
     return (
         <div className={styles.announcementsBlock}>
@@ -126,7 +147,7 @@ export const AnnouncementsBlock: React.FC = () => {
                                 isDeleting={deleteId === announcement.id}
                                 onView={handleView}
                                 onEdit={handleEdit}
-                                onDelete={handleDelete}
+                                onDelete={handleDeleteClick}
                             />
                         ))}
                     </div>
@@ -180,6 +201,13 @@ export const AnnouncementsBlock: React.FC = () => {
                     onSuccess={handleSuccess}
                 />
             )}
+
+            <DeleteConfirmModal
+                isOpen={!!deleteConfirmId}
+                onClose={handleDeleteCancel}
+                onConfirm={handleDeleteConfirm}
+                isLoading={isDeleting && deleteId === deleteConfirmId}
+            />
         </div>
     );
 };

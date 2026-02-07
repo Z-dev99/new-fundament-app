@@ -104,7 +104,7 @@ export const Footer: React.FC = () => {
                         <div className={styles.contactInfo}>
                             <div className={styles.contactItem}>
                                 <Phone size={18} />
-                                <a href="tel:+998887556556">+998 88 755-65-56</a>
+                                <a href="tel:+998887556556">+998 88 755 65 56</a>
                             </div>
                             <div className={styles.contactItem}>
                                 <Mail size={18} />

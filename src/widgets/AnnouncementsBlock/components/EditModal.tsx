@@ -426,6 +426,106 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                     ))}
                                 </select>
                             </div>
+                        </div>
+                    </div>
+
+                    <div className={styles.formSection}>
+                        <h3>Дополнительные характеристики (в описание и блок «Характеристики»)</h3>
+                        <p style={{ fontSize: "14px", color: "#6b7280", marginBottom: "24px" }}>
+                            Эти поля не отправляются на сервер отдельно — они сохраняются в описании и отображаются в блоке «Характеристики» на странице объявления.
+                        </p>
+                        <div className={styles.formGrid}>
+                            <div className={styles.formGroup}>
+                                <label>Кол-во санузлов</label>
+                                <input
+                                    type="number"
+                                    name="bathroom_count"
+                                    value={formData.bathroom_count || ""}
+                                    onChange={handleInputChange}
+                                    placeholder="-"
+                                    min="1"
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Этажи (дома / участки)</label>
+                                <input
+                                    type="number"
+                                    name="house_floors"
+                                    value={formData.house_floors || ""}
+                                    onChange={handleInputChange}
+                                    placeholder="например: 2"
+                                    min="1"
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Площадь балкона, м²</label>
+                                <input
+                                    type="text"
+                                    name="balcony_area"
+                                    value={formData.balcony_area || ""}
+                                    onChange={handleInputChange}
+                                    placeholder="-"
+                                    disabled={!formData.has_balcony}
+                                />
+                            </div>
+
+                            <div className={`${styles.formGroup} ${styles.toggleGroup}`}>
+                                <label htmlFor="is_duplex">Дабллюкс (квартира)</label>
+                                <div className={styles.toggleSwitch}>
+                                    <input
+                                        type="checkbox"
+                                        name="is_duplex"
+                                        checked={formData.is_duplex || false}
+                                        onChange={handleInputChange}
+                                        id="is_duplex"
+                                    />
+                                    <span className={styles.slider}></span>
+                                </div>
+                            </div>
+
+                            <div className={`${styles.formGroup} ${styles.toggleGroup}`}>
+                                <label htmlFor="is_two_story">Двухэтажная квартира</label>
+                                <div className={styles.toggleSwitch}>
+                                    <input
+                                        type="checkbox"
+                                        name="is_two_story"
+                                        checked={formData.is_two_story || false}
+                                        onChange={handleInputChange}
+                                        id="is_two_story"
+                                    />
+                                    <span className={styles.slider}></span>
+                                </div>
+                            </div>
+
+                            <div className={`${styles.formGroup} ${styles.toggleGroup}`}>
+                                <label htmlFor="mortgage_available">Ипотека</label>
+                                <div className={styles.toggleSwitch}>
+                                    <input
+                                        type="checkbox"
+                                        name="mortgage_available"
+                                        checked={formData.mortgage_available || false}
+                                        onChange={handleInputChange}
+                                        id="mortgage_available"
+                                    />
+                                    <span className={styles.slider}></span>
+                                </div>
+                            </div>
+
+                            <div className={`${styles.formGroup} ${styles.toggleGroup}`}>
+                                <label htmlFor="has_balcony">Балкон</label>
+                                <div className={styles.toggleSwitch}>
+                                    <input
+                                        type="checkbox"
+                                        name="has_balcony"
+                                        checked={formData.has_balcony || false}
+                                        onChange={handleInputChange}
+                                        id="has_balcony"
+                                    />
+                                    <span className={styles.slider}></span>
+                                </div>
+                            </div>
 
                             <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
                                 <label>Описание *</label>

@@ -9,6 +9,7 @@ import { Navbar } from "@/widgets/navbar/ui/Navbar";
 import styles from "./Property.module.scss";
 import { ImageSlider } from "@/widgets/imageSlider/ImageSlider";
 import { ThumbnailsSlider } from "@/widgets/imageSlider/ThumbnailsSlider";
+import { FullscreenGallery } from "@/widgets/imageSlider/FullscreenGallery";
 import {
     useGetAnnouncementByIdQuery,
     useGetAnnouncementContactsQuery,
@@ -60,6 +61,7 @@ const WALL_MATERIAL_LABELS: Record<string, string> = {
 const BATHROOM_LAYOUT_LABELS: Record<string, string> = {
     COMBINED: "Совмещенный",
     SEPARATE: "Раздельный",
+    TWO_OR_MORE: "2 и более санузлов",
 };
 
 const HEATING_TYPE_LABELS: Record<string, string> = {
@@ -102,6 +104,8 @@ export default function PropertyPage() {
     
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [showPhone, setShowPhone] = useState(false);
+    const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+    const [fullscreenIndex, setFullscreenIndex] = useState(0);
 
     // Placeholder изображение в формате SVG (серый фон)
     const PLACEHOLDER_IMAGE = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
@@ -158,8 +162,74 @@ export default function PropertyPage() {
         };
     }, [announcement, contacts]);
 
+    // Функция для парсинга дополнительных полей из описания
+    const parseAdditionalFields = useMemo(() => {
+        if (!propertyData?.description) return {};
+        
+        const description = propertyData.description;
+        const fields: {
+            bathroom_count?: number;
+            balcony_area?: string;
+            is_duplex?: boolean;
+            is_two_story?: boolean;
+            house_floors?: number;
+            mortgage_available?: boolean | null;
+            has_balcony?: boolean;
+        } = {};
+        
+        // Парсим количество санузлов
+        const bathroomCountMatch = description.match(/<strong>количество санузлов:<\/strong>\s*(\d+)/i);
+        if (bathroomCountMatch) {
+            fields.bathroom_count = parseInt(bathroomCountMatch[1], 10);
+        }
+        
+        // Парсим балкон
+        const balconyMatch = description.match(/<strong>балкон:<\/strong>\s*([^<]+)/i);
+        if (balconyMatch) {
+            const balconyText = balconyMatch[1].trim().toLowerCase();
+            if (balconyText.includes("есть") || balconyText.includes("да")) {
+                fields.has_balcony = true;
+                const areaMatch = balconyText.match(/(\d+(?:[.,]\d+)?)\s*м²/i);
+                if (areaMatch) {
+                    fields.balcony_area = areaMatch[1].replace(",", ".");
+                }
+            }
+        }
+        
+        // Парсим дуплекс
+        const duplexMatch = description.match(/<strong>дуплекс:<\/strong>\s*([^<]+)/i);
+        if (duplexMatch) {
+            const duplexText = duplexMatch[1].trim().toLowerCase();
+            fields.is_duplex = duplexText === "да" || duplexText.includes("да");
+        }
+        
+        // Парсим двухэтажную квартиру
+        const twoStoryMatch = description.match(/<strong>двухэтажная квартира:<\/strong>\s*([^<]+)/i);
+        if (twoStoryMatch) {
+            const twoStoryText = twoStoryMatch[1].trim().toLowerCase();
+            fields.is_two_story = twoStoryText === "да" || twoStoryText.includes("да");
+        }
+        
+        // Парсим этажи домов/участков
+        const houseFloorsMatch = description.match(/<strong>этажи \(дома \/ участки\):<\/strong>\s*(\d+)/i);
+        if (houseFloorsMatch) {
+            fields.house_floors = parseInt(houseFloorsMatch[1], 10);
+        }
+        
+        // Парсим ипотеку
+        const mortgageMatch = description.match(/<strong>ипотека:<\/strong>\s*([^<]+)/i);
+        if (mortgageMatch) {
+            const mortgageText = mortgageMatch[1].trim().toLowerCase();
+            fields.mortgage_available = mortgageText.includes("доступна") || mortgageText.includes("можно");
+        }
+        
+        return fields;
+    }, [propertyData?.description]);
+
     const characteristics = useMemo(() => {
         if (!propertyData) return [];
+        
+        const additionalFields = parseAdditionalFields;
         
         const allCharacteristics = [
             { icon: Building2, label: "Тип", value: propertyData.type },
@@ -177,10 +247,24 @@ export default function PropertyPage() {
             propertyData.renovation && { icon: Wrench, label: "Ремонт", value: propertyData.renovation },
             propertyData.yearBuilt && { icon: Calendar, label: "Год постройки", value: `${propertyData.yearBuilt}` },
             propertyData.availableFrom && { icon: Calendar, label: "Доступно с", value: new Date(propertyData.availableFrom).toLocaleDateString('ru-RU') },
+            additionalFields.bathroom_count && { icon: Droplets, label: "Количество санузлов", value: `${additionalFields.bathroom_count}` },
+            additionalFields.is_duplex && { icon: Home, label: "Дабллюкс (квартира)", value: "Да" },
+            additionalFields.is_two_story && { icon: Home, label: "Двухэтажная квартира", value: "Да" },
+            additionalFields.house_floors && { icon: Building2, label: "Этажи (дома / участки)", value: `${additionalFields.house_floors}` },
+            additionalFields.mortgage_available !== undefined && { 
+                icon: Home, 
+                label: "Ипотека", 
+                value: additionalFields.mortgage_available ? "Доступна" : "Недоступна" 
+            },
+            additionalFields.has_balcony && { 
+                icon: Home, 
+                label: "Балкон", 
+                value: additionalFields.balcony_area ? `Есть, ${additionalFields.balcony_area} м²` : "Есть" 
+            },
         ].filter(Boolean) as Array<{ icon: any; label: string; value: string }>;
         
         return allCharacteristics;
-    }, [propertyData]);
+    }, [propertyData, parseAdditionalFields]);
 
     const handlePhoneClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -255,6 +339,10 @@ export default function PropertyPage() {
                                     className={styles.mainSlider}
                                     activeIndex={activeImageIndex}
                                     onSlideChange={setActiveImageIndex}
+                                    onFullscreen={(index) => {
+                                        setFullscreenIndex(index);
+                                        setIsFullscreenOpen(true);
+                                    }}
                                 />
                                 <ThumbnailsSlider
                                     images={images}
@@ -263,6 +351,13 @@ export default function PropertyPage() {
                                     className={styles.thumbnails}
                                 />
                             </div>
+
+                            <FullscreenGallery
+                                images={images}
+                                initialIndex={fullscreenIndex}
+                                isOpen={isFullscreenOpen}
+                                onClose={() => setIsFullscreenOpen(false)}
+                            />
 
                             <motion.div
                                 className={styles.header}

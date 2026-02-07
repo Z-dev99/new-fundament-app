@@ -30,6 +30,14 @@ interface FormData {
     house_number?: string;
     price?: string;
     currency?: string;
+    // Дополнительные поля, не отправляемые на сервер
+    bathroom_count?: number;
+    is_duplex?: boolean;
+    is_two_story?: boolean;
+    house_floors?: number;
+    mortgage_available?: boolean;
+    has_balcony?: boolean;
+    balcony_area?: string;
 }
 
 export const generateDescription = (formData: FormData): string => {
@@ -134,13 +142,48 @@ export const generateDescription = (formData: FormData): string => {
     // Санузел
     const bathroomLayout = BATHROOM_LAYOUTS.find(t => t.value === formData.bathroom_layout);
     if (bathroomLayout) {
-        characteristics.push(`<li><strong>санузел:</strong> ${bathroomLayout.label.toLowerCase()}</li>`);
+        const bathroomLabel = bathroomLayout.label.charAt(0).toUpperCase() + bathroomLayout.label.slice(1).toLowerCase();
+        characteristics.push(`<li><strong>санузел:</strong> ${bathroomLabel}</li>`);
+    }
+
+    // Количество санузлов
+    if (formData.bathroom_count) {
+        characteristics.push(`<li><strong>количество санузлов:</strong> ${formData.bathroom_count}</li>`);
+    }
+
+    // Дуплекс
+    if (formData.is_duplex) {
+        characteristics.push(`<li><strong>дуплекс:</strong> Да</li>`);
+    }
+
+    // Двухэтажная квартира
+    if (formData.is_two_story) {
+        characteristics.push(`<li><strong>двухэтажная квартира:</strong> Да</li>`);
+    }
+
+    // Этажи (дома / участки)
+    if (formData.house_floors) {
+        characteristics.push(`<li><strong>этажи (дома / участки):</strong> ${formData.house_floors}</li>`);
+    }
+
+    // Ипотека
+    if (formData.mortgage_available !== undefined) {
+        characteristics.push(`<li><strong>ипотека:</strong> ${formData.mortgage_available ? "Доступна" : "Недоступна"}</li>`);
+    }
+
+    // Балкон
+    if (formData.has_balcony) {
+        const balconyText = formData.balcony_area 
+            ? `Есть, ${formData.balcony_area} м²`
+            : "Есть";
+        characteristics.push(`<li><strong>балкон:</strong> ${balconyText}</li>`);
     }
 
     // Отопление
     const heatingType = HEATING_TYPES.find(t => t.value === formData.heating_type);
     if (heatingType) {
-        characteristics.push(`<li><strong>отопление:</strong> ${heatingType.label.toLowerCase()}</li>`);
+        const heatingLabel = heatingType.label.charAt(0).toUpperCase() + heatingType.label.slice(1).toLowerCase();
+        characteristics.push(`<li><strong>отопление:</strong> ${heatingLabel}</li>`);
     }
 
     // Состояние/ремонт

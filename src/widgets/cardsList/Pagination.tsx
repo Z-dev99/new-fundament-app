@@ -13,21 +13,28 @@ interface Props {
 export const Pagination: React.FC<Props> = ({ page, pages, onChange }) => {
     if (pages <= 1) return null;
 
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     const handlePrev = () => {
         if (page > 1) {
             onChange(page - 1);
+            scrollToTop();
         }
     };
 
     const handleNext = () => {
         if (page < pages) {
             onChange(page + 1);
+            scrollToTop();
         }
     };
 
     const handlePageClick = (newPage: number) => {
         if (newPage !== page && newPage >= 1 && newPage <= pages) {
             onChange(newPage);
+            scrollToTop();
         }
     };
 

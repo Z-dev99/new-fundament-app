@@ -7,6 +7,31 @@ import { useGetAnnouncementByIdQuery } from "@/shared/api/announcementsApi";
 import { getImageUrl } from "../utils";
 import styles from "../styles.module.scss";
 
+// Функция для удаления HTML тегов и форматирования текста
+const stripHtmlTags = (html: string): string => {
+    if (!html) return "";
+    
+    // Заменяем HTML теги на переносы строк и пробелы для сохранения структуры
+    let text = html
+        .replace(/<h3>/gi, "\n\n") // Заголовки - двойной перенос
+        .replace(/<\/h3>/gi, "\n")
+        .replace(/<p>/gi, "\n") // Параграфы - перенос
+        .replace(/<\/p>/gi, "\n")
+        .replace(/<ul>/gi, "\n") // Списки
+        .replace(/<\/ul>/gi, "\n")
+        .replace(/<li>/gi, "\n• ") // Элементы списка с маркером
+        .replace(/<\/li>/gi, "")
+        .replace(/<strong>/gi, "") // Убираем теги форматирования, но сохраняем текст
+        .replace(/<\/strong>/gi, "")
+        .replace(/<br\s*\/?>/gi, "\n") // Переносы строк
+        .replace(/<[^>]+>/g, "") // Удаляем все остальные HTML теги
+        .replace(/\n\s*\n\s*\n/g, "\n\n") // Убираем множественные переносы
+        .replace(/[ \t]+/g, " ") // Множественные пробелы в один
+        .trim();
+    
+    return text;
+};
+
 interface DetailModalProps {
     announcementId: string;
     onClose: () => void;
@@ -110,7 +135,13 @@ export const DetailModal: React.FC<DetailModalProps> = ({ announcementId, onClos
                     {data.description && (
                         <div className={styles.detailSection}>
                             <h3>Описание</h3>
-                            <p className={styles.descriptionText}>{data.description}</p>
+                            <div className={styles.descriptionText}>
+                                {stripHtmlTags(data.description).split("\n\n").map((paragraph, index) => (
+                                    <p key={index} style={{ marginBottom: "16px", lineHeight: "1.6" }}>
+                                        {paragraph.trim()}
+                                    </p>
+                                ))}
+                            </div>
                         </div>
                     )}
 

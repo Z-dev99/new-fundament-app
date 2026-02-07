@@ -18,6 +18,8 @@ export const LAYOUT_TYPES = [
     { value: "STUDIO", label: "Студия" },
     { value: "SEPARATE_ROOMS", label: "Раздельные комнаты" },
     { value: "OPEN_PLAN", label: "Свободная планировка" },
+    { value: "DUPLEX", label: "Дуплекс" },
+    { value: "TWO_STORY", label: "Двухэтажная квартира" },
 ] as const;
 
 export const WALL_MATERIALS = [
@@ -33,6 +35,7 @@ export const WALL_MATERIALS = [
 export const BATHROOM_LAYOUTS = [
     { value: "COMBINED", label: "Совмещенный" },
     { value: "SEPARATE", label: "Раздельный" },
+    { value: "TWO_OR_MORE", label: "2 и более санузлов" },
 ] as const;
 
 export const HEATING_TYPES = [

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import styles from "./ImageSlider.module.scss";
 
 interface ImageSliderProps {
@@ -11,6 +11,7 @@ interface ImageSliderProps {
     className?: string;
     activeIndex?: number;
     onSlideChange?: (index: number) => void;
+    onFullscreen?: (index: number) => void;
 }
 
 export const ImageSlider: React.FC<ImageSliderProps> = ({
@@ -18,6 +19,7 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
     className,
     activeIndex: externalIndex,
     onSlideChange,
+    onFullscreen,
 }) => {
     const [internalIndex, setInternalIndex] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -82,7 +84,11 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
                         exit={{ opacity: 0, x: -100 }}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                        <div className={styles.imageWrapper}>
+                        <div 
+                            className={styles.imageWrapper}
+                            onClick={() => onFullscreen?.(currentIndex)}
+                            style={{ cursor: onFullscreen ? "pointer" : "default" }}
+                        >
                             <Image
                                 src={images[currentIndex]}
                                 alt={`Изображение ${currentIndex + 1}`}
@@ -91,6 +97,18 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
                                 sizes="(max-width: 768px) 100vw, 70vw"
                                 priority={currentIndex === 0}
                             />
+                            {onFullscreen && (
+                                <button
+                                    className={styles.fullscreenButton}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onFullscreen(currentIndex);
+                                    }}
+                                    aria-label="Открыть в полноэкранном режиме"
+                                >
+                                    <Maximize2 size={20} />
+                                </button>
+                            )}
                         </div>
                     </motion.div>
                 </AnimatePresence>
