@@ -14,6 +14,9 @@ import {
     useGetAnnouncementByIdQuery,
     useGetAnnouncementContactsQuery,
 } from "@/shared/api/announcementsApi";
+import { useGetUSDRateQuery } from "@/shared/api/currencyApi";
+import { formatPrice } from "@/shared/utils/currencyConverter";
+import { useCurrency } from "@/shared/contexts/CurrencyContext";
 
 // Динамический импорт карты для избежания проблем с SSR
 const PropertyMap = dynamic(() => import("./PropertyMap"), { ssr: false });
@@ -98,10 +101,16 @@ const getImageUrl = (imagePath: string): string => {
 export default function PropertyPage() {
     const routeParams = useParams();
     const id = routeParams.id as string;
-    
+    const { selectedCurrency } = useCurrency();
+
     const { data: announcement, isLoading, error } = useGetAnnouncementByIdQuery(id);
     const { data: contacts, isLoading: loadingContacts } = useGetAnnouncementContactsQuery(id);
-    
+
+    // Получаем курс USD
+    const { data: usdRateData } = useGetUSDRateQuery();
+    const usdRate = usdRateData?.[0] ? parseFloat(usdRateData[0].Rate) : null;
+    const usdNominal = usdRateData?.[0] ? parseFloat(usdRateData[0].Nominal) : 1;
+
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [showPhone, setShowPhone] = useState(false);
     const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
@@ -129,10 +138,22 @@ export default function PropertyPage() {
             announcement.apartment && announcement.apartment !== "0" && `кв. ${announcement.apartment}`,
         ].filter(Boolean);
 
+        const originalPrice = Number(announcement.price);
+        const originalCurrency = announcement.currency || "UZS";
+
+        // Конвертируем цену если выбрана валюта
+        const formattedPrice = formatPrice(
+            originalPrice,
+            originalCurrency,
+            selectedCurrency,
+            usdRate,
+            usdNominal
+        );
+
         return {
             id: announcement.id,
             title: announcement.title,
-            price: `${Number(announcement.price).toLocaleString('ru-RU')} ${announcement.currency}`,
+            price: formattedPrice,
             address: addressParts.join(", ") || `${announcement.city}, ${announcement.district}`,
             description: announcement.description || "",
             type: announcement.type === "SALE" ? "Продажа" : "Аренда",
@@ -157,15 +178,15 @@ export default function PropertyPage() {
                 lat: parseFloat(announcement.latitude) || 41.2995,
                 lng: parseFloat(announcement.longitude) || 69.2401,
             },
-            phone: contacts?.phone_number || "",
+            phone: "+998770900800",
             email: contacts?.email || "",
         };
-    }, [announcement, contacts]);
+    }, [announcement, contacts, selectedCurrency, usdRate, usdNominal]);
 
     // Функция для парсинга дополнительных полей из описания
     const parseAdditionalFields = useMemo(() => {
         if (!propertyData?.description) return {};
-        
+
         const description = propertyData.description;
         const fields: {
             bathroom_count?: number;
@@ -176,13 +197,13 @@ export default function PropertyPage() {
             mortgage_available?: boolean | null;
             has_balcony?: boolean;
         } = {};
-        
+
         // Парсим количество санузлов
         const bathroomCountMatch = description.match(/<strong>количество санузлов:<\/strong>\s*(\d+)/i);
         if (bathroomCountMatch) {
             fields.bathroom_count = parseInt(bathroomCountMatch[1], 10);
         }
-        
+
         // Парсим балкон
         const balconyMatch = description.match(/<strong>балкон:<\/strong>\s*([^<]+)/i);
         if (balconyMatch) {
@@ -195,42 +216,42 @@ export default function PropertyPage() {
                 }
             }
         }
-        
+
         // Парсим дуплекс
         const duplexMatch = description.match(/<strong>дуплекс:<\/strong>\s*([^<]+)/i);
         if (duplexMatch) {
             const duplexText = duplexMatch[1].trim().toLowerCase();
             fields.is_duplex = duplexText === "да" || duplexText.includes("да");
         }
-        
+
         // Парсим двухэтажную квартиру
         const twoStoryMatch = description.match(/<strong>двухэтажная квартира:<\/strong>\s*([^<]+)/i);
         if (twoStoryMatch) {
             const twoStoryText = twoStoryMatch[1].trim().toLowerCase();
             fields.is_two_story = twoStoryText === "да" || twoStoryText.includes("да");
         }
-        
+
         // Парсим этажи домов/участков
         const houseFloorsMatch = description.match(/<strong>этажи \(дома \/ участки\):<\/strong>\s*(\d+)/i);
         if (houseFloorsMatch) {
             fields.house_floors = parseInt(houseFloorsMatch[1], 10);
         }
-        
+
         // Парсим ипотеку
         const mortgageMatch = description.match(/<strong>ипотека:<\/strong>\s*([^<]+)/i);
         if (mortgageMatch) {
             const mortgageText = mortgageMatch[1].trim().toLowerCase();
             fields.mortgage_available = mortgageText.includes("доступна") || mortgageText.includes("можно");
         }
-        
+
         return fields;
     }, [propertyData?.description]);
 
     const characteristics = useMemo(() => {
         if (!propertyData) return [];
-        
+
         const additionalFields = parseAdditionalFields;
-        
+
         const allCharacteristics = [
             { icon: Building2, label: "Тип", value: propertyData.type },
             { icon: Home, label: "Тип недвижимости", value: propertyData.propertyType },
@@ -251,18 +272,18 @@ export default function PropertyPage() {
             additionalFields.is_duplex && { icon: Home, label: "Дабллюкс (квартира)", value: "Да" },
             additionalFields.is_two_story && { icon: Home, label: "Двухэтажная квартира", value: "Да" },
             additionalFields.house_floors && { icon: Building2, label: "Этажи (дома / участки)", value: `${additionalFields.house_floors}` },
-            additionalFields.mortgage_available !== undefined && { 
-                icon: Home, 
-                label: "Ипотека", 
-                value: additionalFields.mortgage_available ? "Доступна" : "Недоступна" 
+            additionalFields.mortgage_available !== undefined && {
+                icon: Home,
+                label: "Ипотека",
+                value: additionalFields.mortgage_available ? "Доступна" : "Недоступна"
             },
-            additionalFields.has_balcony && { 
-                icon: Home, 
-                label: "Балкон", 
-                value: additionalFields.balcony_area ? `Есть, ${additionalFields.balcony_area} м²` : "Есть" 
+            additionalFields.has_balcony && {
+                icon: Home,
+                label: "Балкон",
+                value: additionalFields.balcony_area ? `Есть, ${additionalFields.balcony_area} м²` : "Есть"
             },
         ].filter(Boolean) as Array<{ icon: any; label: string; value: string }>;
-        
+
         return allCharacteristics;
     }, [propertyData, parseAdditionalFields]);
 
@@ -271,7 +292,7 @@ export default function PropertyPage() {
         e.stopPropagation();
 
         if (showPhone || !propertyData?.phone || loadingContacts) return;
-        
+
         setShowPhone(true);
         setTimeout(() => setShowPhone(false), 5000);
     };
@@ -319,7 +340,7 @@ export default function PropertyPage() {
         },
     };
 
-    
+
 
     return (
         <>
@@ -433,7 +454,7 @@ export default function PropertyPage() {
                                     className={styles.description}
                                 >
                                     <h2 className={styles.sectionTitle}>Описание</h2>
-                                    <div 
+                                    <div
                                         className={styles.descriptionContent}
                                         dangerouslySetInnerHTML={{ __html: propertyData.description }}
                                     />
@@ -475,7 +496,7 @@ export default function PropertyPage() {
                                 transition={{ duration: 0.2 }}
                             >
                                 <h3 className={styles.ownerTitle}>Контакты</h3>
-                                
+
                                 {loadingContacts ? (
                                     <button
                                         className={styles.phoneBtn}
@@ -504,7 +525,7 @@ export default function PropertyPage() {
                                                 </>
                                             )}
                                         </button>
-                                        
+
                                         {showPhone && (
                                             <motion.a
                                                 href={`tel:${propertyData.phone.replace(/\s/g, "")}`}
@@ -520,7 +541,7 @@ export default function PropertyPage() {
                                         )}
                                     </>
                                 ) : null}
-                                
+
                                 {propertyData.email && (
                                     <motion.a
                                         href={`mailto:${propertyData.email}`}
@@ -556,7 +577,7 @@ export default function PropertyPage() {
                 </div>
             </section>
 
-            <WhyThisProperty 
+            <WhyThisProperty
                 propertyType={propertyData?.propertyType}
                 district={propertyData?.address.split(",")[1]?.trim()}
             />

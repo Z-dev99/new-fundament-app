@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mail, MessageCircle, Phone, ExternalLink } from "lucide-react";
+import { Mail, Phone, ExternalLink } from "lucide-react";
 import styles from "./ContactBlocks.module.scss";
 
 export const ContactMethods = () => {
@@ -13,14 +13,6 @@ export const ContactMethods = () => {
             value: "info@fundament.uz",
             link: "mailto:info@fundament.uz",
             color: "#ff6b6b",
-        },
-        {
-            icon: <MessageCircle size={24} />,
-            title: "WhatsApp",
-            description: "Быстрая связь через WhatsApp",
-            value: "+998 88 755 65 56",
-            link: "https://wa.me/998887556556",
-            color: "#25D366",
         },
         {
             icon: <Phone size={24} />,

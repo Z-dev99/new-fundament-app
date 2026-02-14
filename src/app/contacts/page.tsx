@@ -10,8 +10,8 @@ const contacts = [
     {
         id: 1,
         title: "Бесплатная консультация",
-        phone: "+998887556556",
-        tg: "https://t.me/example",
+        phone: "+998770900800",
+        tg: "https://t.me/Fundament_CEO",
         icon: MessageCircle,
         gradient: "gradient1",
         description: "Получите бесплатную консультацию по недвижимости",
@@ -19,8 +19,8 @@ const contacts = [
     {
         id: 2,
         title: "Корпоративным клиентам",
-        phone: "+998887556556",
-        tg: "https://t.me/example",
+        phone: "+998770900800",
+        tg: "https://t.me/Fundament_CEO",
         icon: Users,
         gradient: "gradient2",
         description: "Специальные условия для корпоративных клиентов",
@@ -28,8 +28,8 @@ const contacts = [
     {
         id: 3,
         title: "Предложения о сотрудничестве",
-        phone: "+998887556556",
-        tg: "https://t.me/example",
+        phone: "+998770900800",
+        tg: "https://t.me/Fundament_CEO",
         icon: Zap,
         gradient: "gradient3",
         description: "Предложите нам сотрудничество или партнерство",

@@ -1,9 +1,9 @@
 "use client";
 
-import { FC, useMemo } from "react";
+import { FC } from "react";
 import { motion } from "framer-motion";
 import styles from "./InlineAdBlock.module.scss";
-import { useGetBannersQuery } from "@/shared/api/bannersApi";
+import { useGetBannerByTypeQuery } from "@/shared/api/bannersApi";
 import Image from "next/image";
 
 interface InlineAdBlockProps {
@@ -23,14 +23,7 @@ export const InlineAdBlock: FC<InlineAdBlockProps> = ({
     title = "Место для вашей рекламы",
     onClick 
 }) => {
-    const { data: banners, isLoading } = useGetBannersQuery();
-    
-    // Получаем MIDDLE_SIDE баннеры
-    const middleBanners = useMemo(() => {
-        return banners?.filter((b) => b.banner_type === "MIDDLE_SIDE") || [];
-    }, [banners]);
-
-    // Берем первый баннер, если есть
+    const { data: middleBanners = [] } = useGetBannerByTypeQuery("MIDDLE_SIDE");
     const banner = middleBanners[0];
 
     return (
@@ -47,9 +40,10 @@ export const InlineAdBlock: FC<InlineAdBlockProps> = ({
                     <Image
                         src={getImageUrl(banner.file_name)}
                         alt={title}
-                        width={800}
-                        height={400}
+                        fill
                         className={styles.bannerImage}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                        style={{ objectFit: "cover" }}
                         unoptimized
                     />
                 </div>

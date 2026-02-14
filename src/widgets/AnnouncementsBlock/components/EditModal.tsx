@@ -68,7 +68,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="title"
-                                    value={formData.title}
+                                    value={formData.title ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -78,7 +78,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <label>Тип *</label>
                                 <select
                                     name="type"
-                                    value={formData.type}
+                                    value={formData.type ?? "SALE"}
                                     onChange={handleInputChange}
                                     required
                                 >
@@ -95,7 +95,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <label>Тип недвижимости *</label>
                                 <select
                                     name="property_type"
-                                    value={formData.property_type}
+                                    value={formData.property_type ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 >
@@ -128,25 +128,27 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                             <div className={styles.formGroup}>
                                 <label>Цена *</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     name="price"
-                                    value={formData.price}
+                                    value={formData.price ?? ""}
                                     onChange={handleInputChange}
+                                    placeholder="Например: 400000 или 400$"
                                     required
                                 />
+                                <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}>
+                                    Можно ввести цену в сумах (400000) или в долларах (400$). Доллары автоматически конвертируются в сумы по курсу ЦБУ.
+                                </p>
                             </div>
 
                             <div className={styles.formGroup}>
                                 <label>Валюта *</label>
                                 <select
                                     name="currency"
-                                    value={formData.currency}
+                                    value={formData.currency ?? "UZS"}
                                     onChange={handleInputChange}
                                     required
                                 >
                                     <option value="UZS">UZS</option>
-                                    <option value="USD">USD</option>
-                                    <option value="EUR">EUR</option>
                                 </select>
                             </div>
 
@@ -155,7 +157,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="number"
                                     name="rooms_count"
-                                    value={formData.rooms_count}
+                                    value={formData.rooms_count ?? 1}
                                     onChange={handleInputChange}
                                     min="1"
                                     required
@@ -167,7 +169,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="area_total"
-                                    value={formData.area_total}
+                                    value={formData.area_total ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -178,7 +180,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="area_living"
-                                    value={formData.area_living}
+                                    value={formData.area_living ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -189,7 +191,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="area_kitchen"
-                                    value={formData.area_kitchen}
+                                    value={formData.area_kitchen ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -200,7 +202,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="number"
                                     name="floor"
-                                    value={formData.floor}
+                                    value={formData.floor ?? 1}
                                     onChange={handleInputChange}
                                     min="1"
                                     required
@@ -212,7 +214,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="number"
                                     name="floors_total"
-                                    value={formData.floors_total}
+                                    value={formData.floors_total ?? 1}
                                     onChange={handleInputChange}
                                     min="1"
                                     required
@@ -224,7 +226,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="number"
                                     name="ceiling_height"
-                                    value={formData.ceiling_height}
+                                    value={formData.ceiling_height ?? 2.5}
                                     onChange={handleInputChange}
                                     step="0.1"
                                     required
@@ -236,7 +238,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="number"
                                     name="year_built"
-                                    value={formData.year_built}
+                                    value={formData.year_built ?? new Date().getFullYear()}
                                     onChange={handleInputChange}
                                     min="1900"
                                     max={new Date().getFullYear()}
@@ -254,7 +256,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="country"
-                                    value={formData.country}
+                                    value={formData.country ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -265,7 +267,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="region"
-                                    value={formData.region}
+                                    value={formData.region ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -276,7 +278,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="city"
-                                    value={formData.city}
+                                    value={formData.city ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -287,7 +289,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="district"
-                                    value={formData.district}
+                                    value={formData.district ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -298,7 +300,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="street"
-                                    value={formData.street}
+                                    value={formData.street ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -309,7 +311,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="house_number"
-                                    value={formData.house_number}
+                                    value={formData.house_number ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -320,7 +322,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="block"
-                                    value={formData.block}
+                                    value={formData.block ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -331,7 +333,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="apartment"
-                                    value={formData.apartment}
+                                    value={formData.apartment ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -440,7 +442,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="number"
                                     name="bathroom_count"
-                                    value={formData.bathroom_count || ""}
+                                    value={formData.bathroom_count ?? ""}
                                     onChange={handleInputChange}
                                     placeholder="-"
                                     min="1"
@@ -452,7 +454,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="number"
                                     name="house_floors"
-                                    value={formData.house_floors || ""}
+                                    value={formData.house_floors ?? ""}
                                     onChange={handleInputChange}
                                     placeholder="например: 2"
                                     min="1"
@@ -464,7 +466,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="balcony_area"
-                                    value={formData.balcony_area || ""}
+                                    value={formData.balcony_area ?? ""}
                                     onChange={handleInputChange}
                                     placeholder="-"
                                     disabled={!formData.has_balcony}
@@ -531,14 +533,14 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <label>Описание *</label>
                                 <textarea
                                     name="description"
-                                    value={formData.description}
+                                    value={formData.description ?? ""}
                                     onChange={handleInputChange}
                                     rows={12}
                                     required
                                     readOnly
                                     className={styles.descriptionTextarea}
-                                    style={{ 
-                                        backgroundColor: "#f5f5f5", 
+                                    style={{
+                                        backgroundColor: "#f5f5f5",
                                         cursor: "not-allowed",
                                         whiteSpace: "pre-wrap",
                                         lineHeight: "1.6",
@@ -555,7 +557,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="date"
                                     name="available_from"
-                                    value={formData.available_from}
+                                    value={formData.available_from ?? new Date().toISOString().slice(0, 10)}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -567,10 +569,10 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                     <input
                                         type="text"
                                         name="cadastral_number"
-                                        value={formData.cadastral_number}
+                                        value={formData.cadastral_number ?? ""}
                                         onChange={handleInputChange}
                                         required
-                                        style={{ 
+                                        style={{
                                             paddingRight: "42px",
                                             width: "100%",
                                             flex: 1
@@ -616,8 +618,8 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
 
                             <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
                                 <label>Выберите местоположение на карте *</label>
-                                <div style={{ 
-                                    width: "100%", 
+                                <div style={{
+                                    width: "100%",
                                     marginTop: "8px",
                                     display: "block"
                                 }}>
@@ -639,7 +641,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="latitude"
-                                    value={formData.latitude}
+                                    value={formData.latitude ?? ""}
                                     onChange={handleInputChange}
                                     required
                                     placeholder="Выберите точку на карте"
@@ -653,7 +655,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="longitude"
-                                    value={formData.longitude}
+                                    value={formData.longitude ?? ""}
                                     onChange={handleInputChange}
                                     required
                                     placeholder="Выберите точку на карте"
@@ -667,7 +669,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="text"
                                     name="postal_code"
-                                    value={formData.postal_code}
+                                    value={formData.postal_code ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -683,7 +685,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="tel"
                                     name="contact_phone"
-                                    value={formData.contact_phone}
+                                    value={formData.contact_phone ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -694,7 +696,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 <input
                                     type="email"
                                     name="contact_email"
-                                    value={formData.contact_email}
+                                    value={formData.contact_email ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -706,11 +708,11 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                     <input
                                         type="text"
                                         name="subscription_id"
-                                        value={formData.subscription_id}
+                                        value={formData.subscription_id ?? ""}
                                         onChange={handleInputChange}
                                         placeholder={isEdit ? "Опционально" : "Обязательно"}
                                         required={!isEdit}
-                                        style={{ 
+                                        style={{
                                             paddingRight: "42px",
                                             width: "100%",
                                             flex: 1
@@ -817,7 +819,7 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                     <label>Дополнительная информация</label>
                                     <textarea
                                         name="rentAdditionalInfo"
-                                        value={formData.rentAdditionalInfo || ""}
+                                        value={formData.rentAdditionalInfo ?? ""}
                                         onChange={handleInputChange}
                                         placeholder="Например: + оплата за последний месяц, сумма комиссии и т.д."
                                         rows={3}

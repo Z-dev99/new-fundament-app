@@ -21,13 +21,13 @@ import NavLink from "../NavLink/NavLink";
 
 const socialLinks = [
     {
-        href: "https://t.me/",
+        href: "https://t.me/Fundament_CEO",
         label: "Telegram",
         icon: Send,
         color: "#0088cc",
     },
     {
-        href: "https://instagram.com/",
+        href: "https://www.instagram.com/fundament__uz?igsh=MndiMHk4NDRhN2Zj",
         label: "Instagram",
         icon: Instagram,
         color: "#E4405F",
@@ -104,7 +104,7 @@ export const Footer: React.FC = () => {
                         <div className={styles.contactInfo}>
                             <div className={styles.contactItem}>
                                 <Phone size={18} />
-                                <a href="tel:+998887556556">+998 88 755 65 56</a>
+                                <a href="tel:+998770900800">+998 77 090 08 00</a>
                             </div>
                             <div className={styles.contactItem}>
                                 <Mail size={18} />

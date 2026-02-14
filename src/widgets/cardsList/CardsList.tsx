@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import styles from "./CardsList.module.css";
 import { CardItem } from "./CardItem";
 import { Pagination } from "./Pagination";
 import { useGetAnnouncementsQuery } from "@/shared/api/announcementsApi";
 import type { AnnouncementsFilters } from "@/shared/api/announcementsApi";
 import FiltersBar from "@/widgets/filtersBar/FiltersBar";
+import { useGetUSDRateQuery } from "@/shared/api/currencyApi";
+import { formatPrice } from "@/shared/utils/currencyConverter";
+import { useCurrency } from "@/shared/contexts/CurrencyContext";
 
 interface Props {
     activeTab?: string;
@@ -25,16 +28,22 @@ const getImageUrl = (imagePath: string): string => {
 };
 
 export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
+    const { selectedCurrency } = useCurrency();
     const [page, setPage] = useState(1);
     const [filters, setFilters] = useState<Partial<AnnouncementsFilters>>({
-        currency: "UZS",
+        announcement_type: "SALE", // По умолчанию показываем объявления на продажу
     });
+    const cardsListRef = useRef<HTMLDivElement>(null);
+
+    // Получаем курс USD
+    const { data: usdRateData } = useGetUSDRateQuery();
+    const usdRate = usdRateData?.[0] ? parseFloat(usdRateData[0].Rate) : null;
+    const usdNominal = usdRateData?.[0] ? parseFloat(usdRateData[0].Nominal) : 1;
 
     const currentFilters = useMemo(() => {
         const result: Partial<AnnouncementsFilters> = {
             page,
             page_size: PER_PAGE,
-            currency: filters.currency || "UZS",
         };
 
         Object.entries(filters).forEach(([key, value]) => {
@@ -53,15 +62,23 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
     const handlePageChange = useCallback((newPage: number) => {
         if (newPage >= 1) {
             setPage(newPage);
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            // Скролл к началу списка объявлений
+            setTimeout(() => {
+                if (cardsListRef.current) {
+                    cardsListRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+                } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+            }, 100);
         }
     }, []);
 
     const handleFiltersChange = useCallback((newFilters: any) => {
-        const apiFilters: Partial<AnnouncementsFilters> = {
-            currency: newFilters.currency || "UZS",
-        };
+        const apiFilters: Partial<AnnouncementsFilters> = {};
 
+        // Валюта не отправляется в API, она используется только для отображения
+
+        // Добавляем тип сделки
         if (newFilters.dealType === "purchase") {
             apiFilters.announcement_type = "SALE";
         } else if (newFilters.dealType === "rent") {
@@ -123,23 +140,34 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
             return [];
         }
 
-        const mapped = data.announcements.map((announcement) => ({
-            id: announcement.id,
-            title: announcement.title || "Без названия",
-            price: `${Number(announcement.price || 0).toLocaleString("ru-RU")} ${announcement.currency === "USD" ? "$" :
-                announcement.currency === "EUR" ? "€" :
-                    "сум"
-                }`,
-            address: `${announcement.city || ""}${announcement.district ? `, ${announcement.district}` : ""}`.trim() || "Адрес не указан",
-            rooms: String(announcement.rooms_count || 0),
-            area: String(announcement.area_total || 0),
-            images: announcement.images && Array.isArray(announcement.images) && announcement.images.length > 0
-                ? announcement.images.map(img => getImageUrl(String(img)))
-                : [],
-        }));
+        const mapped = data.announcements.map((announcement) => {
+            const originalPrice = Number(announcement.price || 0);
+            const originalCurrency = announcement.currency || "UZS";
+
+            // Конвертируем цену если выбрана валюта
+            const formattedPrice = formatPrice(
+                originalPrice,
+                originalCurrency,
+                selectedCurrency,
+                usdRate,
+                usdNominal
+            );
+
+            return {
+                id: announcement.id,
+                title: announcement.title || "Без названия",
+                price: formattedPrice,
+                address: `${announcement.city || ""}${announcement.district ? `, ${announcement.district}` : ""}`.trim() || "Адрес не указан",
+                rooms: String(announcement.rooms_count || 0),
+                area: String(announcement.area_total || 0),
+                images: announcement.images && Array.isArray(announcement.images) && announcement.images.length > 0
+                    ? announcement.images.map(img => getImageUrl(String(img)))
+                    : [],
+            };
+        });
 
         return mapped;
-    }, [data, page]);
+    }, [data, page, selectedCurrency, usdRate, usdNominal]);
 
     const totalPages = useMemo(() => {
         if (!data?.total) return 1;
@@ -151,7 +179,7 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
     const hasItems = items.length > 0;
 
     return (
-        <div className={styles.wrapper}>
+        <div className={styles.wrapper} ref={cardsListRef}>
             <FiltersBar
                 activeTab={activeTab}
                 onFiltersChange={handleFiltersChange}

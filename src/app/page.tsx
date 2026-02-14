@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, Suspense, memo } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useDeviceType } from "@/shared/hooks/useMediaQuery";
-import { useGetBannersQuery } from "@/shared/api/bannersApi";
+import { useGetBannerByTypeQuery } from "@/shared/api/bannersApi";
 
 import { Navbar } from "@/widgets/navbar/ui/Navbar";
 import { Marquee } from "@/widgets/marquee/Marquee";
@@ -56,16 +56,17 @@ const PageContent = memo(function PageContent() {
     const [activeTab, setActiveTab] = useState("new-builds");
     const { isDesktop } = useDeviceType();
     const isMobile = !isDesktop;
-    const { data: banners } = useGetBannersQuery();
-
-    // Получаем LEFT_SIDE и RIGHT_SIDE баннеры
-    const leftBanner = useMemo(() => {
-        return banners?.find((b) => b.banner_type === "LEFT_SIDE");
-    }, [banners]);
-
-    const rightBanner = useMemo(() => {
-        return banners?.find((b) => b.banner_type === "RIGHT_SIDE");
-    }, [banners]);
+    
+    // Получаем LEFT_SIDE и RIGHT_SIDE баннеры по отдельности (возвращают массивы)
+    const { data: leftBanners = [] } = useGetBannerByTypeQuery("LEFT_SIDE", {
+        skip: !isDesktop, // Загружаем только на десктопе
+    });
+    const { data: rightBanners = [] } = useGetBannerByTypeQuery("RIGHT_SIDE", {
+        skip: !isDesktop, // Загружаем только на десктопе
+    });
+    
+    const leftBanner = leftBanners[0] || null;
+    const rightBanner = rightBanners[0] || null;
 
     const getImageUrl = (fileName: string): string => {
         return `https://fundament.uz/img/${fileName}`;

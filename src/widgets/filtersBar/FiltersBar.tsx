@@ -4,6 +4,7 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import styles from "./FiltersBar.module.scss";
 import { ModalFilter } from "../modal/ModalFilter";
 import type { AnnouncementsFilters } from "@/shared/api/announcementsApi";
+import { useCurrency } from "@/shared/contexts/CurrencyContext";
 
 const IconFilter = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -18,8 +19,8 @@ interface FiltersBarProps {
 }
 
 export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: FiltersBarProps = {}) {
+    const { selectedCurrency, setSelectedCurrency } = useCurrency();
     const [dealType, setDealType] = useState<"purchase" | "rent">("purchase");
-    const [currency, setCurrency] = useState<"UZS" | "USD" | "EUR">("UZS");
     const [priceFrom, setPriceFrom] = useState("");
     const [priceTo, setPriceTo] = useState("");
     const [areaFrom, setAreaFrom] = useState("");
@@ -63,7 +64,8 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
         const finalAreaFrom = areaFrom || (modalFilters.min_area_total ? String(modalFilters.min_area_total) : "");
         const finalAreaTo = areaTo || (modalFilters.max_area_total ? String(modalFilters.max_area_total) : "");
         const finalRooms = rooms !== null ? String(rooms) : (modalFilters.min_rooms ? String(modalFilters.min_rooms) : null);
-        const finalCurrency = currency || modalFilters.currency || "UZS";
+        // Используем выбранную валюту из контекста (но не отправляем в API)
+        const finalCurrency = selectedCurrency || modalFilters.currency;
 
         const allFilters = {
             activeTab,
@@ -73,7 +75,7 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
             areaFrom: finalAreaFrom,
             areaTo: finalAreaTo,
             rooms: finalRooms,
-            currency: finalCurrency,
+            currency: finalCurrency, // Передаем для отображения, но не в API
             // Дополнительные фильтры из модалки (теперь в формате API)
             city: modalFilters.city,
             district: modalFilters.district,
@@ -103,7 +105,7 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
             available_from: modalFilters.available_from,
         };
         onFiltersChange?.(allFilters);
-    }, [activeTab, dealType, currency, priceFrom, priceTo, areaFrom, areaTo, rooms, modalFilters, onFiltersChange]);
+    }, [activeTab, dealType, selectedCurrency, priceFrom, priceTo, areaFrom, areaTo, rooms, modalFilters, onFiltersChange, setSelectedCurrency]);
 
     const handleModalApply = useCallback((filters: Partial<AnnouncementsFilters>) => {
         setModalFilters(filters);
@@ -112,7 +114,7 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
             setDealType(filters.announcement_type === "SALE" ? "purchase" : "rent");
         }
         if (filters.currency) {
-            setCurrency(filters.currency as "UZS" | "USD" | "EUR");
+            setSelectedCurrency(filters.currency as "UZS" | "USD");
         }
         // Поддерживаем оба варианта: priceFrom/priceTo и min_price/max_price
         if (filters.min_price) {
@@ -142,6 +144,13 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
             return () => clearTimeout(timer);
         }
     }, [modalFilters, onApply]);
+
+    // Применяем фильтры по умолчанию при монтировании (покупка по умолчанию)
+    useEffect(() => {
+        // Применяем фильтры при первой загрузке
+        onApply();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Пустой массив зависимостей - выполняется только при монтировании
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -175,7 +184,7 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
 
     const handleClearFilters = useCallback(() => {
         setDealType("purchase");
-        setCurrency("UZS");
+        setSelectedCurrency("");
         setPriceFrom("");
         setPriceTo("");
         setAreaFrom("");
@@ -186,7 +195,6 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
         onFiltersChange?.({
             activeTab,
             dealType: "purchase",
-            currency: "UZS",
             priceFrom: "",
             priceTo: "",
             areaFrom: "",
@@ -195,12 +203,10 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
         });
     }, [activeTab, onFiltersChange]);
 
-    const getCurrencySymbol = (curr: "UZS" | "USD" | "EUR") => {
+    const getCurrencySymbol = (curr: "UZS" | "USD" | "") => {
         switch (curr) {
             case "USD":
                 return "$";
-            case "EUR":
-                return "€";
             default:
                 return "сум";
         }
@@ -242,13 +248,13 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
                             <div className={styles.priceRow}>
                                 <div className={styles.currencySelect}>
                                     <select
-                                        value={currency}
-                                        onChange={(e) => setCurrency(e.target.value as "UZS" | "USD" | "EUR")}
+                                        value={selectedCurrency}
+                                        onChange={(e) => setSelectedCurrency(e.target.value as "UZS" | "USD" | "")}
                                         className={styles.currencySelectInput}
                                     >
+                                        <option value="">Все валюты</option>
                                         <option value="UZS">UZS</option>
                                         <option value="USD">USD</option>
-                                        <option value="EUR">EUR</option>
                                     </select>
                                 </div>
                                 <div className={styles.inlineInputs}>
@@ -261,7 +267,7 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
                                             onChange={(e) => setPriceFrom(e.target.value)}
                                             className={styles.input}
                                         />
-                                        <span className={styles.inputSuffix}>{getCurrencySymbol(currency)}</span>
+                                        <span className={styles.inputSuffix}>{getCurrencySymbol(selectedCurrency)}</span>
                                     </div>
                                     <div className={styles.rangeSeparator}>—</div>
                                     <div className={styles.inputWrapper}>
@@ -273,7 +279,7 @@ export default function FiltersBar({ activeTab, onFiltersChange, totalCount }: F
                                             onChange={(e) => setPriceTo(e.target.value)}
                                             className={styles.input}
                                         />
-                                        <span className={styles.inputSuffix}>{getCurrencySymbol(currency)}</span>
+                                        <span className={styles.inputSuffix}>{getCurrencySymbol(selectedCurrency)}</span>
                                     </div>
                                 </div>
                             </div>

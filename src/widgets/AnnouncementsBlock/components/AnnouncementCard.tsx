@@ -1,11 +1,13 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
+import NextImage from "next/image";
 import { Eye, Edit, Trash2, Image as ImageIcon } from "lucide-react";
 import type { Announcement } from "@/shared/api/announcementsApi";
 import { getImageUrl } from "../utils";
 import styles from "../styles.module.scss";
+
+const PLACEHOLDER_IMAGE = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
 
 interface AnnouncementCardProps {
     announcement: Announcement;
@@ -25,21 +27,36 @@ export const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
     onDelete,
 }) => {
     const gradientClass = `gradient${(index % 3) + 1}`;
+    const [imageError, setImageError] = useState(false);
+    const imageUrl = announcement.images && announcement.images.length > 0 
+        ? getImageUrl(announcement.images[0]) 
+        : null;
+
+    // Проверяем загрузку изображения
+    useEffect(() => {
+        if (imageUrl) {
+            const img = new window.Image();
+            img.onerror = () => setImageError(true);
+            img.onload = () => setImageError(false);
+            img.src = imageUrl;
+        }
+    }, [imageUrl]);
 
     return (
         <div className={`${styles.card} ${styles[gradientClass]}`}>
             <div className={styles.cardHeader}>
                 <div className={styles.cardImage}>
-                    {announcement.images && announcement.images.length > 0 ? (
-                        <Image
-                            src={getImageUrl(announcement.images[0])}
+                    {announcement.images && announcement.images.length > 0 && !imageError ? (
+                        <NextImage
+                            src={imageUrl || PLACEHOLDER_IMAGE}
                             alt={announcement.title}
                             width={300}
                             height={200}
                             className={styles.image}
                             unoptimized
+                            onError={() => setImageError(true)}
                         />
-                    ) : (
+                    ) : announcement.images && announcement.images.length > 0 && imageError ? null : (
                         <div className={styles.noImage}>
                             <ImageIcon size={32} />
                         </div>

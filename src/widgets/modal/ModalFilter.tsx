@@ -15,7 +15,7 @@ const initialFilterState: Partial<AnnouncementsFilters> = {
     announcement_type: undefined,
     property_type: undefined,
     layout_type: undefined,
-    currency: "UZS",
+    currency: undefined,
     min_price: undefined,
     max_price: undefined,
     min_rooms: undefined,
@@ -195,12 +195,12 @@ export const ModalFilter: React.FC<Props> = ({
                             <div className={styles.selectWrapper}>
                                 <select
                                     className={styles.select}
-                                    value={filters.currency || "UZS"}
+                                    value={filters.currency || ""}
                                     onChange={(e) => handleInputChange("currency", e.target.value)}
                                 >
+                                    <option value="">Все валюты</option>
                                     <option value="UZS">Узбекский сум</option>
                                     <option value="USD">Доллар США</option>
-                                    <option value="EUR">Евро</option>
                                 </select>
                                 <svg className={styles.selectArrow} width="12" height="8" viewBox="0 0 12 8" fill="none">
                                     <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -222,7 +222,7 @@ export const ModalFilter: React.FC<Props> = ({
                                         value={filters.priceFrom || ""}
                                         onChange={(e) => handleNumberChange("priceFrom", e.target.value)}
                                     />
-                                    <span className={styles.inputSuffix}>{filters.currency === "USD" ? "$" : filters.currency === "EUR" ? "€" : "сум"}</span>
+                                    <span className={styles.inputSuffix}>{filters.currency === "USD" ? "$" : "сум"}</span>
                                 </div>
                                 <div className={styles.rangeSeparator}>—</div>
                                 <div className={styles.inputWrapper}>
@@ -233,7 +233,7 @@ export const ModalFilter: React.FC<Props> = ({
                                         value={filters.priceTo || ""}
                                         onChange={(e) => handleNumberChange("priceTo", e.target.value)}
                                     />
-                                    <span className={styles.inputSuffix}>{filters.currency === "USD" ? "$" : filters.currency === "EUR" ? "€" : "сум"}</span>
+                                    <span className={styles.inputSuffix}>{filters.currency === "USD" ? "$" : "сум"}</span>
                                 </div>
                             </div>
                         </div>

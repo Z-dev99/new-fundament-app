@@ -42,6 +42,13 @@ export const PublishedReviews: React.FC = () => {
         });
     };
 
+    // Скролл наверх при изменении страницы
+    useEffect(() => {
+        if (!isLoading) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    }, [page, isLoading]);
+
     if (isLoading) {
         return (
             <div className={styles.loadingContainer}>
@@ -60,13 +67,6 @@ export const PublishedReviews: React.FC = () => {
     }
 
     const totalPages = data ? Math.ceil(data.total / pageSize) : 1;
-    
-    // Скролл наверх при изменении страницы
-    useEffect(() => {
-        if (!isLoading) {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-    }, [page, isLoading]);
     
     const handlePrev = () => {
         setPage((prev) => Math.max(prev - 1, 1));

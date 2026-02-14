@@ -1,11 +1,13 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
+import NextImage from "next/image";
 import { Edit, X } from "lucide-react";
 import { useGetAnnouncementByIdQuery } from "@/shared/api/announcementsApi";
 import { getImageUrl } from "../utils";
 import styles from "../styles.module.scss";
+
+const PLACEHOLDER_IMAGE = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
 
 // Функция для удаления HTML тегов и форматирования текста
 const stripHtmlTags = (html: string): string => {
@@ -40,6 +42,28 @@ interface DetailModalProps {
 
 export const DetailModal: React.FC<DetailModalProps> = ({ announcementId, onClose, onEdit }) => {
     const { data, isLoading, error } = useGetAnnouncementByIdQuery(announcementId);
+    const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
+
+    // Проверяем загрузку изображений
+    useEffect(() => {
+        if (data?.images && data.images.length > 0) {
+            data.images.forEach((img, idx) => {
+                const imgUrl = getImageUrl(img);
+                const imageElement = new window.Image();
+                imageElement.onerror = () => {
+                    setImageErrors((prev) => ({ ...prev, [idx]: true }));
+                };
+                imageElement.onload = () => {
+                    setImageErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors[idx];
+                        return newErrors;
+                    });
+                };
+                imageElement.src = imgUrl;
+            });
+        }
+    }, [data?.images]);
 
     if (isLoading) {
         return (
@@ -149,18 +173,29 @@ export const DetailModal: React.FC<DetailModalProps> = ({ announcementId, onClos
                         <div className={styles.detailSection}>
                             <h3>Фотографии ({data.images.length})</h3>
                             <div className={styles.imagesGrid}>
-                                {data.images.map((img, idx) => (
-                                    <div key={idx} className={styles.imagePreview}>
-                                        <Image
-                                            src={getImageUrl(img)}
-                                            alt={`Фото ${idx + 1}`}
-                                            width={200}
-                                            height={150}
-                                            className={styles.image}
-                                            unoptimized
-                                        />
-                                    </div>
-                                ))}
+                                {data.images.map((img, idx) => {
+                                    const imgUrl = getImageUrl(img);
+                                    const hasError = imageErrors[idx];
+                                    
+                                    // Пропускаем изображения с ошибками
+                                    if (hasError) {
+                                        return null;
+                                    }
+                                    
+                                    return (
+                                        <div key={idx} className={styles.imagePreview}>
+                                            <NextImage
+                                                src={imgUrl}
+                                                alt={`Фото ${idx + 1}`}
+                                                width={200}
+                                                height={150}
+                                                className={styles.image}
+                                                unoptimized
+                                                onError={() => setImageErrors((prev) => ({ ...prev, [idx]: true }))}
+                                            />
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

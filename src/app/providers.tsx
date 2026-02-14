@@ -2,6 +2,7 @@
 
 import { useEffect, useState, memo } from "react";
 import { ModalProvider } from "@/shared/providers/ModalProvider/ModalContext";
+import { CurrencyProvider } from "@/shared/contexts/CurrencyContext";
 import { Toaster } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Provider as ReduxProvider } from "react-redux";
@@ -73,25 +74,27 @@ export const Providers = memo(function Providers({ children }: { children: React
 
     return (
         <ReduxProvider store={store}>
-            <ModalProvider>
-                <AnimatePresence mode="wait">
-                    {loading && <LoadingScreen />}
-                </AnimatePresence>
+            <CurrencyProvider>
+                <ModalProvider>
+                    <AnimatePresence mode="wait">
+                        {loading && <LoadingScreen />}
+                    </AnimatePresence>
 
-                {children}
-                <Toaster 
-                    position="bottom-center"
-                    toastOptions={{
-                        duration: 4000,
-                        style: {
-                            background: "#fff",
-                            color: "#111827",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                        },
-                    }}
-                />
-            </ModalProvider>
+                    {children}
+                    <Toaster 
+                        position="bottom-center"
+                        toastOptions={{
+                            duration: 4000,
+                            style: {
+                                background: "#fff",
+                                color: "#111827",
+                                borderRadius: "12px",
+                                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                            },
+                        }}
+                    />
+                </ModalProvider>
+            </CurrencyProvider>
         </ReduxProvider>
     );
 });

@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import {
-    useGetBannersQuery,
+    useGetBannerByTypeQuery,
     useCreateBannerMutation,
-    useDeleteBannerByTypeMutation,
-    useDeleteBannerByFileNameMutation,
-    useDeleteBannerByIdMutation,
+    useDeleteBannerMutation,
     type BannerType,
     type Banner,
 } from "@/shared/api/bannersApi";
@@ -26,24 +24,38 @@ const SLIDER_BANNER_TYPE: { type: BannerType; label: string; description: string
 };
 
 export const BannersBlock: React.FC = () => {
-    const { data: banners, isLoading, error, refetch } = useGetBannersQuery();
+    // Получаем боковые баннеры отдельными запросами (возвращают массивы)
+    const { data: leftBanners = [], refetch: refetchLeft, isLoading: isLoadingLeft } = useGetBannerByTypeQuery("LEFT_SIDE");
+    const { data: rightBanners = [], refetch: refetchRight, isLoading: isLoadingRight } = useGetBannerByTypeQuery("RIGHT_SIDE");
+    
+    // Получаем баннеры для слайдера (MIDDLE_SIDE)
+    const { data: middleBanners = [], refetch: refetchMiddle, isLoading: isLoadingMiddle } = useGetBannerByTypeQuery("MIDDLE_SIDE");
+    
+    const isLoading = isLoadingLeft || isLoadingRight || isLoadingMiddle;
+    
     const [createBanner, { isLoading: isCreating }] = useCreateBannerMutation();
-    const [deleteBanner, { isLoading: isDeleting }] = useDeleteBannerByTypeMutation();
-    const [deleteBannerByFileName] = useDeleteBannerByFileNameMutation();
-    const [deleteBannerById] = useDeleteBannerByIdMutation();
+    const [deleteBanner, { isLoading: isDeleting }] = useDeleteBannerMutation();
 
     const [uploadingType, setUploadingType] = useState<BannerType | null>(null);
-    const [deletingType, setDeletingType] = useState<BannerType | null>(null);
-    const [deletingFileName, setDeletingFileName] = useState<string | null>(null);
+    const [deletingBannerId, setDeletingBannerId] = useState<string | null>(null);
 
-    // Получить статический баннер (один для типа)
+    // Получить первый баннер для статического типа (LEFT_SIDE, RIGHT_SIDE)
     const getStaticBanner = (type: BannerType): Banner | undefined => {
-        return banners?.find((b) => b.banner_type === type);
+        if (type === "LEFT_SIDE") return leftBanners[0];
+        if (type === "RIGHT_SIDE") return rightBanners[0];
+        return undefined;
     };
 
     // Получить все баннеры для слайдера (MIDDLE_SIDE)
     const getSliderBanners = (): Banner[] => {
-        return banners?.filter((b) => b.banner_type === "MIDDLE_SIDE") || [];
+        return middleBanners;
+    };
+    
+    // Функция для обновления всех данных
+    const refetch = () => {
+        refetchLeft();
+        refetchRight();
+        refetchMiddle();
     };
 
     const handleFileSelect = async (type: BannerType, file: File) => {
@@ -62,34 +74,8 @@ export const BannersBlock: React.FC = () => {
         try {
             setUploadingType(type);
 
-            // Используем имя файла из выбранного файла
-            const file_name = file.name;
-
-            // Для статических баннеров (LEFT_SIDE, RIGHT_SIDE) - заменяем существующий
-            if (type !== "MIDDLE_SIDE") {
-                const existingBanner = getStaticBanner(type);
-                if (existingBanner) {
-                    await deleteBanner(type).unwrap();
-                }
-            }
-
-            // Создаем баннер и получаем presigned URL
-            const result = await createBanner({ banner_type: type, file_name }).unwrap();
-            
-            // Загружаем файл на presigned URL
-            if (result.presigned_url) {
-                const uploadResponse = await fetch(result.presigned_url, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': file.type,
-                    },
-                    body: file,
-                });
-
-                if (!uploadResponse.ok) {
-                    throw new Error('Ошибка загрузки файла');
-                }
-            }
+            // Отправляем файл напрямую на сервер
+            await createBanner({ banner_type: type, file }).unwrap();
             
             const label = type === "MIDDLE_SIDE" 
                 ? SLIDER_BANNER_TYPE.label 
@@ -104,20 +90,21 @@ export const BannersBlock: React.FC = () => {
         }
     };
 
-    const handleDeleteStatic = async (type: BannerType) => {
-        if (!confirm(`Вы уверены, что хотите удалить баннер "${STATIC_BANNER_TYPES.find(t => t.type === type)?.label}"?`)) {
+    const handleDeleteStatic = async (banner: Banner) => {
+        const typeLabel = STATIC_BANNER_TYPES.find(t => t.type === banner.banner_type)?.label;
+        if (!confirm(`Вы уверены, что хотите удалить баннер "${typeLabel}"?`)) {
             return;
         }
 
         try {
-            setDeletingType(type);
-            await deleteBanner(type).unwrap();
+            setDeletingBannerId(banner.id);
+            await deleteBanner(banner.id).unwrap();
             toast.success("Баннер успешно удален!");
             refetch();
         } catch (err: any) {
             toast.error(err.data?.message || "Ошибка при удалении баннера");
         } finally {
-            setDeletingType(null);
+            setDeletingBannerId(null);
         }
     };
 
@@ -127,18 +114,14 @@ export const BannersBlock: React.FC = () => {
         }
 
         try {
-            setDeletingFileName(banner.file_name);
-            
-            // Для MIDDLE_SIDE используем deleteBannerByType с типом MIDDLE_SIDE
-            // Запрос будет: DELETE /banner/MIDDLE_SIDE
-            await deleteBanner("MIDDLE_SIDE").unwrap();
-            
+            setDeletingBannerId(banner.id);
+            await deleteBanner(banner.id).unwrap();
             toast.success("Баннер успешно удален из слайдера!");
             refetch();
         } catch (err: any) {
             toast.error(err.data?.message || err.message || "Ошибка при удалении баннера");
         } finally {
-            setDeletingFileName(null);
+            setDeletingBannerId(null);
         }
     };
 
@@ -147,7 +130,6 @@ export const BannersBlock: React.FC = () => {
     };
 
     if (isLoading) return <p className={styles.loading}>Загрузка баннеров...</p>;
-    if (error) return <p className={styles.error}>Ошибка загрузки баннеров</p>;
 
     const sliderBanners = getSliderBanners();
 
@@ -166,7 +148,7 @@ export const BannersBlock: React.FC = () => {
                     {STATIC_BANNER_TYPES.map(({ type, label, description }) => {
                         const banner = getStaticBanner(type);
                         const isUploading = uploadingType === type;
-                        const isDeleting = deletingType === type;
+                        const isDeleting = banner ? deletingBannerId === banner.id : false;
 
                         return (
                             <div key={type} className={styles.card}>
@@ -219,10 +201,10 @@ export const BannersBlock: React.FC = () => {
                                     {banner && (
                                         <button
                                             className={styles.deleteBtn}
-                                            onClick={() => handleDeleteStatic(type)}
+                                            onClick={() => handleDeleteStatic(banner)}
                                             disabled={isDeleting || isUploading}
                                         >
-                                            {isDeleting ? "Удаляем..." : "Удалить"}
+                                            {deletingBannerId === banner.id ? "Удаляем..." : "Удалить"}
                                         </button>
                                     )}
                                 </div>
@@ -260,10 +242,10 @@ export const BannersBlock: React.FC = () => {
                     {sliderBanners.length > 0 ? (
                         <div className={styles.sliderBanners}>
                             {sliderBanners.map((banner, index) => {
-                                const isDeleting = deletingFileName === banner.file_name;
+                                const isDeleting = deletingBannerId === banner.id;
 
                                 return (
-                                    <div key={`${banner.file_name}-${index}`} className={styles.sliderBannerCard}>
+                                    <div key={`${banner.id}-${index}`} className={styles.sliderBannerCard}>
                                         <div className={styles.sliderBannerHeader}>
                                             <span className={styles.bannerNumber}>Баннер #{index + 1}</span>
                                             <span className={styles.bannerType}>MIDDLE_SIDE</span>

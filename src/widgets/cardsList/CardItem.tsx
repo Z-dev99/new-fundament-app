@@ -45,14 +45,14 @@ export const CardItem: React.FC<Props> = React.memo(({
     const handlePhoneClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Активируем запрос контактов при первом клике
         if (!shouldFetchContacts) {
             setShouldFetchContacts(true);
         }
     };
 
-    const phoneNumber = contacts?.phone_number || "";
+    const phoneNumber = "+998770900800";
 
     const handleImageError = (index: number) => {
         setImageErrors((prev) => ({ ...prev, [index]: true }));
@@ -66,10 +66,10 @@ export const CardItem: React.FC<Props> = React.memo(({
 
     // Проверяем, загружено ли первое изображение из кеша при монтировании
     useEffect(() => {
-        if (images.length > 0) {
+        if (images.length > 0 && images[0]) {
             const img = new Image();
             let isMounted = true;
-            
+
             img.onload = () => {
                 if (isMounted) {
                     setLoadedImages((prev) => ({ ...prev, 0: true }));
@@ -82,16 +82,26 @@ export const CardItem: React.FC<Props> = React.memo(({
                     setLoadedImages((prev) => ({ ...prev, 0: true }));
                 }
             };
-            
-            img.src = images[0];
-            
-            // Если изображение уже в кеше, оно может быть загружено синхронно
-            if (img.complete) {
+
+            // Убеждаемся, что URL валидный
+            const imageUrl = images[0];
+            if (imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('data:') || imageUrl.startsWith('/'))) {
+                img.src = imageUrl;
+
+                // Если изображение уже в кеше, оно может быть загружено синхронно
+                if (img.complete) {
+                    if (isMounted) {
+                        setLoadedImages((prev) => ({ ...prev, 0: true }));
+                    }
+                }
+            } else {
+                // Если URL невалидный, сразу помечаем как ошибку
                 if (isMounted) {
+                    setImageErrors((prev) => ({ ...prev, 0: true }));
                     setLoadedImages((prev) => ({ ...prev, 0: true }));
                 }
             }
-            
+
             return () => {
                 isMounted = false;
             };
@@ -103,7 +113,7 @@ export const CardItem: React.FC<Props> = React.memo(({
             <div className={styles.card}>
                 <div className={styles.imageWrap}>
                     <Swiper
-                        pagination={{ 
+                        pagination={{
                             clickable: true,
                             dynamicBullets: true,
                         }}
@@ -112,11 +122,37 @@ export const CardItem: React.FC<Props> = React.memo(({
                         modules={[Pagination]}
                         className={styles.swiper}
                     >
-                        {images.length > 0 ? (
-                            images.map((src, i) => {
-                                const imageSrc = imageErrors[i] ? PLACEHOLDER_IMAGE : src;
+                        {images.length > 0 ? (() => {
+                            const validImages = images
+                                .map((src, i) => {
+                                    // Проверяем, валидный ли URL
+                                    const isValidUrl = src && (src.startsWith('http') || src.startsWith('data:') || src.startsWith('/'));
+                                    // Пропускаем изображения с ошибками
+                                    if (imageErrors[i] || !isValidUrl) {
+                                        return null;
+                                    }
+                                    return { src, index: i };
+                                })
+                                .filter(Boolean) as Array<{ src: string; index: number }>;
+
+                            // Если все изображения с ошибками, показываем placeholder
+                            if (validImages.length === 0) {
+                                return (
+                                    <SwiperSlide>
+                                        <div className={styles.imageContainer}>
+                                            <img
+                                                src={PLACEHOLDER_IMAGE}
+                                                alt={title}
+                                                className={`${styles.image} ${styles.loaded}`}
+                                            />
+                                        </div>
+                                    </SwiperSlide>
+                                );
+                            }
+
+                            return validImages.map(({ src, index: i }) => {
                                 const isLoaded = loadedImages[i];
-                                
+
                                 return (
                                     <SwiperSlide key={i}>
                                         <div className={styles.imageContainer}>
@@ -126,7 +162,7 @@ export const CardItem: React.FC<Props> = React.memo(({
                                                 </div>
                                             )}
                                             <img
-                                                src={imageSrc}
+                                                src={src}
                                                 alt={`${title} - фото ${i + 1}`}
                                                 className={`${styles.image} ${isLoaded ? styles.loaded : ""}`}
                                                 onError={() => handleImageError(i)}
@@ -138,8 +174,8 @@ export const CardItem: React.FC<Props> = React.memo(({
                                         </div>
                                     </SwiperSlide>
                                 );
-                            })
-                        ) : (
+                            });
+                        })() : (
                             <SwiperSlide>
                                 <div className={styles.imageContainer}>
                                     <img
@@ -152,10 +188,10 @@ export const CardItem: React.FC<Props> = React.memo(({
                         )}
                     </Swiper>
                     <div className={styles.imageOverlay}></div>
-                    {images.length > 1 && (
+                    {images.filter((_, i) => !imageErrors[i]).length > 1 && (
                         <div className={styles.imageCount}>
                             <Maximize2 size={14} />
-                            <span>{images.length}</span>
+                            <span>{images.filter((_, i) => !imageErrors[i]).length}</span>
                         </div>
                     )}
                 </div>
@@ -181,7 +217,7 @@ export const CardItem: React.FC<Props> = React.memo(({
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         className={`${styles.phoneBtn} ${phoneNumber ? styles.phoneBtnActive : ""}`}
                         onClick={handlePhoneClick}
                         disabled={loadingContacts}

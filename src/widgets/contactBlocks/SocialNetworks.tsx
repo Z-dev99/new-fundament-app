@@ -9,13 +9,13 @@ export const SocialNetworks = () => {
         {
             icon: <Instagram size={24} />,
             name: "Instagram",
-            link: "https://instagram.com/fundament",
+            link: "https://www.instagram.com/fundament__uz?igsh=MndiMHk4NDRhN2Zj",
             color: "#E4405F",
         },
         {
             icon: <Send size={24} />,
             name: "Telegram",
-            link: "https://t.me/fundament",
+            link: "https://t.me/Fundament_CEO",
             color: "#0088cc",
         },
     ];

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useGetAnnouncementByIdQuery, useAddAnnouncementMutation, useUpdateAnnouncementMutation, type AddAnnouncementBody } from "@/shared/api/announcementsApi";
+import { useGetUSDRateQuery } from "@/shared/api/currencyApi";
+import { parsePrice, convertUSDtoUZS } from "@/shared/utils/currencyConverter";
 import toast from "react-hot-toast";
 import { MAX_IMAGES, MIN_IMAGES } from "../constants";
 import { generateDescription } from "../utils/generateDescription";
@@ -98,6 +100,11 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
     const { data: existingData } = useGetAnnouncementByIdQuery(announcementId || "", {
         skip: !announcementId,
     });
+
+    // Получаем курс USD для конвертации
+    const { data: usdRateData } = useGetUSDRateQuery();
+    const usdRate = usdRateData?.[0] ? parseFloat(usdRateData[0].Rate) : null;
+    const usdNominal = usdRateData?.[0] ? parseFloat(usdRateData[0].Nominal) : 1;
 
     const [addAnnouncement, { isLoading: isAdding }] = useAddAnnouncementMutation();
     const [updateAnnouncement, { isLoading: isUpdating }] = useUpdateAnnouncementMutation();
@@ -385,8 +392,31 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                         : formData.rentAdditionalInfo.trim();
                 }
 
+                // Парсим цену и конвертируем доллары в сумы
+                const priceInput = formData.price || "";
+                const parsedPrice = parsePrice(priceInput);
+                let finalPrice = parsedPrice.amount.toString();
+                let finalCurrency = "UZS";
+
+                if (parsedPrice.currency === "USD") {
+                    if (!usdRate) {
+                        toast.error("Курс доллара не загружен. Пожалуйста, попробуйте позже.");
+                        return;
+                    }
+                    // Конвертируем доллары в сумы
+                    const priceInUZS = convertUSDtoUZS(parsedPrice.amount, usdRate, usdNominal);
+                    finalPrice = Math.round(priceInUZS).toString();
+                    finalCurrency = "UZS";
+                } else {
+                    // Уже в сумах
+                    finalPrice = parsedPrice.amount.toString();
+                    finalCurrency = "UZS";
+                }
+
                 const updateData = {
                     ...formData,
+                    price: finalPrice,
+                    currency: finalCurrency,
                     description: finalDescription,
                     images: allImageNames,
                     latitude,
@@ -420,6 +450,27 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                         : formData.rentAdditionalInfo.trim();
                 }
 
+                // Парсим цену и конвертируем доллары в сумы
+                const priceInput = formData.price || "";
+                const parsedPrice = parsePrice(priceInput);
+                let finalPrice = parsedPrice.amount.toString();
+                let finalCurrency = "UZS";
+
+                if (parsedPrice.currency === "USD") {
+                    if (!usdRate) {
+                        toast.error("Курс доллара не загружен. Пожалуйста, попробуйте позже.");
+                        return;
+                    }
+                    // Конвертируем доллары в сумы
+                    const priceInUZS = convertUSDtoUZS(parsedPrice.amount, usdRate, usdNominal);
+                    finalPrice = Math.round(priceInUZS).toString();
+                    finalCurrency = "UZS";
+                } else {
+                    // Уже в сумах
+                    finalPrice = parsedPrice.amount.toString();
+                    finalCurrency = "UZS";
+                }
+
                 const submitData: AddAnnouncementBody = {
                     title: formData.title || "",
                     description: finalDescription,
@@ -439,8 +490,8 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                     heating_type: formData.heating_type || "",
                     renovation_type: formData.renovation_type || "",
                     city_side: formData.city_side || "",
-                    price: formData.price || "",
-                    currency: formData.currency || "UZS",
+                    price: finalPrice,
+                    currency: finalCurrency,
                     country: formData.country || "",
                     region: formData.region || "",
                     city: formData.city || "",

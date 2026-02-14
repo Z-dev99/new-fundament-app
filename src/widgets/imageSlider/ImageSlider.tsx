@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import NextImage from "next/image";
 import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import styles from "./ImageSlider.module.scss";
 
@@ -14,6 +14,8 @@ interface ImageSliderProps {
     onFullscreen?: (index: number) => void;
 }
 
+const PLACEHOLDER_IMAGE = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
+
 export const ImageSlider: React.FC<ImageSliderProps> = ({
     images,
     className,
@@ -23,8 +25,28 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
 }) => {
     const [internalIndex, setInternalIndex] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
+    const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
     const currentIndex = externalIndex !== undefined ? externalIndex : internalIndex;
+
+    // Проверяем загрузку изображений при изменении индекса
+    useEffect(() => {
+        if (images.length > 0 && images[currentIndex]) {
+            const img = new window.Image();
+            img.onerror = () => {
+                setImageErrors((prev) => ({ ...prev, [currentIndex]: true }));
+            };
+            img.onload = () => {
+                // Если изображение загрузилось, сбрасываем ошибку
+                setImageErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[currentIndex];
+                    return newErrors;
+                });
+            };
+            img.src = images[currentIndex];
+        }
+    }, [currentIndex, images]);
 
     const goToSlide = useCallback(
         (index: number) => {
@@ -42,15 +64,41 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
 
     const goToPrevious = useCallback(() => {
         if (isAnimating) return;
-        const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
-        goToSlide(newIndex);
-    }, [currentIndex, images.length, isAnimating, goToSlide]);
+        // Находим предыдущее валидное изображение
+        let prevIndex = currentIndex - 1;
+        while (prevIndex >= 0 && imageErrors[prevIndex]) {
+            prevIndex--;
+        }
+        if (prevIndex < 0) {
+            // Ищем с конца
+            prevIndex = images.length - 1;
+            while (prevIndex > currentIndex && imageErrors[prevIndex]) {
+                prevIndex--;
+            }
+        }
+        if (prevIndex >= 0 && !imageErrors[prevIndex]) {
+            goToSlide(prevIndex);
+        }
+    }, [currentIndex, images.length, isAnimating, goToSlide, imageErrors]);
 
     const goToNext = useCallback(() => {
         if (isAnimating) return;
-        const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
-        goToSlide(newIndex);
-    }, [currentIndex, images.length, isAnimating, goToSlide]);
+        // Находим следующее валидное изображение
+        let nextIndex = currentIndex + 1;
+        while (nextIndex < images.length && imageErrors[nextIndex]) {
+            nextIndex++;
+        }
+        if (nextIndex >= images.length) {
+            // Ищем с начала
+            nextIndex = 0;
+            while (nextIndex < currentIndex && imageErrors[nextIndex]) {
+                nextIndex++;
+            }
+        }
+        if (nextIndex < images.length && !imageErrors[nextIndex]) {
+            goToSlide(nextIndex);
+        }
+    }, [currentIndex, images.length, isAnimating, goToSlide, imageErrors]);
 
     useEffect(() => {
         if (externalIndex !== undefined && externalIndex !== internalIndex) {
@@ -68,7 +116,22 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [goToPrevious, goToNext]);
 
-    if (!images || images.length === 0) {
+    // Фильтруем изображения с ошибками
+    const validImages = useMemo(() => {
+        return images.filter((_, index) => !imageErrors[index]);
+    }, [images, imageErrors]);
+
+    const validCurrentIndex = useMemo(() => {
+        if (validImages.length === 0) return 0;
+        // Находим индекс в отфильтрованном массиве
+        let validCount = 0;
+        for (let i = 0; i < currentIndex && i < images.length; i++) {
+            if (!imageErrors[i]) validCount++;
+        }
+        return validCount;
+    }, [currentIndex, images, imageErrors, validImages.length]);
+
+    if (!images || images.length === 0 || validImages.length === 0) {
         return null;
     }
 
@@ -77,7 +140,7 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
             <div className={styles.sliderContainer}>
                 <AnimatePresence mode="wait">
                     <motion.div
-                        key={currentIndex}
+                        key={validCurrentIndex}
                         className={styles.slide}
                         initial={{ opacity: 0, x: 100 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -86,23 +149,51 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
                     >
                         <div 
                             className={styles.imageWrapper}
-                            onClick={() => onFullscreen?.(currentIndex)}
+                            onClick={() => {
+                                // Находим оригинальный индекс для полноэкранного режима
+                                let originalIndex = 0;
+                                let validCount = 0;
+                                for (let i = 0; i < images.length; i++) {
+                                    if (!imageErrors[i]) {
+                                        if (validCount === validCurrentIndex) {
+                                            originalIndex = i;
+                                            break;
+                                        }
+                                        validCount++;
+                                    }
+                                }
+                                onFullscreen?.(originalIndex);
+                            }}
                             style={{ cursor: onFullscreen ? "pointer" : "default" }}
                         >
-                            <Image
-                                src={images[currentIndex]}
-                                alt={`Изображение ${currentIndex + 1}`}
-                                fill
-                                className={styles.image}
-                                sizes="(max-width: 768px) 100vw, 70vw"
-                                priority={currentIndex === 0}
-                            />
+                            {validImages[validCurrentIndex] && (
+                                <NextImage
+                                    src={validImages[validCurrentIndex]}
+                                    alt={`Изображение ${validCurrentIndex + 1}`}
+                                    fill
+                                    className={styles.image}
+                                    sizes="(max-width: 768px) 100vw, 70vw"
+                                    priority={validCurrentIndex === 0}
+                                    unoptimized={validImages[validCurrentIndex]?.startsWith('data:')}
+                                />
+                            )}
                             {onFullscreen && (
                                 <button
                                     className={styles.fullscreenButton}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onFullscreen(currentIndex);
+                                        let originalIndex = 0;
+                                        let validCount = 0;
+                                        for (let i = 0; i < images.length; i++) {
+                                            if (!imageErrors[i]) {
+                                                if (validCount === validCurrentIndex) {
+                                                    originalIndex = i;
+                                                    break;
+                                                }
+                                                validCount++;
+                                            }
+                                        }
+                                        onFullscreen(originalIndex);
                                     }}
                                     aria-label="Открыть в полноэкранном режиме"
                                 >
@@ -133,18 +224,32 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
                 )}
 
                 <div className={styles.counter}>
-                    {currentIndex + 1} / {images.length}
+                    {validCurrentIndex + 1} / {validImages.length}
                 </div>
 
-                {images.length > 1 && (
+                {validImages.length > 1 && (
                     <div className={styles.pagination}>
-                        {images.map((_, index) => (
+                        {validImages.map((_, index) => (
                             <button
                                 key={index}
                                 className={`${styles.paginationDot} ${
-                                    index === currentIndex ? styles.active : ""
+                                    index === validCurrentIndex ? styles.active : ""
                                 }`}
-                                onClick={() => goToSlide(index)}
+                                onClick={() => {
+                                    // Находим оригинальный индекс
+                                    let originalIndex = 0;
+                                    let validCount = 0;
+                                    for (let i = 0; i < images.length; i++) {
+                                        if (!imageErrors[i]) {
+                                            if (validCount === index) {
+                                                originalIndex = i;
+                                                break;
+                                            }
+                                            validCount++;
+                                        }
+                                    }
+                                    goToSlide(originalIndex);
+                                }}
                                 aria-label={`Перейти к изображению ${index + 1}`}
                             />
                         ))}

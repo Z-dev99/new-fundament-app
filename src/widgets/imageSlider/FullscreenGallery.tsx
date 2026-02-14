@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import NextImage from "next/image";
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
 import styles from "./FullscreenGallery.module.scss";
 
@@ -13,6 +13,8 @@ interface FullscreenGalleryProps {
     onClose: () => void;
 }
 
+const PLACEHOLDER_IMAGE = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
+
 export const FullscreenGallery: React.FC<FullscreenGalleryProps> = ({
     images,
     initialIndex,
@@ -22,10 +24,30 @@ export const FullscreenGallery: React.FC<FullscreenGalleryProps> = ({
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     const [isZoomed, setIsZoomed] = useState(false);
     const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+    const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
     useEffect(() => {
         setCurrentIndex(initialIndex);
     }, [initialIndex, isOpen]);
+
+    // Проверяем загрузку изображений при изменении индекса
+    useEffect(() => {
+        if (images.length > 0 && images[currentIndex]) {
+            const img = new window.Image();
+            img.onerror = () => {
+                setImageErrors((prev) => ({ ...prev, [currentIndex]: true }));
+            };
+            img.onload = () => {
+                // Если изображение загрузилось, сбрасываем ошибку
+                setImageErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[currentIndex];
+                    return newErrors;
+                });
+            };
+            img.src = images[currentIndex];
+        }
+    }, [currentIndex, images]);
 
     useEffect(() => {
         if (isOpen) {
@@ -40,17 +62,50 @@ export const FullscreenGallery: React.FC<FullscreenGalleryProps> = ({
         };
     }, [isOpen]);
 
+    // Фильтруем изображения с ошибками
+    const validImages = useMemo(() => {
+        return images.filter((_, index) => !imageErrors[index]);
+    }, [images, imageErrors]);
+
     const goToPrevious = useCallback(() => {
-        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-        setIsZoomed(false);
-        setImagePosition({ x: 0, y: 0 });
-    }, [images.length]);
+        // Находим предыдущее валидное изображение
+        let prevIndex = currentIndex - 1;
+        while (prevIndex >= 0 && imageErrors[prevIndex]) {
+            prevIndex--;
+        }
+        if (prevIndex < 0) {
+            // Ищем с конца
+            prevIndex = images.length - 1;
+            while (prevIndex > currentIndex && imageErrors[prevIndex]) {
+                prevIndex--;
+            }
+        }
+        if (prevIndex >= 0 && !imageErrors[prevIndex]) {
+            setCurrentIndex(prevIndex);
+            setIsZoomed(false);
+            setImagePosition({ x: 0, y: 0 });
+        }
+    }, [currentIndex, images.length, imageErrors]);
 
     const goToNext = useCallback(() => {
-        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-        setIsZoomed(false);
-        setImagePosition({ x: 0, y: 0 });
-    }, [images.length]);
+        // Находим следующее валидное изображение
+        let nextIndex = currentIndex + 1;
+        while (nextIndex < images.length && imageErrors[nextIndex]) {
+            nextIndex++;
+        }
+        if (nextIndex >= images.length) {
+            // Ищем с начала
+            nextIndex = 0;
+            while (nextIndex < currentIndex && imageErrors[nextIndex]) {
+                nextIndex++;
+            }
+        }
+        if (nextIndex < images.length && !imageErrors[nextIndex]) {
+            setCurrentIndex(nextIndex);
+            setIsZoomed(false);
+            setImagePosition({ x: 0, y: 0 });
+        }
+    }, [currentIndex, images.length, imageErrors]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -68,6 +123,16 @@ export const FullscreenGallery: React.FC<FullscreenGalleryProps> = ({
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [isOpen, onClose, goToPrevious, goToNext]);
+
+    // Если текущее изображение с ошибкой и есть валидные изображения, переходим к первому валидному
+    useEffect(() => {
+        if (isOpen && imageErrors[currentIndex] && validImages.length > 0) {
+            const firstValidIndex = images.findIndex((_, index) => !imageErrors[index]);
+            if (firstValidIndex >= 0 && firstValidIndex !== currentIndex) {
+                setCurrentIndex(firstValidIndex);
+            }
+        }
+    }, [isOpen, currentIndex, imageErrors, validImages.length, images]);
 
     const handleImageClick = () => {
         setIsZoomed(!isZoomed);
@@ -87,7 +152,9 @@ export const FullscreenGallery: React.FC<FullscreenGalleryProps> = ({
 
     if (!isOpen) return null;
 
-    if (!isOpen) return null;
+    if (validImages.length === 0) {
+        return null;
+    }
 
     return (
         <AnimatePresence>
@@ -129,27 +196,30 @@ export const FullscreenGallery: React.FC<FullscreenGalleryProps> = ({
                                     cursor: isZoomed ? "zoom-out" : "zoom-in",
                                 }}
                             >
-                                <Image
-                                    src={images[currentIndex]}
-                                    alt={`Изображение ${currentIndex + 1}`}
-                                    fill
-                                    className={styles.image}
-                                    style={{
-                                        objectFit: isZoomed ? "contain" : "contain",
-                                        transform: isZoomed
-                                            ? `scale(2) translate(${imagePosition.x}px, ${imagePosition.y}px)`
-                                            : "scale(1)",
-                                        transition: isZoomed
-                                            ? "none"
-                                            : "transform 0.3s ease",
-                                    }}
-                                    sizes="100vw"
-                                    priority
-                                />
+                                {!imageErrors[currentIndex] && images[currentIndex] && (
+                                    <NextImage
+                                        src={images[currentIndex]}
+                                        alt={`Изображение ${currentIndex + 1}`}
+                                        fill
+                                        className={styles.image}
+                                        style={{
+                                            objectFit: isZoomed ? "contain" : "contain",
+                                            transform: isZoomed
+                                                ? `scale(2) translate(${imagePosition.x}px, ${imagePosition.y}px)`
+                                                : "scale(1)",
+                                            transition: isZoomed
+                                                ? "none"
+                                                : "transform 0.3s ease",
+                                        }}
+                                        sizes="100vw"
+                                        priority
+                                        unoptimized={images[currentIndex]?.startsWith('data:')}
+                                    />
+                                )}
                             </motion.div>
                         </AnimatePresence>
 
-                        {images.length > 1 && (
+                        {validImages.length > 1 && (
                             <>
                                 <button
                                     className={`${styles.navButton} ${styles.prevButton}`}
@@ -169,7 +239,13 @@ export const FullscreenGallery: React.FC<FullscreenGalleryProps> = ({
                         )}
 
                         <div className={styles.counter}>
-                            {currentIndex + 1} / {images.length}
+                            {(() => {
+                                let validCount = 0;
+                                for (let i = 0; i <= currentIndex; i++) {
+                                    if (!imageErrors[i]) validCount++;
+                                }
+                                return validCount;
+                            })()} / {validImages.length}
                         </div>
 
                         <button
@@ -185,30 +261,38 @@ export const FullscreenGallery: React.FC<FullscreenGalleryProps> = ({
                         </button>
                     </div>
 
-                    {images.length > 1 && (
+                    {validImages.length > 1 && (
                         <div className={styles.thumbnails}>
-                            {images.map((img, index) => (
-                                <button
-                                    key={index}
-                                    className={`${styles.thumbnail} ${
-                                        index === currentIndex ? styles.active : ""
-                                    }`}
-                                    onClick={() => {
-                                        setCurrentIndex(index);
-                                        setIsZoomed(false);
-                                        setImagePosition({ x: 0, y: 0 });
-                                    }}
-                                    aria-label={`Показать изображение ${index + 1}`}
-                                >
-                                    <Image
-                                        src={img}
-                                        alt={`Миниатюра ${index + 1}`}
-                                        fill
-                                        className={styles.thumbnailImage}
-                                        sizes="(max-width: 768px) 15vw, 10vw"
-                                    />
-                                </button>
-                            ))}
+                            {images.map((img, index) => {
+                                // Пропускаем изображения с ошибками
+                                if (imageErrors[index]) {
+                                    return null;
+                                }
+                                
+                                return (
+                                    <button
+                                        key={index}
+                                        className={`${styles.thumbnail} ${
+                                            index === currentIndex ? styles.active : ""
+                                        }`}
+                                        onClick={() => {
+                                            setCurrentIndex(index);
+                                            setIsZoomed(false);
+                                            setImagePosition({ x: 0, y: 0 });
+                                        }}
+                                        aria-label={`Показать изображение ${index + 1}`}
+                                    >
+                                        <NextImage
+                                            src={img}
+                                            alt={`Миниатюра ${index + 1}`}
+                                            fill
+                                            className={styles.thumbnailImage}
+                                            sizes="(max-width: 768px) 15vw, 10vw"
+                                            unoptimized={img?.startsWith('data:')}
+                                        />
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                     </motion.div>

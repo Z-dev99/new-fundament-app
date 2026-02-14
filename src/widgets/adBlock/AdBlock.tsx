@@ -1,10 +1,11 @@
 "use client";
 
-import { FC, useState, useMemo } from "react";
-import { useGetBannersQuery } from "@/shared/api/bannersApi";
+import { FC, useState } from "react";
+import { useGetBannerByTypeQuery } from "@/shared/api/bannersApi";
 import styles from "./AdBlock.module.scss";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
+import Image from "next/image";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -15,15 +16,9 @@ const getImageUrl = (fileName: string): string => {
 };
 
 export const AdBlock: FC = () => {
-    const { data: banners, isLoading } = useGetBannersQuery();
+    const { data: middleBanners = [], isLoading, error } = useGetBannerByTypeQuery("MIDDLE_SIDE");
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
     const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
-
-    // Фильтруем только MIDDLE_SIDE баннеры
-    const middleBanners = useMemo(() => {
-        if (!banners) return [];
-        return banners.filter((banner) => banner.banner_type === "MIDDLE_SIDE");
-    }, [banners]);
 
     if (isLoading) {
         return (
@@ -35,8 +30,8 @@ export const AdBlock: FC = () => {
         );
     }
 
-    // Если нет баннеров, показываем placeholder
-    if (!middleBanners || middleBanners.length === 0) {
+    // Если ошибка API или нет баннеров, показываем placeholder
+    if (error || !middleBanners || middleBanners.length === 0) {
         return (
             <div className={`${styles.wrapper} container`}>
                 <div className={styles.emptyBanner}>
@@ -99,13 +94,17 @@ export const AdBlock: FC = () => {
                                         <div className={styles.loader}></div>
                                     </div>
                                 )}
-                                <img
+                                <Image
                                     src={imageSrc}
                                     alt="Реклама"
+                                    fill
                                     className={`${styles.image} ${isLoaded ? styles.loaded : ""}`}
                                     onError={() => handleImageError(banner.file_name)}
                                     onLoad={() => handleImageLoad(banner.file_name)}
                                     loading={index === 0 ? "eager" : "lazy"}
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                                    style={{ objectFit: "cover" }}
+                                    unoptimized
                                 />
                             </div>
                         </SwiperSlide>

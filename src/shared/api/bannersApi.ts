@@ -4,24 +4,22 @@ import Cookies from 'js-cookie';
 export type BannerType = 'LEFT_SIDE' | 'RIGHT_SIDE' | 'MIDDLE_SIDE';
 
 export interface Banner {
-    id?: string;
+    id: string;
     banner_type: BannerType;
     file_name: string;
 }
 
 export interface CreateBannerPayload {
     banner_type: BannerType;
-    file_name: string;
+    file: File;
 }
 
-export interface CreateBannerResponse {
-    id?: string;
-    banner_type: BannerType;
-    file_name: string;
-    presigned_url: string;
-}
-
-const baseUrl = (process.env.NEXT_PUBLIC_API_URL as string).replace(/\/?$/, "/");
+const baseUrl = (() => {
+    let url = process.env.NEXT_PUBLIC_API_URL || "https://fundament.uz/api/v1/";
+    // Нормализуем baseUrl - убираем все слэши в конце и добавляем один
+    url = url.replace(/\/+$/, "");
+    return `${url}/`;
+})();
 
 export const bannersApi = createApi({
     reducerPath: 'bannersApi',
@@ -39,7 +37,7 @@ export const bannersApi = createApi({
         getBanners: builder.query<Banner[], void>({
             queryFn: async () => {
                 const token = Cookies.get('token');
-                const url = `${baseUrl}banner`;
+                const url = `${baseUrl}banners`;
                 const startTime = performance.now();
 
                 console.log(`📡 API Request → GET ${url}`);
@@ -57,11 +55,14 @@ export const bannersApi = createApi({
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        console.error(`❌ API Error ← GET ${url} (${duration} ms)`, {
-                            status: response.status,
-                            statusText: response.statusText,
-                            error: errorData,
-                        });
+                        // Для 404 и 401 не логируем как ошибку - это нормальная ситуация для публичного эндпоинта
+                        if (response.status !== 404 && response.status !== 401) {
+                            console.error(`❌ API Error ← GET ${url} (${duration} ms)`, {
+                                status: response.status,
+                                statusText: response.statusText,
+                                error: errorData,
+                            });
+                        }
                         return { error: { status: response.status, data: errorData } };
                     }
 
@@ -80,10 +81,10 @@ export const bannersApi = createApi({
             },
         }),
 
-        getBannerByType: builder.query<Banner, BannerType>({
+        getBannerByType: builder.query<Banner[], BannerType>({
             queryFn: async (type) => {
                 const token = Cookies.get('token');
-                const url = `${baseUrl}banner/${type}`;
+                const url = `${baseUrl}banners/${type}`;
                 const startTime = performance.now();
 
                 console.log(`📡 API Request → GET ${url}`);
@@ -101,11 +102,14 @@ export const bannersApi = createApi({
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        console.error(`❌ API Error ← GET ${url} (${duration} ms)`, {
-                            status: response.status,
-                            statusText: response.statusText,
-                            error: errorData,
-                        });
+                        // Для 404 не логируем как ошибку - это нормальная ситуация, когда баннер еще не добавлен
+                        if (response.status !== 404) {
+                            console.error(`❌ API Error ← GET ${url} (${duration} ms)`, {
+                                status: response.status,
+                                statusText: response.statusText,
+                                error: errorData,
+                            });
+                        }
                         return { error: { status: response.status, data: errorData } };
                     }
 
@@ -124,26 +128,27 @@ export const bannersApi = createApi({
             },
         }),
 
-        createBanner: builder.mutation<CreateBannerResponse, CreateBannerPayload>({
-            queryFn: async ({ banner_type, file_name }) => {
+        createBanner: builder.mutation<void, CreateBannerPayload>({
+            queryFn: async ({ banner_type, file }) => {
                 const token = Cookies.get('token');
-                const url = `${baseUrl}banner`;
+                const url = `${baseUrl}banners/${banner_type}`;
                 const startTime = performance.now();
-                const body = { banner_type, file_name };
 
                 console.log(`📡 API Request → POST ${url}`);
-                console.log(`Body:`, JSON.stringify(body, null, 2));
+                console.log(`File:`, file.name, `Size:`, file.size, `Type:`, file.type);
 
                 try {
-                    const headers: HeadersInit = {
-                        'Content-Type': 'application/json',
-                    };
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const headers: HeadersInit = {};
                     if (token) headers['Authorization'] = `Bearer ${token}`;
+                    // Не устанавливаем Content-Type - браузер установит его автоматически с boundary для FormData
 
                     const response = await fetch(url, {
                         method: 'POST',
                         headers,
-                        body: JSON.stringify(body),
+                        body: formData,
                     });
 
                     const duration = (performance.now() - startTime).toFixed(1);
@@ -158,13 +163,9 @@ export const bannersApi = createApi({
                         return { error: { status: response.status, data: errorData } };
                     }
 
-                    const data = await response.json();
-                    console.log(`📨 API Response ← POST ${url} (${duration} ms)`, {
-                        data,
-                    });
-                    console.log(`Body:`, JSON.stringify(data, null, 2));
-
-                    return { data };
+                    console.log(`📨 API Response ← POST ${url} (${duration} ms) - Success`);
+                    // POST возвращает 201 без тела ответа
+                    return { data: undefined };
                 } catch (error: any) {
                     const duration = (performance.now() - startTime).toFixed(1);
                     console.error(`❌ API Fetch Error ← POST ${url} (${duration} ms)`, error);
@@ -173,13 +174,14 @@ export const bannersApi = createApi({
             },
         }),
 
-        deleteBannerByType: builder.mutation<{ success: boolean }, BannerType>({
-            queryFn: async (type) => {
+        deleteBanner: builder.mutation<void, string>({
+            queryFn: async (banner_id) => {
                 const token = Cookies.get('token');
-                const url = `${baseUrl}banner/${type}`;
+                const url = `${baseUrl}banners/${banner_id}`;
                 const startTime = performance.now();
 
                 console.log(`📡 API Request → DELETE ${url}`);
+                console.log(`Banner ID:`, banner_id);
 
                 try {
                     const headers: HeadersInit = {};
@@ -202,13 +204,9 @@ export const bannersApi = createApi({
                         return { error: { status: response.status, data: errorData } };
                     }
 
-                    const data = await response.json().catch(() => ({ success: true }));
-                    console.log(`📨 API Response ← DELETE ${url} (${duration} ms)`, {
-                        data,
-                    });
-                    console.log(`Body:`, JSON.stringify(data, null, 2));
-
-                    return { data };
+                    // DELETE возвращает 204 без тела ответа
+                    console.log(`📨 API Response ← DELETE ${url} (${duration} ms) - Success`);
+                    return { data: undefined };
                 } catch (error: any) {
                     const duration = (performance.now() - startTime).toFixed(1);
                     console.error(`❌ API Fetch Error ← DELETE ${url} (${duration} ms)`, error);
@@ -217,153 +215,11 @@ export const bannersApi = createApi({
             },
         }),
 
-        deleteBannerByFileName: builder.mutation<{ success: boolean }, { banner_type: BannerType; file_name: string }>({
-            queryFn: async ({ banner_type, file_name }) => {
-                const token = Cookies.get('token');
-                const url = `${baseUrl}banner/${banner_type}/${encodeURIComponent(file_name)}`;
-                const startTime = performance.now();
-
-                console.log(`📡 API Request → DELETE ${url}`);
-                console.log(`Params:`, { banner_type, file_name });
-
-                try {
-                    const headers: HeadersInit = {};
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-                    const response = await fetch(url, {
-                        method: 'DELETE',
-                        headers,
-                    });
-
-                    const duration = (performance.now() - startTime).toFixed(1);
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        console.error(`❌ API Error ← DELETE ${url} (${duration} ms)`, {
-                            status: response.status,
-                            statusText: response.statusText,
-                            error: errorData,
-                        });
-                        return { error: { status: response.status, data: errorData } };
-                    }
-
-                    const data = await response.json().catch(() => ({ success: true }));
-                    console.log(`📨 API Response ← DELETE ${url} (${duration} ms)`, {
-                        data,
-                    });
-                    console.log(`Body:`, JSON.stringify(data, null, 2));
-
-                    return { data };
-                } catch (error: any) {
-                    const duration = (performance.now() - startTime).toFixed(1);
-                    console.error(`❌ API Fetch Error ← DELETE ${url} (${duration} ms)`, error);
-                    return { error: { status: 'FETCH_ERROR' as const, error: error.message } };
-                }
-            },
-        }),
-
-        deleteBannerById: builder.mutation<{ success: boolean }, string>({
-            queryFn: async (id) => {
-                const token = Cookies.get('token');
-                const url = `${baseUrl}banner/${id}`;
-                const startTime = performance.now();
-
-                console.log(`📡 API Request → DELETE ${url}`);
-                console.log(`ID:`, id);
-
-                try {
-                    const headers: HeadersInit = {};
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-                    const response = await fetch(url, {
-                        method: 'DELETE',
-                        headers,
-                    });
-
-                    const duration = (performance.now() - startTime).toFixed(1);
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        console.error(`❌ API Error ← DELETE ${url} (${duration} ms)`, {
-                            status: response.status,
-                            statusText: response.statusText,
-                            error: errorData,
-                        });
-                        return { error: { status: response.status, data: errorData } };
-                    }
-
-                    const data = await response.json().catch(() => ({ success: true }));
-                    console.log(`📨 API Response ← DELETE ${url} (${duration} ms)`, {
-                        data,
-                    });
-                    console.log(`Body:`, JSON.stringify(data, null, 2));
-
-                    return { data };
-                } catch (error: any) {
-                    const duration = (performance.now() - startTime).toFixed(1);
-                    console.error(`❌ API Fetch Error ← DELETE ${url} (${duration} ms)`, error);
-                    return { error: { status: 'FETCH_ERROR' as const, error: error.message } };
-                }
-            },
-        }),
-
-        getPresignedUrl: builder.mutation<{ presigned_url: string; file_name: string }, { file_name: string; content_type: string }>({
-            queryFn: async ({ file_name, content_type }) => {
-                const token = Cookies.get('token');
-                const url = `${baseUrl}banner/upload-url`;
-                const startTime = performance.now();
-                const body = { file_name, content_type };
-
-                console.log(`📡 API Request → POST ${url}`);
-                console.log(`Body:`, JSON.stringify(body, null, 2));
-
-                try {
-                    const headers: HeadersInit = {
-                        'Content-Type': 'application/json',
-                    };
-                    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify(body),
-                    });
-
-                    const duration = (performance.now() - startTime).toFixed(1);
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        console.error(`❌ API Error ← POST ${url} (${duration} ms)`, {
-                            status: response.status,
-                            statusText: response.statusText,
-                            error: errorData,
-                        });
-                        return { error: { status: response.status, data: errorData } };
-                    }
-
-                    const data = await response.json();
-                    console.log(`📨 API Response ← POST ${url} (${duration} ms)`, {
-                        data,
-                    });
-                    console.log(`Body:`, JSON.stringify(data, null, 2));
-
-                    return { data };
-                } catch (error: any) {
-                    const duration = (performance.now() - startTime).toFixed(1);
-                    console.error(`❌ API Fetch Error ← POST ${url} (${duration} ms)`, error);
-                    return { error: { status: 'FETCH_ERROR' as const, error: error.message } };
-                }
-            },
-        }),
     }),
 });
 
 export const {
-    useGetBannersQuery,
     useGetBannerByTypeQuery,
     useCreateBannerMutation,
-    useDeleteBannerByTypeMutation,
-    useDeleteBannerByFileNameMutation,
-    useDeleteBannerByIdMutation,
-    useGetPresignedUrlMutation,
+    useDeleteBannerMutation,
 } = bannersApi;
