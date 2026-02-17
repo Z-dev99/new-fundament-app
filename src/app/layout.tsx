@@ -6,6 +6,8 @@ import { Providers } from "./providers";
 import ClientOnly from "./ClientOnly";
 import ScrollTopButton from "@/widgets/ScrollTopButton";
 import { ConditionalFooter } from "./ConditionalFooter";
+import { YandexMetrika } from "@/widgets/YandexMetrika/YandexMetrika";
+import { GoogleTagManager } from "@/widgets/GoogleTagManager/GoogleTagManager";
 
 const inter = Inter({
     subsets: ["latin", "cyrillic"],
@@ -90,6 +92,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 <link rel="dns-prefetch" href="https://images.pexels.com" />
             </head>
             <body className={inter.variable}>
+                <GoogleTagManager />
+                <YandexMetrika />
                 <Providers>
                     <ClientOnly>
                         {children}

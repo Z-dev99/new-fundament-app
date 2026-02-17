@@ -104,7 +104,10 @@ export default function PropertyPage() {
     const { selectedCurrency } = useCurrency();
 
     const { data: announcement, isLoading, error } = useGetAnnouncementByIdQuery(id);
-    const { data: contacts, isLoading: loadingContacts } = useGetAnnouncementContactsQuery(id);
+    const [shouldFetchContacts, setShouldFetchContacts] = useState(false);
+    const { data: contacts, isLoading: loadingContacts, error: contactsError } = useGetAnnouncementContactsQuery(id, {
+        skip: !shouldFetchContacts,
+    });
 
     // Получаем курс USD
     const { data: usdRateData } = useGetUSDRateQuery();
@@ -112,7 +115,6 @@ export default function PropertyPage() {
     const usdNominal = usdRateData?.[0] ? parseFloat(usdRateData[0].Nominal) : 1;
 
     const [activeImageIndex, setActiveImageIndex] = useState(0);
-    const [showPhone, setShowPhone] = useState(false);
     const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
     const [fullscreenIndex, setFullscreenIndex] = useState(0);
 
@@ -178,7 +180,7 @@ export default function PropertyPage() {
                 lat: parseFloat(announcement.latitude) || 41.2995,
                 lng: parseFloat(announcement.longitude) || 69.2401,
             },
-            phone: "+998770900800",
+            phone: contacts?.phone_number || "",
             email: contacts?.email || "",
         };
     }, [announcement, contacts, selectedCurrency, usdRate, usdNominal]);
@@ -291,10 +293,9 @@ export default function PropertyPage() {
         e.preventDefault();
         e.stopPropagation();
 
-        if (showPhone || !propertyData?.phone || loadingContacts) return;
+        if (loadingContacts || contacts?.phone_number) return;
 
-        setShowPhone(true);
-        setTimeout(() => setShowPhone(false), 5000);
+        setShouldFetchContacts(true);
     };
 
     if (isLoading) {
@@ -506,41 +507,39 @@ export default function PropertyPage() {
                                         <Loader2 size={20} className={styles.spinner} />
                                         <span>Загрузка...</span>
                                     </button>
-                                ) : propertyData.phone ? (
+                                ) : contacts?.phone_number ? (
                                     <>
                                         <button
-                                            className={`${styles.phoneBtn} ${showPhone ? styles.phoneBtnActive : ""}`}
-                                            onClick={handlePhoneClick}
+                                            className={`${styles.phoneBtn} ${styles.phoneBtnActive}`}
                                             type="button"
+                                            disabled
                                         >
-                                            {showPhone ? (
-                                                <>
-                                                    <Phone size={20} />
-                                                    <span>{propertyData.phone}</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Phone size={20} />
-                                                    <span>Показать телефон</span>
-                                                </>
-                                            )}
+                                            <Phone size={20} />
+                                            <span>{contacts.phone_number}</span>
                                         </button>
 
-                                        {showPhone && (
-                                            <motion.a
-                                                href={`tel:${propertyData.phone.replace(/\s/g, "")}`}
-                                                className={styles.callBtn}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                            >
-                                                <Phone size={20} />
-                                                Позвонить
-                                            </motion.a>
-                                        )}
+                                        <motion.a
+                                            href={`tel:${contacts.phone_number.replace(/\s/g, "").replace(/\D/g, "")}`}
+                                            className={styles.callBtn}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                        >
+                                            <Phone size={20} />
+                                            Позвонить
+                                        </motion.a>
                                     </>
-                                ) : null}
+                                ) : (
+                                    <button
+                                        className={styles.phoneBtn}
+                                        onClick={handlePhoneClick}
+                                        type="button"
+                                    >
+                                        <Phone size={20} />
+                                        <span>{contactsError ? "Ошибка загрузки" : "Показать телефон"}</span>
+                                    </button>
+                                )}
 
                                 {propertyData.email && (
                                     <motion.a

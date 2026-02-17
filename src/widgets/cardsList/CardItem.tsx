@@ -52,7 +52,7 @@ export const CardItem: React.FC<Props> = React.memo(({
         }
     };
 
-    const phoneNumber = "+998770900800";
+    const phoneNumber = contacts?.phone_number;
 
     const handleImageError = (index: number) => {
         setImageErrors((prev) => ({ ...prev, [index]: true }));
