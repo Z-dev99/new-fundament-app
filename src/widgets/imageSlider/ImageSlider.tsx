@@ -116,9 +116,11 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [goToPrevious, goToNext]);
 
-    // Фильтруем изображения с ошибками
+    // Фильтруем изображения с ошибками, но если все "ошибочные" — используем исходный список,
+    // чтобы не показывать пустой блок.
     const validImages = useMemo(() => {
-        return images.filter((_, index) => !imageErrors[index]);
+        const filtered = images.filter((_, index) => !imageErrors[index]);
+        return filtered.length > 0 ? filtered : images;
     }, [images, imageErrors]);
 
     const validCurrentIndex = useMemo(() => {
@@ -128,10 +130,10 @@ export const ImageSlider: React.FC<ImageSliderProps> = ({
         for (let i = 0; i < currentIndex && i < images.length; i++) {
             if (!imageErrors[i]) validCount++;
         }
-        return validCount;
+        return Math.min(validCount, validImages.length - 1);
     }, [currentIndex, images, imageErrors, validImages.length]);
 
-    if (!images || images.length === 0 || validImages.length === 0) {
+    if (!images || images.length === 0) {
         return null;
     }
 

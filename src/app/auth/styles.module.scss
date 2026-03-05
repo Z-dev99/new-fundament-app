@@ -1,0 +1,228 @@
+@use "sass:color";
+
+$primary-gradient: linear-gradient(135deg, #002574 0%, #0046c4 100%);
+$card-bg: #ffffff;
+$card-border: #e2e8f0;
+$text-primary: #1a202c;
+$text-secondary: #718096;
+$bg-primary: #f3f4f6;
+$shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+$radius: 18px;
+
+.page {
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #e0edff 0, #f5f7fb 45%, #eef2f7 100%);
+}
+
+.wrapper {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px 48px;
+}
+
+.authCard {
+    width: 100%;
+    max-width: 520px;
+    background: $card-bg;
+    border-radius: $radius;
+    box-shadow: $shadow-lg;
+    padding: 32px 32px 28px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top left, rgba(0, 37, 116, 0.12), transparent 60%);
+        pointer-events: none;
+    }
+}
+
+.authHeader {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-bottom: 24px;
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(0, 37, 116, 0.05);
+        color: #002574;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .title {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: $text-primary;
+        margin-bottom: 6px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+        color: $text-secondary;
+        margin: 0;
+    }
+}
+
+.authForm {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+
+    @media (max-width: 640px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: $text-primary;
+    }
+
+    input {
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1.5px solid $card-border;
+        font-size: 14px;
+        font-family: inherit;
+        color: $text-primary;
+        background: #f9fafb;
+        outline: none;
+        transition: all 0.2s ease;
+
+        &::placeholder {
+            color: #a0aec0;
+        }
+
+        &:focus {
+            border-color: #002574;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(0, 37, 116, 0.12);
+        }
+
+        &:hover:not(:focus) {
+            border-color: #cbd5e0;
+        }
+    }
+}
+
+.passwordHint {
+    font-size: 12px;
+    color: $text-secondary;
+}
+
+.submitButton {
+    margin-top: 4px;
+    padding: 14px 20px;
+    border-radius: 999px;
+    border: none;
+    background: $primary-gradient;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    box-shadow: 0 10px 25px rgba(0, 37, 116, 0.35);
+
+    &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(0, 37, 116, 0.4);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 0 8px 20px rgba(0, 37, 116, 0.32);
+    }
+
+    &:disabled {
+        opacity: 0.75;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .spinner {
+        animation: spin 0.8s linear infinite;
+    }
+}
+
+.bottomText {
+    position: relative;
+    z-index: 1;
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    color: $text-secondary;
+    flex-wrap: wrap;
+}
+
+.link {
+    color: #002574;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.muted {
+    opacity: 0.8;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 480px) {
+    .authCard {
+        padding: 24px 18px 22px;
+        border-radius: 16px;
+    }
+
+    .authHeader {
+        .title {
+            font-size: 22px;
+        }
+    }
+}
+

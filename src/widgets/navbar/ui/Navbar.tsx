@@ -8,8 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 // import { CitySelect } from "./CitySelect";
 import { ContactModal } from "@/widgets/modal/ContactModal";
 import { AddAnnouncementModal } from "@/widgets/modal/AddAnnouncementModal";
-import { Menu, X, Home, Phone, MessageSquare, FileText, Plus } from "lucide-react";
+import { OwnerAuthModal } from "@/widgets/modal/OwnerAuthModal";
+import { Menu, X, Home, Phone, MessageSquare, FileText, Plus, LogIn, User } from "lucide-react";
 import Link from "next/link";
+import Cookies from "js-cookie";
 
 const navItems = [
     { href: "/", label: "Главная", icon: Home },
@@ -19,11 +21,17 @@ const navItems = [
 
 export const Navbar = () => {
     const [modalOpen, setModalOpen] = useState(false);
-    const [addAnnouncementModalOpen, setAddAnnouncementModalOpen] = useState(false);
+    const [authModalOpen, setAuthModalOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const pathname = usePathname();
 
     const closeMenu = () => setMenuOpen(false);
+
+    // Проверяем авторизацию
+    useEffect(() => {
+        setIsAuthenticated(!!Cookies.get("token"));
+    }, []);
 
     // Закрываем меню при изменении роута
     useEffect(() => {
@@ -89,16 +97,6 @@ export const Navbar = () => {
 
                         <div className={styles.rightSide}>
                             <motion.button
-                                className={styles.addAnnouncementBtn}
-                                whileTap={{ scale: 0.95 }}
-                                whileHover={{ scale: 1.05 }}
-                                onClick={() => setAddAnnouncementModalOpen(true)}
-                            >
-                                <Plus size={18} />
-                                <span>Добавить объявление</span>
-                            </motion.button>
-                            
-                            <motion.button
                                 className={styles.requestDesktop}
                                 whileTap={{ scale: 0.95 }}
                                 whileHover={{ scale: 1.05 }}
@@ -107,6 +105,23 @@ export const Navbar = () => {
                                 <FileText size={18} />
                                 <span>Подать заявку</span>
                             </motion.button>
+
+                            {isAuthenticated ? (
+                                <Link href="/owner" className={styles.authBtn}>
+                                    <User size={18} />
+                                    <span>Личный кабинет</span>
+                                </Link>
+                            ) : (
+                                <motion.button
+                                    className={styles.authBtn}
+                                    whileTap={{ scale: 0.95 }}
+                                    whileHover={{ scale: 1.05 }}
+                                    onClick={() => setAuthModalOpen(true)}
+                                >
+                                    <LogIn size={18} />
+                                    <span>Войти</span>
+                                </motion.button>
+                            )}
 
                             <button
                                 className={styles.burger}
@@ -206,21 +221,7 @@ export const Navbar = () => {
                                 })}
                             </div>
 
-                            <motion.button
-                                className={styles.mobileBtn}
-                                onClick={() => {
-                                    setAddAnnouncementModalOpen(true);
-                                    closeMenu();
-                                }}
-                                whileTap={{ scale: 0.95 }}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                            >
-                                <Plus size={20} />
-                                <span>Добавить объявление</span>
-                            </motion.button>
-                            
+                            {/* Кнопка добавления объявления отключена */}
                             <motion.button
                                 className={styles.mobileBtn}
                                 onClick={() => {
@@ -235,13 +236,44 @@ export const Navbar = () => {
                                 <FileText size={20} />
                                 <span>Подать заявку</span>
                             </motion.button>
+
+                            {isAuthenticated ? (
+                                <Link
+                                    href="/owner"
+                                    className={styles.mobileBtn}
+                                    onClick={closeMenu}
+                                >
+                                    <User size={20} />
+                                    <span>Личный кабинет</span>
+                                </Link>
+                            ) : (
+                                <motion.button
+                                    className={styles.mobileBtn}
+                                    onClick={() => {
+                                        setAuthModalOpen(true);
+                                        closeMenu();
+                                    }}
+                                    whileTap={{ scale: 0.95 }}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.4 }}
+                                >
+                                    <LogIn size={20} />
+                                    <span>Войти</span>
+                                </motion.button>
+                            )}
                         </motion.nav>
                     </>
                 )}
             </AnimatePresence>
 
             <ContactModal open={modalOpen} onClose={() => setModalOpen(false)} />
-            <AddAnnouncementModal open={addAnnouncementModalOpen} onClose={() => setAddAnnouncementModalOpen(false)} />
+            {/* Модалка добавления объявления отключена вместе с кнопкой */}
+            <OwnerAuthModal
+                open={authModalOpen}
+                onClose={() => setAuthModalOpen(false)}
+                onAuthSuccess={() => setIsAuthenticated(true)}
+            />
         </>
     );
 };

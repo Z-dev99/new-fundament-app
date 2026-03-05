@@ -73,12 +73,9 @@ export const ThumbnailsSlider: React.FC<ThumbnailsSliderProps> = ({
         return null;
     }
 
-    // Фильтруем изображения с ошибками
+    // Фильтруем изображения с ошибками, но не скрываем весь блок,
+    // даже если временно все помечены как ошибочные.
     const validImages = images.filter((_, index) => !imageErrors[index]);
-    
-    if (validImages.length === 0) {
-        return null;
-    }
 
     return (
         <div className={`${styles.thumbnails} ${className || ""}`}>
