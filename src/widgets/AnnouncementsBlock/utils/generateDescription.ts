@@ -1,3 +1,4 @@
+import { convertUSDtoUZS, parseUsdPriceAmount } from "@/shared/utils/currencyConverter";
 import {
     ANNOUNCEMENT_TYPES,
     PROPERTY_TYPES,
@@ -40,7 +41,11 @@ interface FormData {
     balcony_area?: string;
 }
 
-export const generateDescription = (formData: FormData): string => {
+export const generateDescription = (
+    formData: FormData,
+    usdRate: number | null = null,
+    usdNominal: number = 1
+): string => {
     const parts: string[] = [];
 
     // Вводный абзац
@@ -245,13 +250,19 @@ export const generateDescription = (formData: FormData): string => {
         parts.push(`<h3>Адрес:</h3><p>${addressParts.join(", ")}</p>`);
     }
 
-    // Цена
-    if (formData.price) {
-        const currency = formData.currency === "USD" ? "$" : formData.currency === "EUR" ? "€" : "сум";
-        const priceText = formData.currency === "UZS" 
-            ? `${parseInt(formData.price).toLocaleString("ru-RU")} ${currency}`
-            : `${parseInt(formData.price).toLocaleString("ru-RU")} ${currency}`;
-        parts.push(`<h3>Цена:</h3><p>${priceText}</p>`);
+    // Цена: ввод в USD, в описании — в сумах по курсу ЦБУ
+    if (formData.price?.trim()) {
+        const usdAmount = parseUsdPriceAmount(formData.price);
+        if (usdAmount > 0 && usdRate) {
+            const uzs = Math.round(convertUSDtoUZS(usdAmount, usdRate, usdNominal));
+            parts.push(
+                `<h3>Цена:</h3><p>${uzs.toLocaleString("ru-RU")} сум</p>`
+            );
+        } else if (usdAmount > 0) {
+            parts.push(
+                `<h3>Цена:</h3><p>${usdAmount.toLocaleString("ru-RU")} USD</p>`
+            );
+        }
     }
 
     // Заключительная фраза

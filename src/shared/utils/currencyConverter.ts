@@ -7,6 +7,32 @@ export interface CurrencyRate {
     Nominal: string;
 }
 
+/** Парсит числовые поля ответа ЦБУ (пробелы как разделитель тысяч, запятая как десятичная). */
+export function parseCbuNumeric(value: string | number | undefined | null): number | null {
+    if (value === undefined || value === null) return null;
+    const cleaned = String(value).trim().replace(/\s/g, "").replace(",", ".");
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/** Запасной курс UZS за 1 USD, если API ЦБУ недоступен (только для отображения в каталоге). */
+export const DEFAULT_USD_UZS_FALLBACK = 12800;
+
+/**
+ * Курс для отображения цен в списке/карточке: данные ЦБУ или fallback.
+ * Для сохранения объявлений используйте только фактический курс без fallback.
+ */
+export function getUsdRateForDisplay(
+    usdRateData: { Rate: string; Nominal: string }[] | undefined,
+    fallback: number = DEFAULT_USD_UZS_FALLBACK
+): { rate: number; nominal: number } {
+    const row = usdRateData?.[0];
+    const rate = row ? parseCbuNumeric(row.Rate) : null;
+    const nominalRaw = row ? parseCbuNumeric(row.Nominal) : null;
+    const nominal = nominalRaw && nominalRaw > 0 ? nominalRaw : 1;
+    return { rate: rate ?? fallback, nominal };
+}
+
 /**
  * Конвертирует сумму из UZS в USD по курсу ЦБУ
  */
@@ -24,26 +50,22 @@ export function convertUSDtoUZS(amountUSD: number, rate: number, nominal: number
 }
 
 /**
- * Парсит цену из строки, определяя валюту по символу $
- * Возвращает объект с ценой и валютой
+ * Парсит сумму в USD из поля ввода: только цифры и десятичный разделитель (. или ,),
+ * без символов валюты. Невалидный ввод → NaN.
  */
-export function parsePrice(priceString: string): { amount: number; currency: "UZS" | "USD" } {
-    if (!priceString || priceString.trim() === "") {
-        return { amount: 0, currency: "UZS" };
-    }
+export function parseUsdPriceAmount(priceString: string): number {
+    if (!priceString || !priceString.trim()) return NaN;
+    const cleaned = priceString.trim().replace(/\s/g, "").replace(",", ".");
+    if (!/^\d+(\.\d+)?$/.test(cleaned)) return NaN;
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : NaN;
+}
 
-    // Убираем пробелы и проверяем наличие символа $
-    const cleaned = priceString.trim().replace(/\s/g, "");
-    const isUSD = cleaned.includes("$") || cleaned.toUpperCase().includes("USD");
-
-    // Извлекаем число, убирая все нечисловые символы кроме точки и запятой
-    const numberString = cleaned.replace(/[^\d.,]/g, "").replace(",", ".");
-    const amount = parseFloat(numberString) || 0;
-
-    return {
-        amount,
-        currency: isUSD ? "USD" : "UZS"
-    };
+/** Округление для отображения введённой суммы в USD (например при загрузке из UZS). */
+export function formatUsdInputAmount(usd: number): string {
+    if (!Number.isFinite(usd) || usd <= 0) return "";
+    const rounded = Math.round(usd * 100) / 100;
+    return Number.isInteger(rounded) ? String(rounded) : String(rounded);
 }
 
 /**

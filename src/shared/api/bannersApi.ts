@@ -16,7 +16,6 @@ export interface CreateBannerPayload {
 
 const baseUrl = (() => {
     let url = process.env.NEXT_PUBLIC_API_URL || "https://fundament.uz/api/v1/";
-    // Нормализуем baseUrl - убираем все слэши в конце и добавляем один
     url = url.replace(/\/+$/, "");
     return `${url}/`;
 })();
@@ -38,9 +37,6 @@ export const bannersApi = createApi({
             queryFn: async () => {
                 const token = Cookies.get('token');
                 const url = `${baseUrl}banners`;
-                const startTime = performance.now();
-
-                console.log(`📡 API Request → GET ${url}`);
 
                 try {
                     const headers: HeadersInit = {};
@@ -51,31 +47,14 @@ export const bannersApi = createApi({
                         headers,
                     });
 
-                    const duration = (performance.now() - startTime).toFixed(1);
-
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        // Для 404 и 401 не логируем как ошибку - это нормальная ситуация для публичного эндпоинта
-                        if (response.status !== 404 && response.status !== 401) {
-                            console.error(`❌ API Error ← GET ${url} (${duration} ms)`, {
-                                status: response.status,
-                                statusText: response.statusText,
-                                error: errorData,
-                            });
-                        }
                         return { error: { status: response.status, data: errorData } };
                     }
 
                     const data = await response.json();
-                    console.log(`📨 API Response ← GET ${url} (${duration} ms)`, {
-                        data,
-                    });
-                    console.log(`Body:`, JSON.stringify(data, null, 2));
-
                     return { data };
                 } catch (error: any) {
-                    const duration = (performance.now() - startTime).toFixed(1);
-                    console.error(`❌ API Fetch Error ← GET ${url} (${duration} ms)`, error);
                     return { error: { status: 'FETCH_ERROR' as const, error: error.message } };
                 }
             },
@@ -85,9 +64,6 @@ export const bannersApi = createApi({
             queryFn: async (type) => {
                 const token = Cookies.get('token');
                 const url = `${baseUrl}banners/${type}`;
-                const startTime = performance.now();
-
-                console.log(`📡 API Request → GET ${url}`);
 
                 try {
                     const headers: HeadersInit = {};
@@ -98,31 +74,14 @@ export const bannersApi = createApi({
                         headers,
                     });
 
-                    const duration = (performance.now() - startTime).toFixed(1);
-
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        // Для 404 не логируем как ошибку - это нормальная ситуация, когда баннер еще не добавлен
-                        if (response.status !== 404) {
-                            console.error(`❌ API Error ← GET ${url} (${duration} ms)`, {
-                                status: response.status,
-                                statusText: response.statusText,
-                                error: errorData,
-                            });
-                        }
                         return { error: { status: response.status, data: errorData } };
                     }
 
                     const data = await response.json();
-                    console.log(`📨 API Response ← GET ${url} (${duration} ms)`, {
-                        data,
-                    });
-                    console.log(`Body:`, JSON.stringify(data, null, 2));
-
                     return { data };
                 } catch (error: any) {
-                    const duration = (performance.now() - startTime).toFixed(1);
-                    console.error(`❌ API Fetch Error ← GET ${url} (${duration} ms)`, error);
                     return { error: { status: 'FETCH_ERROR' as const, error: error.message } };
                 }
             },
@@ -132,10 +91,6 @@ export const bannersApi = createApi({
             queryFn: async ({ banner_type, file }) => {
                 const token = Cookies.get('token');
                 const url = `${baseUrl}banners/${banner_type}`;
-                const startTime = performance.now();
-
-                console.log(`📡 API Request → POST ${url}`);
-                console.log(`File:`, file.name, `Size:`, file.size, `Type:`, file.type);
 
                 try {
                     const formData = new FormData();
@@ -143,7 +98,6 @@ export const bannersApi = createApi({
 
                     const headers: HeadersInit = {};
                     if (token) headers['Authorization'] = `Bearer ${token}`;
-                    // Не устанавливаем Content-Type - браузер установит его автоматически с boundary для FormData
 
                     const response = await fetch(url, {
                         method: 'POST',
@@ -151,24 +105,13 @@ export const bannersApi = createApi({
                         body: formData,
                     });
 
-                    const duration = (performance.now() - startTime).toFixed(1);
-
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        console.error(`❌ API Error ← POST ${url} (${duration} ms)`, {
-                            status: response.status,
-                            statusText: response.statusText,
-                            error: errorData,
-                        });
                         return { error: { status: response.status, data: errorData } };
                     }
 
-                    console.log(`📨 API Response ← POST ${url} (${duration} ms) - Success`);
-                    // POST возвращает 201 без тела ответа
                     return { data: undefined };
                 } catch (error: any) {
-                    const duration = (performance.now() - startTime).toFixed(1);
-                    console.error(`❌ API Fetch Error ← POST ${url} (${duration} ms)`, error);
                     return { error: { status: 'FETCH_ERROR' as const, error: error.message } };
                 }
             },
@@ -178,10 +121,6 @@ export const bannersApi = createApi({
             queryFn: async (banner_id) => {
                 const token = Cookies.get('token');
                 const url = `${baseUrl}banners/${banner_id}`;
-                const startTime = performance.now();
-
-                console.log(`📡 API Request → DELETE ${url}`);
-                console.log(`Banner ID:`, banner_id);
 
                 try {
                     const headers: HeadersInit = {};
@@ -192,24 +131,13 @@ export const bannersApi = createApi({
                         headers,
                     });
 
-                    const duration = (performance.now() - startTime).toFixed(1);
-
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
-                        console.error(`❌ API Error ← DELETE ${url} (${duration} ms)`, {
-                            status: response.status,
-                            statusText: response.statusText,
-                            error: errorData,
-                        });
                         return { error: { status: response.status, data: errorData } };
                     }
 
-                    // DELETE возвращает 204 без тела ответа
-                    console.log(`📨 API Response ← DELETE ${url} (${duration} ms) - Success`);
                     return { data: undefined };
                 } catch (error: any) {
-                    const duration = (performance.now() - startTime).toFixed(1);
-                    console.error(`❌ API Fetch Error ← DELETE ${url} (${duration} ms)`, error);
                     return { error: { status: 'FETCH_ERROR' as const, error: error.message } };
                 }
             },

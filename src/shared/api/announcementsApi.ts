@@ -198,10 +198,13 @@ export const announcementApi = createApi({
             },
             // Отключаем кеширование для этого запроса, чтобы всегда получать свежие данные
             keepUnusedDataFor: 0,
-            transformResponse: (response: AnnouncementsResponse) => ({
-                ...response,
-                topTen: response.announcements.slice(0, 10),
-            }),
+            transformResponse: (response: AnnouncementsResponse) => {
+                const announcements = response?.announcements ?? [];
+                return {
+                    ...response,
+                    topTen: announcements.slice(0, 10),
+                };
+            },
             providesTags: ["Announcement"],
         }),
 
@@ -260,14 +263,11 @@ export const announcementApi = createApi({
 
                     // ✅ backend реально возвращает string[]
                     const presignedUrls: string[] = await response.json();
-                    console.log("📥 Received presigned URLs:", JSON.stringify(presignedUrls, null, 2));
-                    console.log(`📁 Files to upload: ${files?.length || 0}`);
 
                     // =========================
                     // 2️⃣ Загрузка файлов
                     // =========================
                     if (files && files.length > 0) {
-                        console.log(`🚀 Starting file upload process for ${files.length} files...`);
                         if (presignedUrls.length !== files.length) {
                             return {
                                 error: {
@@ -282,8 +282,6 @@ export const announcementApi = createApi({
                             const file = files[i];
                             const presignedUrl = presignedUrls[i];
 
-                            console.log(`Uploading file ${i + 1}/${files.length}: ${file.name} to ${presignedUrl}`);
-
                             try {
                                 const uploadResponse = await fetch(presignedUrl, {
                                     method: "PUT",
@@ -294,8 +292,7 @@ export const announcementApi = createApi({
                                 });
 
                                 if (!uploadResponse.ok) {
-                                    const errorText = await uploadResponse.text().catch(() => "Unknown error");
-                                    console.error(`Failed to upload file ${i + 1}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                                    await uploadResponse.text().catch(() => "Unknown error");
                                     return {
                                         error: {
                                             status: "CUSTOM_ERROR" as const,
@@ -303,10 +300,7 @@ export const announcementApi = createApi({
                                         },
                                     };
                                 }
-
-                                console.log(`Successfully uploaded file ${i + 1}/${files.length}: ${file.name}`);
                             } catch (uploadError: any) {
-                                console.error(`Error uploading file ${i + 1}:`, uploadError);
                                 return {
                                     error: {
                                         status: "FETCH_ERROR" as const,
@@ -315,8 +309,6 @@ export const announcementApi = createApi({
                                 };
                             }
                         }
-
-                        console.log(`All ${files.length} files uploaded successfully`);
                     }
 
                     // ✅ ВАЖНО: возвращаем ТО ЖЕ, что вернул backend
@@ -359,7 +351,6 @@ export const announcementApi = createApi({
 
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => null);
-                        console.log("Error response:", JSON.stringify(errorData, null, 2));
                         return {
                             error: {
                                 status: response.status,
@@ -370,8 +361,6 @@ export const announcementApi = createApi({
 
                     // ✅ backend возвращает string[] (presigned URLs)
                     const presignedUrls: string[] = await response.json();
-                    console.log("📥 Received presigned URLs:", JSON.stringify(presignedUrls, null, 2));
-                    console.log(`📁 Files to upload: ${files?.length || 0}`);
 
                     // =========================
                     // 2️⃣ Загрузка файлов (если есть новые файлы)
@@ -387,7 +376,6 @@ export const announcementApi = createApi({
                             };
                         }
 
-                        console.log(`🚀 Starting file upload process for ${files.length} files...`);
                         if (presignedUrls.length !== files.length) {
                             return {
                                 error: {
@@ -402,8 +390,6 @@ export const announcementApi = createApi({
                             const file = files[i];
                             const presignedUrl = presignedUrls[i];
 
-                            console.log(`Uploading file ${i + 1}/${files.length}: ${file.name} to ${presignedUrl}`);
-
                             try {
                                 const uploadResponse = await fetch(presignedUrl, {
                                     method: "PUT",
@@ -414,8 +400,7 @@ export const announcementApi = createApi({
                                 });
 
                                 if (!uploadResponse.ok) {
-                                    const errorText = await uploadResponse.text().catch(() => "Unknown error");
-                                    console.error(`Failed to upload file ${i + 1}: ${uploadResponse.status} ${uploadResponse.statusText}`, errorText);
+                                    await uploadResponse.text().catch(() => "Unknown error");
                                     return {
                                         error: {
                                             status: "CUSTOM_ERROR" as const,
@@ -423,10 +408,7 @@ export const announcementApi = createApi({
                                         },
                                     };
                                 }
-
-                                console.log(`Successfully uploaded file ${i + 1}/${files.length}: ${file.name}`);
                             } catch (uploadError: any) {
-                                console.error(`Error uploading file ${i + 1}:`, uploadError);
                                 return {
                                     error: {
                                         status: "FETCH_ERROR" as const,
@@ -435,8 +417,6 @@ export const announcementApi = createApi({
                                 };
                             }
                         }
-
-                        console.log(`All ${files.length} files uploaded successfully`);
                     }
 
                     // ✅ ВАЖНО: возвращаем ТО ЖЕ, что вернул backend

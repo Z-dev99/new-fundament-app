@@ -15,7 +15,7 @@ import {
     useGetAnnouncementContactsQuery,
 } from "@/shared/api/announcementsApi";
 import { useGetUSDRateQuery } from "@/shared/api/currencyApi";
-import { formatPrice } from "@/shared/utils/currencyConverter";
+import { formatPrice, getUsdRateForDisplay, DEFAULT_USD_UZS_FALLBACK } from "@/shared/utils/currencyConverter";
 import { useCurrency } from "@/shared/contexts/CurrencyContext";
 
 // Динамический импорт карты для избежания проблем с SSR
@@ -109,10 +109,25 @@ export default function PropertyPage() {
         skip: !shouldFetchContacts,
     });
 
-    // Получаем курс USD
-    const { data: usdRateData } = useGetUSDRateQuery();
-    const usdRate = usdRateData?.[0] ? parseFloat(usdRateData[0].Rate) : null;
-    const usdNominal = usdRateData?.[0] ? parseFloat(usdRateData[0].Nominal) : 1;
+    const DISPLAY_USD_FALLBACK =
+        typeof process !== "undefined" && process.env.NEXT_PUBLIC_USD_UZS_FALLBACK
+            ? Number(process.env.NEXT_PUBLIC_USD_UZS_FALLBACK)
+            : DEFAULT_USD_UZS_FALLBACK;
+
+    const { data: usdRateData } = useGetUSDRateQuery(undefined, {
+        refetchOnFocus: true,
+        refetchOnReconnect: true,
+    });
+    const { rate: usdRate, nominal: usdNominal } = useMemo(
+        () =>
+            getUsdRateForDisplay(
+                usdRateData,
+                Number.isFinite(DISPLAY_USD_FALLBACK) && DISPLAY_USD_FALLBACK > 0
+                    ? DISPLAY_USD_FALLBACK
+                    : DEFAULT_USD_UZS_FALLBACK
+            ),
+        [usdRateData, DISPLAY_USD_FALLBACK]
+    );
 
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
@@ -409,9 +424,8 @@ export default function PropertyPage() {
                                                         toast.success("Ссылка скопирована в буфер обмена!");
                                                     }
                                                 } catch (error) {
-                                                    // Пользователь отменил или произошла ошибка
                                                     if (error instanceof Error && error.name !== 'AbortError') {
-                                                        console.error('Ошибка при попытке поделиться:', error);
+                                                        toast.error("Не удалось поделиться");
                                                     }
                                                 }
                                             }}
@@ -431,8 +445,7 @@ export default function PropertyPage() {
                                             try {
                                                 await navigator.clipboard.writeText(propertyData.id);
                                                 toast.success("ID скопирован в буфер обмена!");
-                                            } catch (error) {
-                                                console.error('Ошибка при копировании ID:', error);
+                                            } catch {
                                                 toast.error("Не удалось скопировать ID");
                                             }
                                         }}

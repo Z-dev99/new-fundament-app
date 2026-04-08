@@ -125,31 +125,21 @@ export const EditModal: React.FC<EditModalProps> = ({ announcementId, onClose, o
                                 </select>
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label>Цена *</label>
+                            <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+                                <label>Цена, USD *</label>
                                 <input
                                     type="text"
                                     name="price"
+                                    inputMode="decimal"
+                                    autoComplete="off"
                                     value={formData.price ?? ""}
                                     onChange={handleInputChange}
-                                    placeholder="Например: 400000 или 400$"
+                                    placeholder="Например: 45000"
                                     required
                                 />
                                 <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}>
-                                    Можно ввести цену в сумах (400000) или в долларах (400$). Доллары автоматически конвертируются в сумы по курсу ЦБУ.
+                                    Только число в долларах, без знака $. В объявлении и на сервере цена сохраняется в сумах по курсу ЦБУ.
                                 </p>
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label>Валюта *</label>
-                                <select
-                                    name="currency"
-                                    value={formData.currency ?? "UZS"}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <option value="UZS">UZS</option>
-                                </select>
                             </div>
 
                             <div className={styles.formGroup}>

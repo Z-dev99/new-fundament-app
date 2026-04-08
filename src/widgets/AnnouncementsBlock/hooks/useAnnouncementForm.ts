@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useGetAnnouncementByIdQuery, useAddAnnouncementMutation, useUpdateAnnouncementMutation, type AddAnnouncementBody } from "@/shared/api/announcementsApi";
 import { useGetUSDRateQuery } from "@/shared/api/currencyApi";
-import { parsePrice, convertUSDtoUZS } from "@/shared/utils/currencyConverter";
+import {
+    convertUSDtoUZS,
+    convertUZSToUSD,
+    parseUsdPriceAmount,
+    formatUsdInputAmount,
+    parseCbuNumeric,
+} from "@/shared/utils/currencyConverter";
 import toast from "react-hot-toast";
 import { MAX_IMAGES, MIN_IMAGES } from "../constants";
 import { generateDescription } from "../utils/generateDescription";
@@ -66,7 +72,7 @@ const getInitialFormData = (): Partial<AddAnnouncementBody & {
     city_side: "",
     renovation_type: "",
     price: "",
-    currency: "UZS",
+    currency: "UZS", // на сервер всегда уходит UZS после конвертации из USD
     country: "",
     region: "",
     city: "",
@@ -103,8 +109,9 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
 
     // Получаем курс USD для конвертации
     const { data: usdRateData } = useGetUSDRateQuery();
-    const usdRate = usdRateData?.[0] ? parseFloat(usdRateData[0].Rate) : null;
-    const usdNominal = usdRateData?.[0] ? parseFloat(usdRateData[0].Nominal) : 1;
+    const usdRate = usdRateData?.[0] ? parseCbuNumeric(usdRateData[0].Rate) : null;
+    const usdNominalRaw = usdRateData?.[0] ? parseCbuNumeric(usdRateData[0].Nominal) : null;
+    const usdNominal = usdNominalRaw && usdNominalRaw > 0 ? usdNominalRaw : 1;
 
     const [addAnnouncement, { isLoading: isAdding }] = useAddAnnouncementMutation();
     const [updateAnnouncement, { isLoading: isUpdating }] = useUpdateAnnouncementMutation();
@@ -223,8 +230,8 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                 heating_type: (existingData as any).heating_type || "",
                 city_side: (existingData as any).city_side || "",
                 renovation_type: (existingData as any).renovation_type || "",
-                price: String(existingData.price || ""),
-                currency: existingData.currency || "UZS",
+                price: "",
+                currency: "UZS",
                 country: (existingData as any).country || "",
                 region: (existingData as any).region || "",
                 city: existingData.city || "",
@@ -251,7 +258,7 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
             setImageFiles([]);
         } else if (!isEdit) {
             const initialData = getInitialFormData();
-            const autoDescription = generateDescription(initialData);
+            const autoDescription = generateDescription(initialData, usdRate, usdNominal);
             setFormData({
                 ...initialData,
                 description: autoDescription,
@@ -263,6 +270,26 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
             blobUrlsRef.current = [];
         }
     }, [existingData, isEdit]);
+
+    // При редактировании: в поле цены показываем эквивалент в USD из сохранённой сумы
+    useEffect(() => {
+        if (!isEdit || !existingData || !usdRate) return;
+        const uzs = Number(existingData.price);
+        if (!Number.isFinite(uzs) || uzs <= 0) return;
+        const usdAmount = convertUZSToUSD(uzs, usdRate, usdNominal);
+        const usdStr = formatUsdInputAmount(usdAmount);
+        if (!usdStr) return;
+        setFormData((prev) => ({ ...prev, price: usdStr }));
+    }, [isEdit, existingData, usdRate, usdNominal]);
+
+    // После загрузки курса обновить автоописание (цена в тексте — в сумах)
+    useEffect(() => {
+        if (isEdit || !usdRate) return;
+        setFormData((prev) => ({
+            ...prev,
+            description: generateDescription(prev, usdRate, usdNominal),
+        }));
+    }, [isEdit, usdRate, usdNominal]);
 
     // Очистка blob URLs при размонтировании
     useEffect(() => {
@@ -293,7 +320,7 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
         
         // Автогенерация описания при изменении основных полей (кроме самого description)
         if (name !== "description") {
-            const autoDescription = generateDescription(updatedData);
+            const autoDescription = generateDescription(updatedData, usdRate, usdNominal);
             updatedData.description = autoDescription;
         }
         
@@ -392,26 +419,18 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                         : formData.rentAdditionalInfo.trim();
                 }
 
-                // Парсим цену и конвертируем доллары в сумы
                 const priceInput = formData.price || "";
-                const parsedPrice = parsePrice(priceInput);
-                let finalPrice = parsedPrice.amount.toString();
-                let finalCurrency = "UZS";
-
-                if (parsedPrice.currency === "USD") {
-                    if (!usdRate) {
-                        toast.error("Курс доллара не загружен. Пожалуйста, попробуйте позже.");
-                        return;
-                    }
-                    // Конвертируем доллары в сумы
-                    const priceInUZS = convertUSDtoUZS(parsedPrice.amount, usdRate, usdNominal);
-                    finalPrice = Math.round(priceInUZS).toString();
-                    finalCurrency = "UZS";
-                } else {
-                    // Уже в сумах
-                    finalPrice = parsedPrice.amount.toString();
-                    finalCurrency = "UZS";
+                const usdAmount = parseUsdPriceAmount(priceInput);
+                if (!Number.isFinite(usdAmount) || usdAmount <= 0) {
+                    toast.error("Укажите цену в долларах числом, без символов (например: 45000 или 1200.5)");
+                    return;
                 }
+                if (!usdRate) {
+                    toast.error("Курс доллара не загружен. Пожалуйста, попробуйте позже.");
+                    return;
+                }
+                const finalPrice = Math.round(convertUSDtoUZS(usdAmount, usdRate, usdNominal)).toString();
+                const finalCurrency = "UZS";
 
                 const updateData = {
                     ...formData,
@@ -450,26 +469,18 @@ export const useAnnouncementForm = ({ announcementId, onSuccess, onClose }: UseA
                         : formData.rentAdditionalInfo.trim();
                 }
 
-                // Парсим цену и конвертируем доллары в сумы
                 const priceInput = formData.price || "";
-                const parsedPrice = parsePrice(priceInput);
-                let finalPrice = parsedPrice.amount.toString();
-                let finalCurrency = "UZS";
-
-                if (parsedPrice.currency === "USD") {
-                    if (!usdRate) {
-                        toast.error("Курс доллара не загружен. Пожалуйста, попробуйте позже.");
-                        return;
-                    }
-                    // Конвертируем доллары в сумы
-                    const priceInUZS = convertUSDtoUZS(parsedPrice.amount, usdRate, usdNominal);
-                    finalPrice = Math.round(priceInUZS).toString();
-                    finalCurrency = "UZS";
-                } else {
-                    // Уже в сумах
-                    finalPrice = parsedPrice.amount.toString();
-                    finalCurrency = "UZS";
+                const usdAmountNew = parseUsdPriceAmount(priceInput);
+                if (!Number.isFinite(usdAmountNew) || usdAmountNew <= 0) {
+                    toast.error("Укажите цену в долларах числом, без символов (например: 45000 или 1200.5)");
+                    return;
                 }
+                if (!usdRate) {
+                    toast.error("Курс доллара не загружен. Пожалуйста, попробуйте позже.");
+                    return;
+                }
+                const finalPrice = Math.round(convertUSDtoUZS(usdAmountNew, usdRate, usdNominal)).toString();
+                const finalCurrency = "UZS";
 
                 const submitData: AddAnnouncementBody = {
                     title: formData.title || "",

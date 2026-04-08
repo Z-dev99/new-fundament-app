@@ -118,8 +118,7 @@ export default function MapPicker({ latitude, longitude, onLocationSelect }: Map
             } else {
                 setSearchError("Адрес не найден. Попробуйте другой адрес");
             }
-        } catch (error) {
-            console.error("Geocoding error:", error);
+        } catch {
             setSearchError("Ошибка при поиске адреса. Попробуйте позже");
         } finally {
             setIsSearching(false);

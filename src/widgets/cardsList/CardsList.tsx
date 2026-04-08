@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import styles from "./CardsList.module.css";
 import { CardItem } from "./CardItem";
 import { Pagination } from "./Pagination";
@@ -8,7 +8,7 @@ import { useGetAnnouncementsQuery } from "@/shared/api/announcementsApi";
 import type { AnnouncementsFilters } from "@/shared/api/announcementsApi";
 import FiltersBar from "@/widgets/filtersBar/FiltersBar";
 import { useGetUSDRateQuery } from "@/shared/api/currencyApi";
-import { formatPrice } from "@/shared/utils/currencyConverter";
+import { formatPrice, getUsdRateForDisplay, DEFAULT_USD_UZS_FALLBACK } from "@/shared/utils/currencyConverter";
 import { useCurrency } from "@/shared/contexts/CurrencyContext";
 
 interface Props {
@@ -16,6 +16,11 @@ interface Props {
 }
 
 const PER_PAGE = 24;
+
+const DISPLAY_USD_FALLBACK =
+    typeof process !== "undefined" && process.env.NEXT_PUBLIC_USD_UZS_FALLBACK
+        ? Number(process.env.NEXT_PUBLIC_USD_UZS_FALLBACK)
+        : DEFAULT_USD_UZS_FALLBACK;
 
 const getImageUrl = (imagePath: string): string => {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
@@ -35,10 +40,14 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
     });
     const cardsListRef = useRef<HTMLDivElement>(null);
 
-    // Получаем курс USD
-    const { data: usdRateData } = useGetUSDRateQuery();
-    const usdRate = usdRateData?.[0] ? parseFloat(usdRateData[0].Rate) : null;
-    const usdNominal = usdRateData?.[0] ? parseFloat(usdRateData[0].Nominal) : 1;
+    const { data: usdRateData } = useGetUSDRateQuery(undefined, {
+        refetchOnFocus: true,
+        refetchOnReconnect: true,
+    });
+    const { rate: usdRate, nominal: usdNominal } = useMemo(
+        () => getUsdRateForDisplay(usdRateData, Number.isFinite(DISPLAY_USD_FALLBACK) && DISPLAY_USD_FALLBACK > 0 ? DISPLAY_USD_FALLBACK : DEFAULT_USD_UZS_FALLBACK),
+        [usdRateData]
+    );
 
     const currentFilters = useMemo(() => {
         const result: Partial<AnnouncementsFilters> = {
@@ -230,7 +239,7 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
 
             {!isInitialLoading && !isError && hasItems && (
                 <div
-                    key={`grid-${page}-${JSON.stringify(filters)}`}
+                    key={`grid-${page}-${selectedCurrency}-${JSON.stringify(filters)}`}
                     className={styles.grid}
                 >
                     {items.map((card) => (
@@ -254,6 +263,7 @@ export const CardsList: React.FC<Props> = ({ activeTab = "new-builds" }) => {
                     onChange={handlePageChange}
                 />
             )}
+
         </div>
     );
 };
